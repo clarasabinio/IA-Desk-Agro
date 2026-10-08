@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesList = document.getElementById('messages-list');
     const btnClearChat = document.getElementById('btn-clear-chat');
     const quickChips = document.querySelectorAll('.chip-btn');
+    const metricGasoil = document.getElementById('metric-gasoil');
     
     // Modal elements
     const inspectorModal = document.getElementById('inspector-modal');
@@ -17,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentInspectedFile = 'INDEX.md';
 
-    // Auto-scroll chat to bottom
     const scrollToBottom = () => {
         messagesList.scrollTop = messagesList.scrollHeight;
     };
@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
     });
 
-    // Enter to submit (Shift+Enter for newline)
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -36,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Render User Message
     const appendUserMessage = (text) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const card = document.createElement('div');
@@ -57,33 +55,40 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     };
 
-    // Render Bot Message with Tool Calling Transparency
-    const appendBotMessage = (text, toolCalls = [], isDemo = false) => {
+    // Render Bot Message con frases genéricas sin revelar nombres de archivos
+    const appendBotMessage = (text, toolCalls = []) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const card = document.createElement('div');
         card.className = 'message-card bot-card';
 
-        // Construir badges de Tool Calling si Claude invocó herramientas
         let toolHtml = '';
         if (toolCalls && toolCalls.length > 0) {
             toolHtml = `<div class="tool-call-banner">`;
-            toolCalls.forEach(tc => {
-                const icon = tc.tool === 'write_storage_file' ? '💾' : tc.tool === 'read_storage_file' ? '🔍' : '📂';
-                const fileTarget = tc.args?.filename ? `<code>${tc.args.filename}</code>` : '';
+            
+            // Consolidar en frases genéricas elegantes
+            const hasWrite = toolCalls.some(tc => tc.tool === 'write_storage_file');
+            const hasRead = toolCalls.some(tc => tc.tool === 'read_storage_file');
+
+            if (hasRead) {
                 toolHtml += `
                     <div class="tool-header-row">
-                        <span class="tool-icon">${icon}</span>
-                        <span>Tool Call: <strong>${tc.tool}</strong> ${fileTarget}</span>
-                    </div>
-                    <div class="tool-detail-row">
-                        <span>➔ ${escapeHtml(tc.preview || 'Completado')}</span>
+                        <span class="tool-icon">🔍</span>
+                        <span>Consultando los registros y el inventario del campo...</span>
                     </div>
                 `;
-            });
+            }
+            if (hasWrite) {
+                toolHtml += `
+                    <div class="tool-header-row" style="margin-top: 4px;">
+                        <span class="tool-icon">💾</span>
+                        <span>Actualizando inventario y bitácora operativa en tiempo real...</span>
+                    </div>
+                `;
+            }
+
             toolHtml += `</div>`;
         }
 
-        // Formatear texto simple con párrafos y viñetas
         const formattedText = formatMarkdownLike(text);
 
         card.innerHTML = `
@@ -103,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     };
 
-    // Render Loading indicator
     const showLoading = () => {
         const loadingCard = document.createElement('div');
         loadingCard.id = 'chat-loading-card';
@@ -113,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-body">
                 <div class="loading-indicator">
                     <span class="spinner-dot">⚙️</span>
-                    <span>IA Desk Agro está consultando archivos y procesando con Claude...</span>
+                    <span>IA Desk Agro está procesando los registros del campo...</span>
                 </div>
             </div>
         `;
@@ -126,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingCard) loadingCard.remove();
     };
 
-    // Handle form submit
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = userInput.value.trim();
@@ -149,20 +152,23 @@ document.addEventListener('DOMContentLoaded', () => {
             removeLoading();
 
             if (data.status === 'success') {
-                appendBotMessage(data.data.response, data.data.tool_calls, data.data.is_demo);
+                appendBotMessage(data.data.response, data.data.tool_calls);
+                // Si la respuesta trajo el nuevo stock de gasoil, actualizar métrica en vivo
+                if (data.data.current_gasoil && metricGasoil) {
+                    metricGasoil.textContent = `${data.data.current_gasoil} L`;
+                }
             } else {
                 appendBotMessage('⚠️ Error: ' + (data.message || 'No se pudo procesar la consulta'));
             }
         } catch (err) {
             removeLoading();
-            appendBotMessage('⚠️ Error de conexión con el servidor local Django.');
+            appendBotMessage('⚠️ Error de conexión con el servidor local.');
             console.error(err);
         } finally {
             btnSend.disabled = false;
         }
     });
 
-    // Quick chips click
     quickChips.forEach(chip => {
         chip.addEventListener('click', () => {
             const query = chip.dataset.query;
@@ -173,9 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Clear history
     btnClearChat.addEventListener('click', async () => {
-        if (!confirm('¿Deseas reiniciar la memoria de conversación y el archivo CHAT_HISTORY.json?')) return;
+        if (!confirm('¿Deseas reiniciar la conversación?')) return;
         try {
             const res = await fetch('/api/reset-history/', { method: 'POST' });
             const data = await res.json();
@@ -189,18 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div class="message-content">
-                                <p>Historial y ventana deslizante reiniciados. ¿Qué dato de las operaciones deseas consultar?</p>
+                                <p>Conversación reiniciada. ¿Qué datos de las operaciones deseas consultar o registrar?</p>
                             </div>
                         </div>
                     </div>
                 `;
             }
         } catch (e) {
-            alert('Error al reiniciar historial.');
+            alert('Error al reiniciar.');
         }
     });
 
-    // Storage Inspector Modal Logic
+    // Inspector
     const availableFiles = ['INDEX.md', 'MEMORY.md', 'CHAT_HISTORY.json'];
 
     const renderTabs = () => {
@@ -219,8 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadInspectFile = async (filename) => {
-        modalFileContent.textContent = `Cargando ${filename}...`;
-        document.getElementById('modal-file-title').textContent = `Inspeccionando files_storage/${filename}`;
+        modalFileContent.textContent = `Cargando...`;
+        document.getElementById('modal-file-title').textContent = `Inspeccionando registros del campo: ${filename}`;
         try {
             const res = await fetch(`/api/storage/${filename}/`);
             const data = await res.json();
@@ -260,16 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Utility: Format simple markdown
     function formatMarkdownLike(str) {
         if (!str) return '';
         let html = escapeHtml(str);
 
-        // Bold
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        // Inline code
         html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-        // Split by lines
         const lines = html.split('\n');
         let formatted = '';
         lines.forEach(line => {

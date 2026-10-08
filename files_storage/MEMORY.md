@@ -26,3 +26,6 @@
 - [ ] Chequeo de nacencia y stand de plantas en el lote de prueba.
 
 - Registro Registrar que usamos 500 litros de gasoil en Lote 1: Verificado por IA Desk Agro.
+- Registro Registrar que usamos 500 litros de gasoil en la siembra del Lote 1 con el John Deere: Verificado por IA Desk Agro.
+- Registro "Registrar que usamos 400 litros de gasoil en el tractor John Deere para terminar el Lote 1": Verificado por IA Desk Agro.
+- Consumo registrado: 500.0 L de gasoil reportados por el usuario. Nuevo stock en tanque: 8.000 L.

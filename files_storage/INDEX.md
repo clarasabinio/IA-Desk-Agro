@@ -27,7 +27,7 @@
 
 ## ⛽ 2. STOCK DE COMBUSTIBLES E INSUMOS
 - **Combustible Diesel (Gasoil Grado 2):**
-  - **Stock actual:** 8.500 Litros en Tanque Cisterna Principal (Capacidad total: 15.000 L).
+  - **Stock actual:** 8.000 Litros en Tanque Cisterna Principal (Capacidad total: 15.000 L).
   - **Consumo diario promedio en siembra:** 450 - 600 Litros/día.
   - **Regla de reabastecimiento:** Emitir alerta y pedir camión cisterna cuando baje de 5.000 Litros.
 

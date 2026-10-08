@@ -1,3 +1,4 @@
+import re
 import json
 from typing import Dict, Any, List, Tuple
 from django.conf import settings
@@ -11,11 +12,11 @@ from .storage_service import (
     append_to_history
 )
 
-# Definición formal de Herramientas (Tool Calling) para Anthropic Claude
+# Definición formal de Herramientas para Anthropic Claude
 CLAUDE_TOOLS = [
     {
         "name": "read_storage_file",
-        "description": "Lee el contenido íntegro de un archivo local en la carpeta 'files_storage/' del campo (ej: 'INDEX.md' para lotes y stock, 'MEMORY.md' para directivas y estado de campaña).",
+        "description": "Lee el contenido de un archivo del negocio en el almacenamiento local (ej: 'INDEX.md' para lotes y stock, 'MEMORY.md' para directivas).",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -29,17 +30,17 @@ CLAUDE_TOOLS = [
     },
     {
         "name": "write_storage_file",
-        "description": "Crea o actualiza un archivo en la carpeta 'files_storage/' para persistir cambios en el negocio (ej: actualizar el stock de gasoil, modificar tareas en MEMORY.md o registrar un nuevo lote).",
+        "description": "Crea o actualiza un archivo en el almacenamiento local para persistir cambios (ej: actualizar el stock del tanque en 'INDEX.md' o registrar notas en 'MEMORY.md').",
         "input_schema": {
             "type": "object",
             "properties": {
                 "filename": {
                     "type": "string",
-                    "description": "Nombre del archivo a escribir o actualizar (ej: 'MEMORY.md', 'INDEX.md')."
+                    "description": "Nombre del archivo a actualizar (ej: 'INDEX.md', 'MEMORY.md')."
                 },
                 "content": {
                     "type": "string",
-                    "description": "Contenido completo en formato Markdown o texto que reemplazará o creará el archivo."
+                    "description": "Contenido completo en Markdown que reemplazará el archivo con los datos actualizados."
                 }
             },
             "required": ["filename", "content"]
@@ -47,7 +48,7 @@ CLAUDE_TOOLS = [
     },
     {
         "name": "list_storage_files",
-        "description": "Lista todos los archivos existentes en la carpeta 'files_storage/' con sus tamaños y fechas de modificación para saber qué información está disponible.",
+        "description": "Lista los archivos del negocio para conocer qué registros existen.",
         "input_schema": {
             "type": "object",
             "properties": {}
@@ -55,27 +56,79 @@ CLAUDE_TOOLS = [
     }
 ]
 
-SYSTEM_PROMPT = """Eres "IA Desk Agro", el asistente y copiloto inteligente de operaciones de la empresa agropecuaria familiar "La Esperanza" (Campaña Gruesa 2026/2027).
+SYSTEM_PROMPT = """Eres "IA Desk Agro", el copiloto inteligente de operaciones de la empresa agropecuaria familiar "La Esperanza" (Campaña Gruesa 2026/2027).
 
-Tu rol es asistir a los productores y administradores del campo respondiendo preguntas operativas (stock de gasoil, siembra de lotes, maquinaria, insumos) y actualizando la memoria del negocio.
+Tu rol es asistir a los productores respondiendo consultas operativas y manteniendo al día el inventario de insumos, lotes y combustible.
 
-REGLAS DE OPERACIÓN CON TOOL CALLING:
-1. NUNCA inventes datos del campo. Tienes a tu disposición la carpeta física local 'files_storage/'.
-2. Ante cualquier consulta sobre stock, lotes, insumos o maquinaria, invoca la herramienta 'read_storage_file' para leer 'INDEX.md'.
-3. Ante consultas sobre prioridades de la familia, tareas activas, directivas o clima, invoca 'read_storage_file' para leer 'MEMORY.md'.
-4. Cuando el usuario te pida registrar una salida de combustible, actualizar el estado de un lote o agregar una tarea, PRIMERO lee el archivo correspondiente, modifícalo con precisión y utiliza 'write_storage_file' para persistir el cambio en disco.
-5. Comunica tus respuestas de forma profesional, clara y cordial, típica de un ingeniero agrónomo / administrador rural de confianza. Menciona de forma concisa qué archivos consultaste o actualizaste.
+REGLAS ESTRICTAS DE COMUNICACIÓN Y PRIVACIDAD DE ARCHIVOS:
+1. NUNCA nombres los nombres técnicos de los archivos donde guardas la información (como INDEX.md, MEMORY.md, CHAT_HISTORY.json ni files_storage).
+2. NUNCA envíes enlaces a los archivos.
+3. Utiliza SIEMPRE frases genéricas y profesionales como:
+   - "Consultando los registros del campo..."
+   - "Según el inventario actual del establecimiento..."
+   - "He actualizado el stock del tanque cisterna y la bitácora operativa..."
+   - "De acuerdo a las directivas de la administración..."
+
+REGLA CLAVE DE GESTIÓN DE COMBUSTIBLE:
+4. Cuando el usuario indique que se gastó, consumió o cargó gasoil (ej. "gasté 500 litros de gas oil", "consumimos 400 L en siembra"):
+   a) Consulta el inventario (INDEX.md) para saber el stock actual.
+   b) Resta matemáticamente la cantidad exacta consumida al stock en el tanque.
+   c) Escribe de inmediato el archivo INDEX.md con el NUEVO stock descontado usando 'write_storage_file'.
+   d) Registra la anotación del gasto en MEMORY.md usando 'write_storage_file'.
+   e) Confirma al usuario el consumo descontado y el nuevo stock restante en el tanque cisterna en litros, advirtiendo si cae cerca del umbral de seguridad de 5.000 Litros.
 """
 
+def get_current_gasoil_stock() -> str:
+    """Extrae el stock actual en formato string desde INDEX.md"""
+    content = read_storage_file("INDEX.md")
+    match = re.search(r'\*\*Stock actual:\*\*\s*([\d\.,]+)\s*Litros', content)
+    if match:
+        return match.group(1)
+    return "8.500"
+
+def deduct_gasoil_stock(liters: float) -> Tuple[float, float, str]:
+    """
+    Resta los litros consumidos directamente en INDEX.md y lo guarda físicamente.
+    Devuelve (stock_anterior, stock_nuevo, nuevo_formateado)
+    """
+    content = read_storage_file("INDEX.md")
+    match = re.search(r'\*\*Stock actual:\*\*\s*([\d\.,]+)\s*Litros', content)
+    
+    if match:
+        raw_num = match.group(1).replace('.', '').replace(',', '.')
+        try:
+            current_stock = float(raw_num)
+        except ValueError:
+            current_stock = 8500.0
+    else:
+        current_stock = 8500.0
+
+    new_stock = max(0.0, current_stock - liters)
+    
+    # Formato con puntos para miles (ej: 8.000)
+    if new_stock.is_integer():
+        formatted_new = f"{int(new_stock):,}".replace(',', '.')
+    else:
+        formatted_new = f"{new_stock:,.1f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+    updated_content = re.sub(
+        r'\*\*Stock actual:\*\*\s*([\d\.,]+)\s*Litros',
+        f'**Stock actual:** {formatted_new} Litros',
+        content,
+        count=1
+    )
+    write_storage_file("INDEX.md", updated_content)
+    return current_stock, new_stock, formatted_new
+
 def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
-    """Ejecuta una herramienta en el almacenamiento local y devuelve el resultado y metadatos para UI"""
+    """Ejecuta una herramienta en el almacenamiento local"""
     meta = {"tool": tool_name, "args": tool_args}
     
     if tool_name == "read_storage_file":
         filename = tool_args.get("filename", "")
         content = read_storage_file(filename)
         meta["status"] = "success" if not content.startswith("[ERROR]") else "error"
-        meta["preview"] = f"Leídos {len(content)} caracteres de '{filename}'"
+        meta["preview"] = "Datos consultados correctamente"
         return content, meta
 
     elif tool_name == "write_storage_file":
@@ -83,14 +136,14 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Tuple[str, Dict[s
         content = tool_args.get("content", "")
         result = write_storage_file(filename, content)
         meta["status"] = "success" if not result.startswith("[ERROR]") else "error"
-        meta["preview"] = f"Escrito '{filename}' ({len(content)} caracteres)"
+        meta["preview"] = "Registros actualizados correctamente"
         return result, meta
 
     elif tool_name == "list_storage_files":
         files = list_storage_files()
         res_str = json.dumps(files, indent=2, ensure_ascii=False)
         meta["status"] = "success"
-        meta["preview"] = f"{len(files)} archivos encontrados en files_storage/"
+        meta["preview"] = "Registros verificados"
         return res_str, meta
 
     else:
@@ -101,19 +154,16 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Tuple[str, Dict[s
 
 def process_agro_chat(user_message: str) -> Dict[str, Any]:
     """
-    Orquestador principal del ciclo de conversación con Claude y Tool Calling
+    Orquestador del flujo con Claude y Tool Calling
     """
     api_key = settings.ANTHROPIC_API_KEY
     executed_tools_log = []
 
-    # Si no hay API Key configurada o es vacía, ejecutar simulación realista de Tool Calling
     if not api_key:
         return _simulate_agro_tool_calling(user_message)
 
     try:
         client = anthropic.Anthropic(api_key=api_key)
-        
-        # Recuperar contexto previo de la ventana deslizante
         history = get_sliding_history(limit=6)
         messages_payload: List[Dict[str, Any]] = []
 
@@ -123,13 +173,11 @@ def process_agro_chat(user_message: str) -> Dict[str, Any]:
                 "content": h["content"]
             })
 
-        # Añadir mensaje actual
         messages_payload.append({
             "role": "user",
             "content": user_message
         })
 
-        # Ciclo de llamada a herramientas (Agent Loop)
         max_tool_iterations = 5
         iteration = 0
         final_text = ""
@@ -137,7 +185,6 @@ def process_agro_chat(user_message: str) -> Dict[str, Any]:
         while iteration < max_tool_iterations:
             iteration += 1
 
-            # Llamada al modelo Claude 3.5 Sonnet
             response = client.messages.create(
                 model="claude-3-5-sonnet-20241022",
                 max_tokens=1500,
@@ -146,9 +193,7 @@ def process_agro_chat(user_message: str) -> Dict[str, Any]:
                 messages=messages_payload
             )
 
-            # Si el modelo decidió usar herramientas:
             if response.stop_reason == "tool_use":
-                # Guardar respuesta del asistente en el payload para mantener coherencia
                 messages_payload.append({
                     "role": "assistant",
                     "content": response.content
@@ -156,14 +201,12 @@ def process_agro_chat(user_message: str) -> Dict[str, Any]:
 
                 tool_results_content = []
 
-                # Ejecutar cada herramienta solicitada
                 for block in response.content:
                     if block.type == "tool_use":
                         tool_name = block.name
                         tool_input = block.input
                         tool_use_id = block.id
 
-                        # Ejecutar localmente en files_storage/
                         tool_output, tool_meta = execute_tool(tool_name, tool_input)
                         executed_tools_log.append(tool_meta)
 
@@ -173,128 +216,163 @@ def process_agro_chat(user_message: str) -> Dict[str, Any]:
                             "content": tool_output
                         })
 
-                # Añadir los resultados de las herramientas como mensaje de usuario
                 messages_payload.append({
                     "role": "user",
                     "content": tool_results_content
                 })
 
             else:
-                # El modelo finalizó su respuesta textual
                 for block in response.content:
                     if hasattr(block, 'text'):
                         final_text += block.text
                 break
 
         if not final_text:
-            final_text = "Se completaron las operaciones solicitadas en los archivos del campo."
+            final_text = "Se completaron las operaciones solicitadas en los registros del establecimiento."
 
-        # Guardar en memoria persistente con ventana deslizante
+        # Limpiar cualquier mención involuntaria de archivos en la respuesta de Claude
+        final_text = re.sub(r'INDEX\.md|MEMORY\.md|CHAT_HISTORY\.json|files_storage/?', 'los registros del campo', final_text)
+
         append_to_history(user_message, final_text, executed_tools_log)
 
         return {
             "response": final_text,
             "tool_calls": executed_tools_log,
+            "current_gasoil": get_current_gasoil_stock(),
             "is_demo": False
         }
 
     except Exception as e:
-        # En caso de error de conexión o cuota, recurrir a la lógica autónoma local
-        print(f"Error comunicando con Anthropic API: {e}")
+        print(f"Error con Anthropic API: {e}")
         sim_res = _simulate_agro_tool_calling(user_message)
-        sim_res["warning"] = f"Aviso de API Anthropic ({str(e)}). Se utilizó el ejecutor de herramientas local."
+        sim_res["warning"] = f"Aviso: {str(e)}"
         return sim_res
 
 def _simulate_agro_tool_calling(user_message: str) -> Dict[str, Any]:
     """
-    Motor local de Tool Calling para pruebas sin API key o ante falta de crédito.
-    Ejecuta las herramientas REALMENTE sobre files_storage/ y genera respuestas contextualizadas.
+    Motor local de Tool Calling: descuenta el gasoil REAL en disco y responde sin nombres de archivos
     """
     msg = user_message.lower()
     executed_tools = []
     
-    # 1. Caso Combustible / Gasoil
-    if "gasoil" in msg or "combustible" in msg or "tanque" in msg or "diesel" in msg:
-        content, meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
-        executed_tools.append(meta)
+    is_consumption = any(w in msg for w in ["gaste", "gasté", "gastamos", "consum", "cargar", "cargamos", "usamos", "descontar", "restar"])
+    has_fuel_word = any(w in msg for w in ["gasoil", "gas oil", "combustible", "diesel", "tanque", "litro", "litros", "lts"])
 
-        # Detectar si es consulta o registro de consumo
-        if "cargar" in msg or "usamos" in msg or "gastamos" in msg or "consum" in msg or "restar" in msg:
-            # Simular actualización en MEMORY.md
-            mem_content, mem_meta = execute_tool("read_storage_file", {"filename": "MEMORY.md"})
-            executed_tools.append(mem_meta)
-
-            updated_mem = mem_content + f"\n- Registro {user_message}: Verificado por IA Desk Agro."
-            _, write_meta = execute_tool("write_storage_file", {"filename": "MEMORY.md", "content": updated_mem})
-            executed_tools.append(write_meta)
-
-            reply = (
-                "⛽ **Registro de Combustible Actualizado:**\n\n"
-                "He consultado `INDEX.md` y actualizado `MEMORY.md`.\n"
-                "- **Capacidad total:** 15.000 Litros en Tanque Cisterna Principal.\n"
-                "- **Stock nominal:** 8.500 Litros de Gasoil Grado 2.\n"
-                "- **Aviso operativo:** He asentado tu reporte de consumo en las notas activas. Recuerda que la directiva de la familia indica solicitar camión cisterna cuando el remanente alcance los **5.000 Litros**."
-            )
+    # 1. Caso Consumo o Gasto de Combustible
+    if is_consumption and has_fuel_word:
+        # Extraer cantidad de litros del mensaje
+        numbers = re.findall(r'(\d+(?:[\.,]\d+)?)', user_message)
+        liters = 0.0
+        if numbers:
+            # Tomar el primer número (ej: 500)
+            liters = float(numbers[0].replace('.', '').replace(',', '.'))
         else:
-            reply = (
-                "⛽ **Estado Actual de Combustibles (según `files_storage/INDEX.md`):**\n\n"
-                "- **Stock actual:** **8.500 Litros** de Gasoil Grado 2 en el Tanque Cisterna Principal.\n"
-                "- **Consumo diario estimado:** Entre 450 y 600 litros/día con el tractor John Deere trabajando en siembra.\n"
-                "- **Directiva de la familia:** El umbral mínimo de seguridad es de **5.000 Litros**. Aún contamos con 3.500 L de margen antes de tener que pedir reabastecimiento."
-            )
+            liters = 500.0  # valor por defecto si no especifica número
 
-    # 2. Caso Lotes o Siembra
-    elif "lote" in msg or "siembra" in msg or "sembr" in msg or "soja" in msg or "maiz" in msg:
-        content, meta1 = execute_tool("read_storage_file", {"filename": "INDEX.md"})
+        # 1.1 Ejecutar Tool Call de lectura
+        _, read_meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
+        executed_tools.append(read_meta)
+
+        # 1.2 Ejecutar descuento real en INDEX.md
+        old_stock, new_stock, formatted_new = deduct_gasoil_stock(liters)
+        _, write_idx_meta = execute_tool("write_storage_file", {
+            "filename": "INDEX.md", 
+            "content": read_storage_file("INDEX.md")
+        })
+        executed_tools.append(write_idx_meta)
+
+        # 1.3 Asentar registro en MEMORY.md
+        mem_content = read_storage_file("MEMORY.md")
+        mem_updated = mem_content + f"\n- Consumo registrado: {liters} L de gasoil reportados por el usuario. Nuevo stock en tanque: {formatted_new} L."
+        write_storage_file("MEMORY.md", mem_updated)
+        _, write_mem_meta = execute_tool("write_storage_file", {
+            "filename": "MEMORY.md",
+            "content": mem_updated
+        })
+        executed_tools.append(write_mem_meta)
+
+        # Alerta de umbral de 5000 litros
+        if new_stock <= 5000:
+            alerta = f"⚠️ **ALERTA CRÍTICA:** El nivel del tanque ha bajado a {formatted_new} Litros, alcanzando el umbral mínimo de seguridad. Se recomienda contactar inmediatamente al distribuidor para pedir el camión cisterna."
+        else:
+            alerta = f"✅ El nivel permanece seguro por encima del umbral de reserva (margen actual: {int(new_stock - 5000):,} L por sobre el límite de aviso)."
+
+        reply = (
+            f"⛽ **Registro de Combustible Actualizado con Éxito:**\n\n"
+            f"- **Consumo descontado:** {int(liters) if liters.is_integer() else liters} Litros.\n"
+            f"- **Nuevo stock en el tanque cisterna:** **{formatted_new} Litros** (Capacidad total: 15.000 L).\n"
+            f"- **Estado de reserva:** {alerta}\n\n"
+            f"He actualizado el inventario central del campo y registrado el movimiento en la bitácora operativa."
+        )
+
+    # 2. Caso Consulta de Combustible (sin gasto)
+    elif has_fuel_word:
+        _, read_meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
+        executed_tools.append(read_meta)
+        stock_str = get_current_gasoil_stock()
+
+        reply = (
+            f"⛽ **Estado Actual de Combustibles:**\n\n"
+            f"- **Stock disponible en el tanque cisterna:** **{stock_str} Litros** de Gasoil Grado 2.\n"
+            f"- **Capacidad máxima del tanque:** 15.000 Litros.\n"
+            f"- **Consumo diario promedio:** Entre 450 y 600 litros/día en labores de siembra activa.\n"
+            f"- **Directiva de seguridad:** Solicitar camión cisterna cuando el nivel baje a 5.000 Litros.\n\n"
+            f"Según los registros del establecimiento, contamos con suministro suficiente para continuar las tareas programadas."
+        )
+
+    # 3. Caso Lotes o Siembra
+    elif any(w in msg for w in ["lote", "siembra", "sembr", "soja", "maiz", "cultivo"]):
+        _, meta1 = execute_tool("read_storage_file", {"filename": "INDEX.md"})
         executed_tools.append(meta1)
-        mem, meta2 = execute_tool("read_storage_file", {"filename": "MEMORY.md"})
+        _, meta2 = execute_tool("read_storage_file", {"filename": "MEMORY.md"})
         executed_tools.append(meta2)
 
         reply = (
-            "🌾 **Informe Operativo de Lotes (según `INDEX.md` y `MEMORY.md`):**\n\n"
+            "🌾 **Informe Operativo de Lotes y Siembra:**\n\n"
             "1. **Lote 1 - 'La Esperanza' (120 ha):**\n"
-            "   - **Cultivo:** Soja de 1ra (Don Mario 46R18).\n"
-            "   - **Avance:** 75% completado (restan ~30 ha).\n"
-            "   - **Prioridad #1:** Concluir antes del fin de semana por pronóstico de lluvias.\n\n"
+            "   - **Cultivo:** Soja de 1ra (Variedad Don Mario 46R18).\n"
+            "   - **Avance:** 75% completado (restan unas 30 ha).\n"
+            "   - **Prioridad:** Concluir antes de las precipitaciones pronosticadas para el fin de semana.\n\n"
             "2. **Lote 2 - 'El Ombú' (85 ha):**\n"
-            "   - Destinado a Maíz Tardío (Dekalb 72-10). Barbecho químico finalizado.\n\n"
+            "   - Maíz Tardío (Dekalb 72-10). Barbecho químico listo.\n\n"
             "3. **Lote 3 - 'Bajo Grande' (210 ha):**\n"
-            "   - Rastrojo de trigo cosechado, pendiente análisis de suelo."
+            "   - Rastrojo cosechado, pendiente de análisis de fertilidad de suelo.\n\n"
+            "Según las directivas de la administración, la prioridad absoluta es finalizar el Lote 1."
         )
 
-    # 3. Caso Maquinaria
-    elif "maquinaria" in msg or "tractor" in msg or "sembradora" in msg or "cosechadora" in msg or "pla" in msg:
-        content, meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
+    # 4. Caso Maquinaria
+    elif any(w in msg for w in ["maquinaria", "tractor", "sembradora", "cosechadora", "pla"]):
+        _, meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
         executed_tools.append(meta)
 
         reply = (
-            "🚜 **Parque de Maquinaria Operativa (según `files_storage/INDEX.md`):**\n\n"
-            "- **Tractor John Deere 7200R (200 HP):** Operativo en Lote 1 con 3.420 horas de motor. Service al día.\n"
-            "- **Sembradora Crucianelli Pionera (27 líneas a 52 cm):** Enganchada y calibrada con corte por sección para soja.\n"
-            "- **Pulverizadora Pla MAP 3 3300:** Lavada y lista en galpón con pastillas antideriva.\n"
-            "- **Cosechadora Case IH 7230:** Resguardada para campaña de cosecha."
+            "🚜 **Parque de Maquinaria y Equipamiento Activo:**\n\n"
+            "- **Tractor John Deere 7200R (200 HP):** Operando en Lote 1 con 3.420 horas de motor. Service al día.\n"
+            "- **Sembradora Crucianelli Pionera (27 líneas a 52 cm):** Calibrada con placa para soja y dosificación variable.\n"
+            "- **Pulverizadora Pla MAP 3 3300:** Lista en galpón central con picos antideriva colocados.\n"
+            "- **Cosechadora Case IH 7230:** Resguardada y lista para la cosecha.\n\n"
+            "Toda la maquinaria principal se encuentra en estado operativo según los registros del campo."
         )
 
-    # 4. Caso General / Lista de archivos
+    # 5. Caso General
     else:
-        files, meta = execute_tool("list_storage_files", {})
+        _, meta = execute_tool("read_storage_file", {"filename": "INDEX.md"})
         executed_tools.append(meta)
-        idx_content, meta_idx = execute_tool("read_storage_file", {"filename": "INDEX.md"})
-        executed_tools.append(meta_idx)
+        stock_str = get_current_gasoil_stock()
 
         reply = (
-            f"🚜 **IA Desk Agro - Asistente de Operaciones:**\n\n"
-            f"He examinado los archivos de la empresa en `files_storage/`. El campo 'La Esperanza' se encuentra en plena **Campaña Gruesa 2026/2027**.\n\n"
-            f"- **Prioridad activa:** Terminar la siembra de soja en Lote 1.\n"
-            f"- **Gasoil disponible:** 8.500 Litros.\n"
-            f"- **Insumos:** Semillas y fertilizantes verificados en galpón.\n\n"
-            f"*(💡 Puedes consultar en lenguaje natural sobre lotes, stock, maquinaria o pedirme registrar movimientos de insumos).* "
-            f"\n\n*(Nota: Puedes configurar tu `ANTHROPIC_API_KEY` en el archivo `.env` para procesamiento en tiempo real con Claude 3.5 Sonnet).* "
+            f"🚜 **IA Desk Agro - Copiloto de Campo:**\n\n"
+            f"He consultado los registros operativos del campo. Estamos en plena **Campaña Gruesa 2026/2027**.\n\n"
+            f"- **Prioridad activa:** Terminar la siembra de soja en el Lote 1 'La Esperanza'.\n"
+            f"- **Combustible:** {stock_str} Litros disponibles en el tanque cisterna.\n"
+            f"- **Maquinaria:** Tractor John Deere y sembradora Crucianelli operativos.\n\n"
+            f"Puedes consultarme sobre cualquier lote, stock de insumos o indicarme gastos de combustible para actualizar el inventario automáticamente."
         )
 
     append_to_history(user_message, reply, executed_tools)
     return {
         "response": reply,
         "tool_calls": executed_tools,
+        "current_gasoil": get_current_gasoil_stock(),
         "is_demo": True
     }
