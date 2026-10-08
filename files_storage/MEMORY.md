@@ -13,3 +13,9 @@
 
 - [2026-10-08 18:44:43] Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande
 - [2026-10-08 18:45:06] Retiro de 2,000 L de acopio YPF hacia Tanque Chico
+- [2026-10-08 18:47:28] Retiro de 2,000 L de acopio YPF hacia Tanque Chico
+- [2026-10-08 20:34:34] Consumo/Retiro de 400 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
+- [2026-10-08 20:35:35] Consumo/Retiro de 200 L desde Cisterna Planta (Maquinaria de labor) reportado por Productor.
+- [2026-10-08 20:36:21] Consumo/Retiro de 150 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
+- [2026-10-08 20:36:34] Consumo/Retiro de 200 L desde Tanque Grande (Tractor John Deere) reportado por Productor.
+- [2026-10-08 20:36:43] Consumo/Retiro de 100 L desde Tanque Chico (Camioneta) reportado por Esteban Maquinista.
