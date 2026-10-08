@@ -19,7 +19,7 @@ from .storage_service import (
 CLAUDE_TOOLS = [
     {
         "name": "read_file",
-        "description": "Lee el contenido íntegro de un archivo en files_storage/ ('stock_gasoil.json', 'stock_insumos.json', 'registro_lotes.json', 'INDEX.md', 'MEMORY.md').",
+        "description": "Lee el contenido íntegro de un archivo en files_storage/ ('stock_gasoil.json', 'stock_insumos.json', 'stock_granos_silos.json', 'registro_lotes.json', 'INDEX.md', 'MEMORY.md').",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -39,7 +39,7 @@ CLAUDE_TOOLS = [
             "properties": {
                 "filename": {
                     "type": "string",
-                    "description": "Nombre del archivo a escribir (ej: 'stock_gasoil.json', 'stock_insumos.json', 'registro_lotes.json')."
+                    "description": "Nombre del archivo a escribir ('stock_gasoil.json', 'stock_insumos.json', 'stock_granos_silos.json', 'registro_lotes.json')."
                 },
                 "content": {
                     "type": "string",
@@ -120,20 +120,28 @@ def execute_native_tool(tool_name: str, tool_args: Dict[str, Any]) -> Tuple[str,
         return err, meta
 
 def get_dashboard_summary() -> Dict[str, Any]:
-    """Lee las planillas físicas y consolida los 4 depósitos de gasoil e insumos"""
+    """Lee las planillas físicas y consolida gasoil, híbridos de maíz, granos en silos e insumos"""
     summary = {
-        "cisterna_planta": {"actual": 14500, "max": 22000},
-        "tanque_grande": {"actual": 3500, "max": 5000},
-        "tanque_chico": {"actual": 1800, "max": 3000},
-        "acopio_por_retirar": 8000,
-        "total_campo": 19800,
-        "total_con_acopio": 27800,
+        "cisterna_planta": {"actual": 12800, "max": 22000},
+        "tanque_grande": {"actual": 4000, "max": 5000},
+        "tanque_chico": {"actual": 2750, "max": 3000},
+        "acopio_por_retirar": 4000,
+        "total_campo": 19550,
+        "total_con_acopio": 23550,
+        "maiz_hibridos": [],
+        "maiz_totales": {"en_planta": 240, "por_retirar": 190, "total_general": 430},
+        "granos_silos": {
+            "soja": {"total_tn": 540.0, "ubicaciones": []},
+            "trigo": {"total_tn": 819.0, "ubicaciones": []},
+            "total_general_tn": 1359.0
+        },
         "semillas_soja": 440,
-        "semillas_maiz": 220,
+        "semillas_maiz": 430,
         "map_tn": 22.0,
         "glifosato_lts": 1200
     }
 
+    # 1. Combustibles
     try:
         g = json.loads(read_file("stock_gasoil.json"))
         deps = g.get("depositos", {})
@@ -142,40 +150,58 @@ def get_dashboard_summary() -> Dict[str, Any]:
         tc = deps.get("tanque_chico", {})
         ac = deps.get("acopio_por_retirar", {})
 
-        summary['cisterna_planta'] = {"actual": cp.get("stock_actual_litros", 14500), "max": cp.get("capacidad_max_litros", 22000)}
-        summary['tanque_grande'] = {"actual": tg.get("stock_actual_litros", 3500), "max": tg.get("capacidad_max_litros", 5000)}
-        summary['tanque_chico'] = {"actual": tc.get("stock_actual_litros", 1800), "max": tc.get("capacidad_max_litros", 3000)}
-        summary['acopio_por_retirar'] = ac.get("litros_disponibles", 8000)
+        summary["cisterna_planta"] = {"actual": cp.get("stock_actual_litros", 12800), "max": cp.get("capacidad_max_litros", 22000)}
+        summary["tanque_grande"] = {"actual": tg.get("stock_actual_litros", 4000), "max": tg.get("capacidad_max_litros", 5000)}
+        summary["tanque_chico"] = {"actual": tc.get("stock_actual_litros", 2750), "max": tc.get("capacidad_max_litros", 3000)}
+        summary["acopio_por_retirar"] = ac.get("litros_disponibles", 4000)
 
         totales = g.get("totales", {})
-        summary["total_campo"] = totales.get("stock_fisico_campo_litros", summary['cisterna_planta']["actual"] + summary['tanque_grande']["actual"] + summary['tanque_chico']["actual"])
-        summary["total_con_acopio"] = totales.get("stock_total_con_acopio_litros", summary["total_campo"] + summary['acopio_por_retirar'])
+        summary["total_campo"] = totales.get("stock_fisico_campo_litros", summary["cisterna_planta"]["actual"] + summary["tanque_grande"]["actual"] + summary["tanque_chico"]["actual"])
+        summary["total_con_acopio"] = totales.get("stock_total_con_acopio_litros", summary["total_campo"] + summary["acopio_por_retirar"])
     except Exception as e:
         print(f"Error parsing stock_gasoil.json: {e}")
 
+    # 2. Insumos y Semillas por Híbrido
     try:
         ins = json.loads(read_file("stock_insumos.json"))
-        for s in ins.get("semillas", []):
-            if "Soja" in s.get("especie", ""):
-                summary["semillas_soja"] = s.get("stock_actual_bolsas", 440)
-            elif "Maíz" in s.get("especie", ""):
-                summary["semillas_maiz"] = s.get("stock_actual_bolsas", 220)
+        mz = ins.get("semillas_maiz", {})
+        summary["maiz_hibridos"] = mz.get("hibridos", [])
+        summary["maiz_totales"] = mz.get("totales", {"en_planta": 240, "por_retirar": 190, "total_general": 430})
+        summary["semillas_maiz"] = summary["maiz_totales"].get("total_general_bolsas", 430)
+
+        sj = ins.get("semillas_soja", {})
+        summary["semillas_soja"] = sj.get("totales", {}).get("total_general_bolsas", 440)
+
+        for f in ins.get("fertilizantes", []):
+            if "MAP" in f.get("nombre", ""):
+                summary["map_tn"] = f.get("stock_actual_tn", 22.0)
         for f in ins.get("fitosanitarios", []):
             if "Glifosato" in f.get("nombre", ""):
                 summary["glifosato_lts"] = f.get("stock_actual", 1200)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error parsing stock_insumos.json: {e}")
+
+    # 3. Granos en Silos y Silobolsas (Toneladas)
+    try:
+        gr = json.loads(read_file("stock_granos_silos.json"))
+        summary["granos_silos"] = {
+            "soja": {
+                "total_tn": gr.get("soja", {}).get("total_tn", 540.0),
+                "ubicaciones": gr.get("soja", {}).get("ubicaciones", [])
+            },
+            "trigo": {
+                "total_tn": gr.get("trigo", {}).get("total_tn", 819.0),
+                "ubicaciones": gr.get("trigo", {}).get("ubicaciones", [])
+            },
+            "total_general_tn": gr.get("totales_generales", {}).get("total_granos_almacenados_tn", 1359.0)
+        }
+    except Exception as e:
+        print(f"Error parsing stock_granos_silos.json: {e}")
 
     return summary
 
 def extract_liters(msg: str, default: float = 300.0) -> float:
-    """
-    Extrae la cantidad de litros gastados/movidos con tolerancia a cualquier redacción:
-    - Con unidades: '400 litros', '400 lts', '400 l', '1.500 lts'
-    - Sin unidades: 'retiré 400 del grande', 'saqué 250', 'gasté 300'
-    - Discrimina números de capacidad ('tanque de 5000') para no confundir la capacidad con el gasto.
-    """
-    # 1. Búsqueda explícita con unidad de volumen
+    """Extrae la cantidad de litros gastados/movidos con tolerancia a cualquier redacción"""
     m = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:litros?|lts?|lt|l)", msg, re.IGNORECASE)
     if m:
         try:
@@ -185,7 +211,6 @@ def extract_liters(msg: str, default: float = 300.0) -> float:
         except ValueError:
             pass
 
-    # 2. Número inmediatamente posterior al verbo de acción
     verb_pattern = (
         r"(?:retir(?:[eé]|ar|amos|o|aron)?|"
         r"saqu(?:[eé]|ar|amos|o|aron)?|"
@@ -208,7 +233,6 @@ def extract_liters(msg: str, default: float = 300.0) -> float:
         except ValueError:
             pass
 
-    # 3. Filtrado de números generales descartando capacidades de tanques o identificadores
     tokens = re.findall(r"\d+(?:[\.,]\d+)?", msg)
     cleaned = []
     for t in tokens:
@@ -225,14 +249,7 @@ def extract_liters(msg: str, default: float = 300.0) -> float:
     return cleaned[0] if cleaned else default
 
 def identify_tank(msg: str) -> str:
-    """
-    Identifica de forma flexible el depósito mencionado:
-    - tanque_chico: 'chico', 'chiquito', 'pequeño', 'carretón', '3000', '3k'
-    - cisterna_planta: 'cisterna', 'planta', 'central', '22000', '22k'
-    - tanque_grande: 'grande', '5000', '5k', 'móvil'
-    - acopio_por_retirar: 'acopio', 'ypf', 'distribuidor', 'saldo'
-    Por defecto ante mención genérica: tanque_grande (cisterna de apoyo estándar en campo).
-    """
+    """Identifica de forma flexible el depósito mencionado"""
     msg_low = msg.lower()
     if any(w in msg_low for w in ["chico", "chiquito", "pequeño", "pequeno", "carretón", "carreton", "3000", "3.000", "3k", "auxilio"]):
         return "tanque_chico"
@@ -247,10 +264,6 @@ def identify_tank(msg: str) -> str:
     return "tanque_grande"
 
 def is_fuel_transfer_or_acopio(msg: str) -> bool:
-    """
-    Determina si la intención es mover combustible entre depósitos o traer de acopio,
-    diferenciándolo de un retiro/gasto de consumo físico.
-    """
     msg_low = msg.lower()
     if any(w in msg_low for w in ["pasar", "transferir", "mover", "trasladar"]):
         return True
@@ -273,7 +286,7 @@ def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name:
     executed_tools_log = []
 
     if is_whatsapp:
-        prompt_input = f"[REPORTE DE WHATSAPP DE: {sender_name}]:\n\"{user_message}\"\n\nInterpreta las labores, haz los descuentos matemáticos precisos en los depósitos de stock_gasoil.json (Cisterna Planta, Tanque Grande, Tanque Chico, Acopio) o insumos usando las herramientas nativas, y confirma sin nombrar archivos técnicos."
+        prompt_input = f"[REPORTE DE WHATSAPP DE: {sender_name}]:\n\"{user_message}\"\n\nInterpreta las labores, haz los descuentos matemáticos precisos en los depósitos de combustible, semillas por híbrido o granos en silos usando las herramientas nativas, y confirma sin nombrar archivos técnicos."
     else:
         prompt_input = user_message
 
@@ -348,7 +361,7 @@ def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name:
         if not final_text:
             final_text = "Se completaron las labores solicitadas en los registros del campo."
 
-        final_text = re.sub(r"stock_gasoil\.json|stock_insumos\.json|registro_lotes\.json|INDEX\.md|MEMORY\.md|files_storage/?", "los registros del campo", final_text)
+        final_text = re.sub(r"stock_gasoil\.json|stock_insumos\.json|stock_granos_silos\.json|registro_lotes\.json|INDEX\.md|MEMORY\.md|files_storage/?", "los registros del campo", final_text)
         append_to_history(user_message, final_text, executed_tools_log)
 
         return {
@@ -369,27 +382,227 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     executed_tools = []
     today_str = datetime.now().strftime("%Y-%m-%d")
 
-    # Cargar stock_gasoil.json
+    # ==============================================================
+    # 1. CASO SEMILLAS DE MAÍZ POR HÍBRIDO (BOLSAS EN PLANTA O POR RETIRAR)
+    # ==============================================================
+    is_corn_query_or_action = ("maiz" in msg or "maíz" in msg or "dekalb" in msg or "dk 72" in msg or "72-10" in msg or "pioneer" in msg or "p2089" in msg or "nidera" in msg or "ax 7784" in msg or ("hibrid" in msg and "semilla" in msg))
+    # Excluir si es consulta de granos en silo o siembra de soja
+    if is_corn_query_or_action and not ("soja" in msg and "sembr" in msg and not "maiz" in msg):
+        insumos_raw, meta_ins = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
+        executed_tools.append(meta_ins)
+        insumos_json = json.loads(insumos_raw)
+        mz_dict = insumos_json.get("semillas_maiz", {})
+        hibridos = mz_dict.get("hibridos", [])
+
+        # Identificar híbrido específico si se menciona
+        target_hibrido = None
+        if "dekalb" in msg or "dk" in msg or "72-10" in msg:
+            target_hibrido = next((h for h in hibridos if "DK" in h["id"] or "Dekalb" in h["hibrido"]), None)
+        elif "pioneer" in msg or "2089" in msg:
+            target_hibrido = next((h for h in hibridos if "P2089" in h["id"] or "Pioneer" in h["hibrido"]), None)
+        elif "nidera" in msg or "7784" in msg or "ax" in msg:
+            target_hibrido = next((h for h in hibridos if "AX" in h["id"] or "Nidera" in h["hibrido"]), None)
+        if not target_hibrido and hibridos:
+            target_hibrido = hibridos[0]
+
+        # Extraer cantidad de bolsas
+        bags_match = re.search(r"(\d+)\s*(?:bolsas?|bolsa)?", msg)
+        bags_qty = int(bags_match.group(1)) if (bags_match and bags_match.group(1) not in ["72", "10", "2089", "7784"]) else 40
+
+        is_query_seeds = any(w in msg for w in ["?", "que", "qué", "cuanto", "cuánto", "saldo", "stock", "estado", "listar", "ver", "tenemos", "informe", "donde", "dónde"])
+        is_moving_to_planta = (not is_query_seeds) and any(w in msg for w in ["retiré", "retire", "retiramos", "trajimos", "traje", "trasladamos", "llevamos", "pasamos", "cargar"]) and any(w in msg for w in ["planta", "campo", "galpon", "galpón", "bayer", "agronorte", "cooperativa"])
+        is_sowing_corn = (not is_query_seeds) and any(w in msg for w in ["sembr", "siembra", "lote 2", "gastamos", "usamos"]) and not is_moving_to_planta
+
+        if is_moving_to_planta and target_hibrido:
+            # Trasladar bolsas de por_retirar a en_planta
+            moved = min(target_hibrido["por_retirar_bolsas"], bags_qty)
+            target_hibrido["por_retirar_bolsas"] -= moved
+            target_hibrido["en_planta_bolsas"] += moved
+
+            # Recalcular totales
+            tot_planta = sum(h["en_planta_bolsas"] for h in hibridos)
+            tot_retiro = sum(h["por_retirar_bolsas"] for h in hibridos)
+            mz_dict["totales"]["bolsas_en_planta"] = tot_planta
+            mz_dict["totales"]["bolsas_por_retirar"] = tot_retiro
+            mz_dict["totales"]["total_general_bolsas"] = tot_planta + tot_retiro
+
+            _, meta_w = execute_native_tool("write_file", {"filename": "stock_insumos.json", "content": json.dumps(insumos_json, indent=2, ensure_ascii=False)})
+            executed_tools.append(meta_w)
+
+            motivo = f"Traslado de {moved} bolsas de maíz {target_hibrido['hibrido']} desde {target_hibrido['lugar_retiro']} a Planta Central"
+            _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
+            executed_tools.append(meta_m)
+
+            reply = (
+                f"🌽 **Traslado de Bolsas de Maíz Registrado:**\n\n"
+                f"- **Híbrido:** **{target_hibrido['hibrido']}** ({target_hibrido['proveedor']}).\n"
+                f"- **Bolsas retiradas y traídas a Planta:** **{moved} bolsas**.\n"
+                f"- **Origen del retiro:** *{target_hibrido['lugar_retiro']}*.\n"
+                f"- **Stock actual del híbrido:**\n"
+                f"  • 🏭 **En Planta Central:** **{target_hibrido['en_planta_bolsas']} bolsas**.\n"
+                f"  • 📍 **Por Retirar remanente:** **{target_hibrido['por_retirar_bolsas']} bolsas** en *{target_hibrido['lugar_retiro']}*.\n"
+                f"  • **Total del híbrido:** {target_hibrido['total_bolsas']} bolsas.\n\n"
+                f"📊 **Totales consolidados de Maíz:**\n"
+                f"• Bolsas en Planta: **{tot_planta}** | Bolsas por retirar: **{tot_retiro}** | **Total: {tot_planta + tot_retiro} bolsas**."
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+        elif is_sowing_corn and target_hibrido:
+            # Descontar bolsas usadas en siembra de en_planta
+            used = min(target_hibrido["en_planta_bolsas"], bags_qty)
+            target_hibrido["en_planta_bolsas"] -= used
+            target_hibrido["total_bolsas"] -= used
+
+            tot_planta = sum(h["en_planta_bolsas"] for h in hibridos)
+            tot_retiro = sum(h["por_retirar_bolsas"] for h in hibridos)
+            mz_dict["totales"]["bolsas_en_planta"] = tot_planta
+            mz_dict["totales"]["bolsas_por_retirar"] = tot_retiro
+            mz_dict["totales"]["total_general_bolsas"] = tot_planta + tot_retiro
+
+            _, meta_w = execute_native_tool("write_file", {"filename": "stock_insumos.json", "content": json.dumps(insumos_json, indent=2, ensure_ascii=False)})
+            executed_tools.append(meta_w)
+
+            motivo = f"Siembra de {used} bolsas de maíz {target_hibrido['hibrido']} en Lote 2 reportado por {sender_name}."
+            _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
+            executed_tools.append(meta_m)
+
+            reply = (
+                f"🚜 **Consumo de Semilla de Maíz Asentado:**\n\n"
+                f"- **Híbrido utilizado:** **{target_hibrido['hibrido']}**.\n"
+                f"- **Bolsas sembradas:** **{used} bolsas**.\n"
+                f"- **Remanente en Planta:** **{target_hibrido['en_planta_bolsas']} bolsas**.\n"
+                f"- **Bolsas pendientes por retirar:** **{target_hibrido['por_retirar_bolsas']} bolsas** en *{target_hibrido['lugar_retiro']}*.\n\n"
+                f"Las planillas del establecimiento han sido actualizadas."
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+        else:
+            # Consulta detallada de semillas de maíz por híbrido
+            tot_planta = mz_dict.get("totales", {}).get("bolsas_en_planta", 240)
+            tot_retiro = mz_dict.get("totales", {}).get("bolsas_por_retirar", 190)
+            tot_gral = mz_dict.get("totales", {}).get("total_general_bolsas", 430)
+
+            items_str = []
+            for h in hibridos:
+                items_str.append(
+                    f"🌽 **{h['hibrido']}** ({h['proveedor']}):\n"
+                    f"   • 🏭 **En Planta Central:** **{h['en_planta_bolsas']} bolsas** ({h['presentacion']})\n"
+                    f"   • 📍 **Por Retirar:** **{h['por_retirar_bolsas']} bolsas** en *{h['lugar_retiro']}*\n"
+                    f"   • Subtotal híbrido: **{h['total_bolsas']} bolsas**."
+                )
+
+            reply = (
+                f"🌽 **Stock de Semillas de Maíz por Híbrido y Ubicación:**\n\n" +
+                "\n\n".join(items_str) +
+                f"\n\n📊 **Consolidado General de Maíz:**\n"
+                f"• 🏭 **Bolsas físicas en Planta:** **{tot_planta} bolsas**\n"
+                f"• 📍 **Bolsas por retirar en distribuidores:** **{tot_retiro} bolsas**\n"
+                f"👉 **Total Acopiado de Maíz:** **{tot_gral} bolsas**."
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+    # ==============================================================
+    # 2. CASO GRANOS EN TONELADAS EN SILOS / SILOBOLSAS (SOJA Y TRIGO)
+    # ==============================================================
+    is_grain_silo_query_or_action = (
+        any(w in msg for w in ["silobolsa", "silobolsas", "silo", "silos", "grano", "granos"]) or
+        (any(w in msg for w in ["soja", "trigo"]) and any(w in msg for w in ["tonelada", "toneladas", "tn", "acopiad", "guardad", "cosechad"]))
+    ) and not any(w in msg for w in ["sembr", "siembra", "sembrando"])
+    if is_grain_silo_query_or_action:
+        granos_raw, meta_gr = execute_native_tool("read_file", {"filename": "stock_granos_silos.json"})
+        executed_tools.append(meta_gr)
+        granos_json = json.loads(granos_raw)
+
+        soja_dict = granos_json.get("soja", {})
+        trigo_dict = granos_json.get("trigo", {})
+
+        is_dispatch = any(w in msg for w in ["carg", "vend", "entreg", "despach", "sacar", "retiro"]) and any(char.isdigit() for char in user_message)
+
+        if is_dispatch:
+            tn_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:toneladas?|tn)?", msg)
+            tn_qty = float(tn_match.group(1).replace(".", "").replace(",", ".")) if tn_match else 30.0
+
+            if "trigo" in msg:
+                target_crop = trigo_dict
+                crop_name = "Trigo"
+            else:
+                target_crop = soja_dict
+                crop_name = "Soja"
+
+            target_silo = target_crop["ubicaciones"][0]
+            for s in target_crop["ubicaciones"]:
+                if "1" in msg and "1" in s["identificador"]:
+                    target_silo = s
+                    break
+                elif "2" in msg and "2" in s["identificador"]:
+                    target_silo = s
+                    break
+                elif "aéreo" in msg or "aereo" in msg or "chapa" in msg:
+                    target_silo = s
+                    break
+
+            target_silo["stock_actual_tn"] = max(0.0, target_silo["stock_actual_tn"] - tn_qty)
+            target_crop["total_tn"] = sum(s["stock_actual_tn"] for s in target_crop["ubicaciones"])
+            granos_json["totales_generales"]["total_granos_almacenados_tn"] = soja_dict["total_tn"] + trigo_dict["total_tn"]
+
+            _, meta_w = execute_native_tool("write_file", {"filename": "stock_granos_silos.json", "content": json.dumps(granos_json, indent=2, ensure_ascii=False)})
+            executed_tools.append(meta_w)
+
+            motivo = f"Despacho/Venta de {tn_qty} Tn de {crop_name} desde {target_silo['identificador']} reportado por {sender_name}."
+            _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
+            executed_tools.append(meta_m)
+
+            reply = (
+                f"🌾 **Despacho de Granos Asentado:**\n\n"
+                f"- **Cultivo:** **{crop_name}**.\n"
+                f"- **Toneladas despachadas:** **{tn_qty:,} Tn**.\n"
+                f"- **Ubicación afectada:** **{target_silo['identificador']}** (Remanente: **{target_silo['stock_actual_tn']:,} Tn**).\n\n"
+                f"📊 **Totales de Granos en Silos y Silobolsas:**\n"
+                f"• Soja: **{soja_dict['total_tn']:,} Tn**\n"
+                f"• Trigo: **{trigo_dict['total_tn']:,} Tn**\n"
+                f"👉 **Total Granos Almacenados en Campo:** **{granos_json['totales_generales']['total_granos_almacenados_tn']:,} Toneladas**."
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+        else:
+            # Consulta general de silos y silobolsas
+            soja_items = [f"  • {s['identificador']}: **{s['stock_actual_tn']:,} Tn** ({s.get('humedad_pct', 13.0)}% humedad - {s['tipo']})" for s in soja_dict.get("ubicaciones", [])]
+            trigo_items = [f"  • {s['identificador']}: **{s['stock_actual_tn']:,} Tn** ({s.get('humedad_pct', 12.2)}% humedad - PH {s.get('peso_hectolitrico', 80.5)})" for s in trigo_dict.get("ubicaciones", [])]
+
+            reply = (
+                f"🌾 **Inventario de Granos en Silos y Silobolsas (Toneladas):**\n\n"
+                f"**1. 🌱 Soja Comercial:** **{soja_dict['total_tn']:,} Toneladas**\n" +
+                "\n".join(soja_items) +
+                f"\n\n**2. 🌾 Trigo Pan Grado 1:** **{trigo_dict['total_tn']:,} Toneladas**\n" +
+                "\n".join(trigo_items) +
+                f"\n\n📊 **Total Granos Almacenados en el Establecimiento:** **{granos_json['totales_generales']['total_granos_almacenados_tn']:,} Toneladas**.\n\n"
+                f"Todos los silobolsas y silos se encuentran bajo monitoreo de humedad y temperatura."
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+    # ==============================================================
+    # 3. COMBUSTIBLES (GASOIL): RETIRO / GASTO / TRANSFERENCIA
+    # ==============================================================
     gasoil_raw, meta_g_read = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
     executed_tools.append(meta_g_read)
     gasoil_json = json.loads(gasoil_raw)
     deps = gasoil_json["depositos"]
 
-    # Detectar labor de siembra combinada (insumos + combustible)
-    is_sowing = any(w in msg for w in ["sembr", "soja", "maíz", "maiz", "dm46"]) and any(w in msg for w in ["bolsa", "ha", "hect", "lote", "insumo"])
-    # Detectar compra o nuevo acopio
+    # Detectar labor de siembra combinada (insumos soja + combustible)
+    has_real_bags = bool(re.search(r"(?<!silo)bolsas?", msg))
+    is_sowing_soy = any(w in msg for w in ["sembr", "siembra", "sembrando"]) and any(w in msg for w in ["soja", "dm46"]) and (has_real_bags or any(w in msg for w in ["ha", "hect", "lote"])) and not is_grain_silo_query_or_action
     is_purchase = any(w in msg for w in ["llegó", "llego", "compra", "compramos", "descargaron", "descarga", "entró", "entro", "remito"]) and not any(w in msg for w in ["gaste", "gasté", "gastamos", "retire", "retiré", "saque", "saqué", "consum", "salida"])
-    # Detectar transferencia interna o retiro de acopio a tanque
     is_transfer = is_fuel_transfer_or_acopio(user_message)
-    # Detectar retiro, gasto o consumo de combustible (salida de un tanque)
     has_spending_verb = any(w in msg for w in ["retir", "saqu", "sacar", "saco", "gast", "consum", "us", "chup", "carg", "descont", "baj", "rest", "llev"])
     has_fuel_word = any(w in msg for w in ["litros", "lts", "lt", "gasoil", "diesel", "combustible"])
     has_numbers = any(char.isdigit() for char in user_message)
 
-    # ==============================================================
-    # 1. CASO SIEMBRA COMBINADA (SEMILLA + COMBUSTIBLE)
-    # ==============================================================
-    if is_sowing:
+    if is_sowing_soy:
         insumos_raw, meta_i = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
         lotes_raw, meta_l = execute_native_tool("read_file", {"filename": "registro_lotes.json"})
         executed_tools.extend([meta_i, meta_l])
@@ -408,21 +621,21 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         if tank_key == "acopio_por_retirar":
             tank_key = "tanque_grande"
 
-        deps[tank_key]['stock_actual_litros'] = max(0.0, deps[tank_key]['stock_actual_litros'] - liters_out)
+        deps[tank_key]["stock_actual_litros"] = max(0.0, deps[tank_key]["stock_actual_litros"] - liters_out)
 
-        gasoil_json['totales']['stock_fisico_campo_litros'] = (
-            deps['cisterna_planta']['stock_actual_litros'] +
-            deps['tanque_grande']['stock_actual_litros'] +
-            deps['tanque_chico']['stock_actual_litros']
+        gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+            deps["cisterna_planta"]["stock_actual_litros"] +
+            deps["tanque_grande"]["stock_actual_litros"] +
+            deps["tanque_chico"]["stock_actual_litros"]
         )
-        gasoil_json['totales']['stock_total_con_acopio_litros'] = (
-            gasoil_json['totales']['stock_fisico_campo_litros'] +
-            deps['acopio_por_retirar']['litros_disponibles']
+        gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+            gasoil_json["totales"]["stock_fisico_campo_litros"] +
+            deps["acopio_por_retirar"]["litros_disponibles"]
         )
 
         gasoil_json.setdefault("salidas", []).append({
             "fecha": today_str,
-            "deposito_origen": deps[tank_key]['nombre'],
+            "deposito_origen": deps[tank_key]["nombre"],
             "labor": f"Siembra soja ({has_done} ha)",
             "litros": liters_out,
             "operario": sender_name
@@ -431,12 +644,14 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         _, w_g = execute_native_tool("write_file", {"filename": "stock_gasoil.json", "content": json.dumps(gasoil_json, indent=2, ensure_ascii=False)})
         executed_tools.append(w_g)
 
+        # Descontar semillas soja
+        sj_variedades = insumos.get("semillas_soja", {}).get("variedades", [])
         nuevo_stk_bolsas = 440
-        for s in insumos.get("semillas", []):
-            if "Soja" in s.get("especie", ""):
-                s["stock_actual_bolsas"] = max(0, s.get("stock_actual_bolsas", 440) - bolsas_out)
-                s["stock_total_kg"] = s["stock_actual_bolsas"] * 40
-                nuevo_stk_bolsas = s["stock_actual_bolsas"]
+        if sj_variedades:
+            sj_variedades[0]["en_planta_bolsas"] = max(0, sj_variedades[0].get("en_planta_bolsas", 440) - bolsas_out)
+            sj_variedades[0]["total_bolsas"] = sj_variedades[0]["en_planta_bolsas"]
+            nuevo_stk_bolsas = sj_variedades[0]["en_planta_bolsas"]
+            insumos["semillas_soja"]["totales"] = {"bolsas_en_planta": nuevo_stk_bolsas, "bolsas_por_retirar": 0, "total_general_bolsas": nuevo_stk_bolsas}
 
         _, w_i = execute_native_tool("write_file", {"filename": "stock_insumos.json", "content": json.dumps(insumos, indent=2, ensure_ascii=False)})
         executed_tools.append(w_i)
@@ -454,37 +669,34 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"🚜 **Reporte de Siembra Asentado:**\n\n"
             f"- **Labor:** Siembra de soja en Lote 1 ({has_done} hectáreas).\n"
             f"- **Semilla descontada:** {bolsas_out} bolsas de DM 46R18 ({bolsas_out * 40:,} kg).\n"
-            f"- **Stock remanente de semillas:** **{nuevo_stk_bolsas} bolsas** en galpón.\n"
+            f"- **Stock remanente de semillas soja:** **{nuevo_stk_bolsas} bolsas** en galpón.\n"
             f"- **Combustible descontado:** **{int(liters_out):,} Litros** desde **{deps[tank_key]['nombre']}** (Remanente: **{int(deps[tank_key]['stock_actual_litros']):,} L**).\n"
             f"- **Stock total físico en campo:** **{int(gasoil_json['totales']['stock_fisico_campo_litros']):,} Litros**.\n\n"
             f"Los registros de insumos, combustible y lote han sido actualizados."
         )
 
-    # ==============================================================
-    # 2. CASO COMPRA DE GASOIL O NUEVO ACOPIO
-    # ==============================================================
     elif is_purchase:
         liters_in = extract_liters(user_message, default=5000.0)
 
         if "acopio" in msg:
-            deps['acopio_por_retirar']['litros_disponibles'] += liters_in
+            deps["acopio_por_retirar"]["litros_disponibles"] += liters_in
             descrip = f"Compra de {int(liters_in):,} L sumados a la cuenta de Gasoil por Retirar en YPF Directo"
         else:
             target_dep = "cisterna_planta"
-            deps[target_dep]['stock_actual_litros'] = min(
-                deps[target_dep]['capacidad_max_litros'],
-                deps[target_dep]['stock_actual_litros'] + liters_in
+            deps[target_dep]["stock_actual_litros"] = min(
+                deps[target_dep]["capacidad_max_litros"],
+                deps[target_dep]["stock_actual_litros"] + liters_in
             )
             descrip = f"Descarga de {int(liters_in):,} L en Cisterna Planta (remito asentado)"
 
-        gasoil_json['totales']['stock_fisico_campo_litros'] = (
-            deps['cisterna_planta']['stock_actual_litros'] +
-            deps['tanque_grande']['stock_actual_litros'] +
-            deps['tanque_chico']['stock_actual_litros']
+        gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+            deps["cisterna_planta"]["stock_actual_litros"] +
+            deps["tanque_grande"]["stock_actual_litros"] +
+            deps["tanque_chico"]["stock_actual_litros"]
         )
-        gasoil_json['totales']['stock_total_con_acopio_litros'] = (
-            gasoil_json['totales']['stock_fisico_campo_litros'] +
-            deps['acopio_por_retirar']['litros_disponibles']
+        gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+            gasoil_json["totales"]["stock_fisico_campo_litros"] +
+            deps["acopio_por_retirar"]["litros_disponibles"]
         )
 
         gasoil_json.setdefault("entradas", []).append({
@@ -510,26 +722,21 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"**Total disponible con acopio:** {int(gasoil_json['totales']['stock_total_con_acopio_litros']):,} Litros."
         )
 
-    # ==============================================================
-    # 3. CASO TRANSFERENCIA ENTRE TANQUES O RETIRO DE ACOPIO A TANQUE
-    # ==============================================================
     elif is_transfer:
         liters_to_move = extract_liters(user_message, default=2000.0)
 
         if "acopio" in msg:
-            # Traer de Acopio YPF hacia uno de los tanques del campo
             destino_key = "tanque_chico" if "chico" in msg else ("tanque_grande" if "grande" in msg else "cisterna_planta")
-            actual_acopio = deps['acopio_por_retirar']['litros_disponibles']
+            actual_acopio = deps["acopio_por_retirar"]["litros_disponibles"]
             liters_moved = min(actual_acopio, liters_to_move)
 
-            deps['acopio_por_retirar']['litros_disponibles'] -= liters_moved
-            deps[destino_key]['stock_actual_litros'] = min(
-                deps[destino_key]['capacidad_max_litros'],
-                deps[destino_key]['stock_actual_litros'] + liters_moved
+            deps["acopio_por_retirar"]["litros_disponibles"] -= liters_moved
+            deps[destino_key]["stock_actual_litros"] = min(
+                deps[destino_key]["capacidad_max_litros"],
+                deps[destino_key]["stock_actual_litros"] + liters_moved
             )
             motivo = f"Retiro de {int(liters_moved):,} L de acopio YPF hacia {deps[destino_key]['nombre']}"
         else:
-            # Transferencia interna entre tanques de campo
             if "chico" in msg and ("cisterna" in msg or "planta" in msg):
                 origen_key = "cisterna_planta"
                 destino_key = "tanque_chico"
@@ -543,23 +750,22 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 origen_key = "cisterna_planta"
                 destino_key = "tanque_grande"
 
-            liters_moved = min(deps[origen_key]['stock_actual_litros'], liters_to_move)
-            deps[origen_key]['stock_actual_litros'] -= liters_moved
-            deps[destino_key]['stock_actual_litros'] = min(
-                deps[destino_key]['capacidad_max_litros'],
-                deps[destino_key]['stock_actual_litros'] + liters_moved
+            liters_moved = min(deps[origen_key]["stock_actual_litros"], liters_to_move)
+            deps[origen_key]["stock_actual_litros"] -= liters_moved
+            deps[destino_key]["stock_actual_litros"] = min(
+                deps[destino_key]["capacidad_max_litros"],
+                deps[destino_key]["stock_actual_litros"] + liters_moved
             )
             motivo = f"Transferencia interna de {int(liters_moved):,} L desde {deps[origen_key]['nombre']} hacia {deps[destino_key]['nombre']}"
 
-        # Recalcular totales
-        gasoil_json['totales']['stock_fisico_campo_litros'] = (
-            deps['cisterna_planta']['stock_actual_litros'] +
-            deps['tanque_grande']['stock_actual_litros'] +
-            deps['tanque_chico']['stock_actual_litros']
+        gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+            deps["cisterna_planta"]["stock_actual_litros"] +
+            deps["tanque_grande"]["stock_actual_litros"] +
+            deps["tanque_chico"]["stock_actual_litros"]
         )
-        gasoil_json['totales']['stock_total_con_acopio_litros'] = (
-            gasoil_json['totales']['stock_fisico_campo_litros'] +
-            deps['acopio_por_retirar']['litros_disponibles']
+        gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+            gasoil_json["totales"]["stock_fisico_campo_litros"] +
+            deps["acopio_por_retirar"]["litros_disponibles"]
         )
 
         gasoil_json.setdefault("transferencias_internas", []).append({
@@ -585,31 +791,27 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"**Total físico en campo:** {int(gasoil_json['totales']['stock_fisico_campo_litros']):,} Litros | **Total con acopio:** {int(gasoil_json['totales']['stock_total_con_acopio_litros']):,} Litros."
         )
 
-    # ==============================================================
-    # 4. CASO RETIRO / GASTO / CONSUMO DE UN TANQUE (SALIDA)
-    # ==============================================================
     elif has_spending_verb or (has_fuel_word and has_numbers) or ("tanque" in msg and has_numbers):
         liters_out = extract_liters(user_message, default=300.0)
         tank_key = identify_tank(user_message)
 
-        # Si el usuario dijo específicamente "retiré del acopio", se interpreta como traslado al campo
         if tank_key == "acopio_por_retirar":
             target_field = "cisterna_planta"
-            liters_moved = min(deps['acopio_por_retirar']['litros_disponibles'], liters_out)
-            deps['acopio_por_retirar']['litros_disponibles'] -= liters_moved
-            deps[target_field]['stock_actual_litros'] = min(
-                deps[target_field]['capacidad_max_litros'],
-                deps[target_field]['stock_actual_litros'] + liters_moved
+            liters_moved = min(deps["acopio_por_retirar"]["litros_disponibles"], liters_out)
+            deps["acopio_por_retirar"]["litros_disponibles"] -= liters_moved
+            deps[target_field]["stock_actual_litros"] = min(
+                deps[target_field]["capacidad_max_litros"],
+                deps[target_field]["stock_actual_litros"] + liters_moved
             )
             motivo = f"Retiro de {int(liters_moved):,} L de acopio YPF ingresados a Cisterna Planta"
-            gasoil_json['totales']['stock_fisico_campo_litros'] = (
-                deps['cisterna_planta']['stock_actual_litros'] +
-                deps['tanque_grande']['stock_actual_litros'] +
-                deps['tanque_chico']['stock_actual_litros']
+            gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+                deps["cisterna_planta"]["stock_actual_litros"] +
+                deps["tanque_grande"]["stock_actual_litros"] +
+                deps["tanque_chico"]["stock_actual_litros"]
             )
-            gasoil_json['totales']['stock_total_con_acopio_litros'] = (
-                gasoil_json['totales']['stock_fisico_campo_litros'] +
-                deps['acopio_por_retirar']['litros_disponibles']
+            gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+                gasoil_json["totales"]["stock_fisico_campo_litros"] +
+                deps["acopio_por_retirar"]["litros_disponibles"]
             )
             gasoil_json.setdefault("transferencias_internas", []).append({
                 "fecha": today_str,
@@ -630,18 +832,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"**Total físico en campo:** {int(gasoil_json['totales']['stock_fisico_campo_litros']):,} L."
             )
         else:
-            # Descuento matemático del tanque físico
-            current_tank_stock = deps[tank_key]['stock_actual_litros']
-            deps[tank_key]['stock_actual_litros'] = max(0.0, current_tank_stock - liters_out)
+            current_tank_stock = deps[tank_key]["stock_actual_litros"]
+            deps[tank_key]["stock_actual_litros"] = max(0.0, current_tank_stock - liters_out)
 
-            gasoil_json['totales']['stock_fisico_campo_litros'] = (
-                deps['cisterna_planta']['stock_actual_litros'] +
-                deps['tanque_grande']['stock_actual_litros'] +
-                deps['tanque_chico']['stock_actual_litros']
+            gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+                deps["cisterna_planta"]["stock_actual_litros"] +
+                deps["tanque_grande"]["stock_actual_litros"] +
+                deps["tanque_chico"]["stock_actual_litros"]
             )
-            gasoil_json['totales']['stock_total_con_acopio_litros'] = (
-                gasoil_json['totales']['stock_fisico_campo_litros'] +
-                deps['acopio_por_retirar']['litros_disponibles']
+            gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+                gasoil_json["totales"]["stock_fisico_campo_litros"] +
+                deps["acopio_por_retirar"]["litros_disponibles"]
             )
 
             machinery = "Maquinaria de labor"
@@ -656,7 +857,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
 
             gasoil_json.setdefault("salidas", []).append({
                 "fecha": today_str,
-                "deposito_origen": deps[tank_key]['nombre'],
+                "deposito_origen": deps[tank_key]["nombre"],
                 "maquinaria": machinery,
                 "litros": liters_out,
                 "operario": sender_name
@@ -669,7 +870,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             _, w_m = execute_native_tool("append_memory", {"entry": entry_mem})
             executed_tools.append(w_m)
 
-            pct_filled = round((deps[tank_key]['stock_actual_litros'] / deps[tank_key]['capacidad_max_litros']) * 100)
+            pct_filled = round((deps[tank_key]["stock_actual_litros"] / deps[tank_key]["capacidad_max_litros"]) * 100)
 
             reply = (
                 f"⛽ **Registro de Combustible Gastado:**\n\n"
@@ -685,16 +886,13 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"Los registros del campo han sido actualizados con los litros gastados."
             )
 
-    # ==============================================================
-    # 5. CASO CONSULTA DE COMBUSTIBLE (ESTADO DE LOS 4 DEPÓSITOS)
-    # ==============================================================
-    elif any(w in msg for w in ["gasoil", "gas oil", "combustible", "tanque", "cisterna", "acopio", "saldo", "cuanto", "cuánto"]):
-        cp = deps['cisterna_planta']
-        tg = deps['tanque_grande']
-        tc = deps['tanque_chico']
-        ac = deps['acopio_por_retirar']
-        tot_campo = gasoil_json['totales']['stock_fisico_campo_litros']
-        tot_gral = gasoil_json['totales']['stock_total_con_acopio_litros']
+    elif any(w in msg for w in ["gasoil", "gas oil", "combustible", "tanque", "cisterna", "acopio", "saldo", "cuanto", "cuánto"]) and ("combustible" in msg or "gasoil" in msg or "tanque" in msg or "cisterna" in msg):
+        cp = deps["cisterna_planta"]
+        tg = deps["tanque_grande"]
+        tc = deps["tanque_chico"]
+        ac = deps["acopio_por_retirar"]
+        tot_campo = gasoil_json["totales"]["stock_fisico_campo_litros"]
+        tot_gral = gasoil_json["totales"]["stock_total_con_acopio_litros"]
 
         reply = (
             f"⛽ **Estado de Combustibles (4 Depósitos y Acopio):**\n\n"
@@ -704,13 +902,9 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"4. 📋 **Gasoil por Retirar (Acopio YPF):** **{int(ac['litros_disponibles']):,} Litros** disponibles.\n\n"
             f"📊 **Totales:**\n"
             f"- **Stock físico en el campo:** **{int(tot_campo):,} Litros** (Capacidad máxima combinada: 30.000 L).\n"
-            f"- **Total disponible con acopio:** **{int(tot_gral):,} Litros**.\n\n"
-            f"Todos los depósitos se encuentran registrados según los movimientos del establecimiento."
+            f"- **Total disponible con acopio:** **{int(tot_gral):,} Litros**."
         )
 
-    # ==============================================================
-    # 6. CASO RENDIMIENTOS Y LOTES
-    # ==============================================================
     elif any(w in msg for w in ["rinde", "rendimiento", "cosecha", "trilla", "qq", "kilos"]):
         _, meta = execute_native_tool("read_file", {"filename": "registro_lotes.json"})
         executed_tools.append(meta)
@@ -719,38 +913,30 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"🌾 **Rendimientos y Datos de Cosecha (Campaña 2026/2027):**\n\n"
             f"- **Lote 1 (Soja 1ra - 120 ha):** En siembra activa. Rinde proyectado: 3.800 kg/ha (38 qq/ha).\n"
             f"- **Lote 2 (Maíz Tardío - 85 ha):** En barbecho. Rinde objetivo: 9.500 kg/ha (95 qq/ha).\n"
-            f"- **Lote 3 (Trigo Cosechado - 210 ha):** Total: 819.000 kg (**3.900 kg/ha / 39 qq/ha**).\n\n"
-            f"Datos consolidados en las planillas del campo."
+            f"- **Lote 3 (Trigo Cosechado - 210 ha):** Total: 819.000 kg (**3.900 kg/ha / 39 qq/ha**), almacenado en silobolsa norte y silo planta.\n\n"
+            f"Datos consolidados en los registros de lotes."
         )
 
-    # ==============================================================
-    # 7. CASO INSUMOS EN GALPÓN
-    # ==============================================================
-    elif any(w in msg for w in ["insumos", "semilla", "glifosato", "fertilizante", "map", "galpón", "galpon"]):
+    elif any(w in msg for w in ["fertilizante", "quimico", "químico", "glifosato", "map", "urea", "galpon", "galpón"]):
         summary = get_dashboard_summary()
         reply = (
-            f"🌱 **Inventario de Insumos en Galpón:**\n\n"
-            f"- **Semilla de Soja (DM 46R18):** {summary['semillas_soja']} bolsas ({summary['semillas_soja'] * 40:,} kg).\n"
-            f"- **Semilla de Maíz (DK 72-10):** {summary['semillas_maiz']} bolsas ({summary['semillas_maiz'] * 80:,} kg).\n"
+            f"🌱 **Inventario de Agroquímicos y Fertilizantes en Galpón:**\n\n"
             f"- **Fertilizante MAP:** {summary['map_tn']} toneladas a granel.\n"
-            f"- **Glifosato Concentrado:** {summary['glifosato_lts']} litros en bidones.\n\n"
-            f"Todos los insumos listos para despacho a lotes."
+            f"- **Glifosato Concentrado:** {summary['glifosato_lts']} litros en bidones.\n"
+            f"- **Semilla de Soja DM 46R18:** {summary['semillas_soja']} bolsas en galpón.\n"
+            f"- **Semilla de Maíz Total:** {summary['semillas_maiz']} bolsas acopiadas (en planta y por retirar).\n\n"
+            f"Insumos disponibles para abastecimiento de labores."
         )
 
-    # ==============================================================
-    # 8. CASO DEFAULT
-    # ==============================================================
     else:
         summary = get_dashboard_summary()
         reply = (
             f"🚜 **IA Desk Agro - Copiloto de Operaciones:**\n\n"
-            f"He verificado los 4 depósitos de combustible y el inventario del campo:\n"
-            f"- **Cisterna Planta:** {summary['cisterna_planta']['actual']:,} / 22.000 L\n"
-            f"- **Tanque Grande:** {summary['tanque_grande']['actual']:,} / 5.000 L\n"
-            f"- **Tanque Chico:** {summary['tanque_chico']['actual']:,} / 3.000 L\n"
-            f"- **Gasoil por Retirar (Acopio):** {summary['acopio_por_retirar']:,} L\n"
-            f"- **Semillas:** {summary['semillas_soja']} bolsas de Soja y {summary['semillas_maiz']} bolsas de Maíz.\n\n"
-            f"¿Qué labor o movimiento de combustible deseas consultar o registrar?"
+            f"He verificado los inventarios del establecimiento:\n"
+            f"- **Combustible:** {summary['total_campo']:,} L en campo | {summary['total_con_acopio']:,} L con acopio YPF.\n"
+            f"- **Maíz por Híbrido:** {summary['maiz_totales']['en_planta']} bolsas en Planta | {summary['maiz_totales']['por_retirar']} bolsas por retirar ({summary['semillas_maiz']} total).\n"
+            f"- **Granos en Silos/Silobolsas:** {summary['granos_silos']['soja']['total_tn']:,} Tn de Soja | {summary['granos_silos']['trigo']['total_tn']:,} Tn de Trigo.\n\n"
+            f"¿Qué labor, movimiento de bolsas o grano deseas consultar o registrar?"
         )
 
     append_to_history(user_message, reply, executed_tools)

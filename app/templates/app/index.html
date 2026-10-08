@@ -82,22 +82,22 @@
 
                 <!-- Quick Consultation Chips -->
                 <div class="quick-chips-wrapper">
-                    <span class="chips-label">Consultas y acciones de combustible:</span>
+                    <span class="chips-label">Consultas y acciones operativas:</span>
                     <div class="chips-container">
                         <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
-                            ⛽ Saldo de los 4 Depósitos
+                            ⛽ Saldo de Gasoil
+                        </button>
+                        <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
+                            🌽 Maíz por Híbrido
+                        </button>
+                        <button class="chip-btn" data-query="¿Cuántas toneladas de soja y trigo tenemos en silos y silobolsas?">
+                            🌾 Silos Soja & Trigo (Tn)
+                        </button>
+                        <button class="chip-btn" data-query="Retiré 40 bolsas de maíz DK 72-10 de Bayer a la planta">
+                            🚚 Retirar 40 b. DK 72-10
                         </button>
                         <button class="chip-btn" data-query="Pasar 1500 litros de la Cisterna Planta al Tanque Grande para la siembra">
-                            🚚 Pasar 1.500 L a Tanque Grande
-                        </button>
-                        <button class="chip-btn" data-query="Retirar 2000 litros del acopio hacia el Tanque Chico">
-                            📦 Retirar 2.000 L de Acopio
-                        </button>
-                        <button class="chip-btn" data-query="Gastamos 250 litros del Tanque Chico en el tractor John Deere">
-                            🛢️ Gasto Tanque Chico
-                        </button>
-                        <button class="chip-btn" data-query="¿Qué stock de semillas y fertilizantes tenemos en galpón?">
-                            🌱 Insumos en Galpón
+                            🚜 Pasar 1.500 L a Tanque Grande
                         </button>
                     </div>
                 </div>
@@ -181,9 +181,108 @@
                     </div>
                 </div>
 
+                <!-- Corn by Hybrid Card -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌽 Maíz por Híbrido (Bolsas)</h2>
+                        <span class="badge-tag" id="metric-maiz-total-badge">{{ stock.maiz_totales.total_general_bolsas }} bolsas</span>
+                    </div>
+                    <div class="hibridos-list" id="hibridos-list-container">
+                        {% for h in stock.maiz_hibridos %}
+                        <div class="hibrido-card" id="card-hibrido-{{ h.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ h.hibrido }}</strong>
+                                <span class="hibrido-provider">{{ h.proveedor }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏭 En Planta:</span>
+                                    <strong class="loc-val text-emerald" id="val-{{ h.id }}-planta">{{ h.en_planta_bolsas }} b.</strong>
+                                </div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 Por Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-{{ h.id }}-retiro">{{ h.por_retirar_bolsas }} b.</strong>
+                                </div>
+                            </div>
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ h.lugar_retiro }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Bolsas en Planta Central:</span>
+                            <strong class="tot-val text-emerald" id="metric-maiz-planta">{{ stock.maiz_totales.bolsas_en_planta }}</strong>
+                        </div>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Bolsas por Retirar:</span>
+                            <strong class="tot-val text-amber" id="metric-maiz-retiro">{{ stock.maiz_totales.bolsas_por_retirar }}</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total General Maíz:</span>
+                            <strong class="tot-val text-cyan" id="metric-maiz-total">{{ stock.maiz_totales.total_general_bolsas }} bolsas</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grains in Silos & Silobolsas Card (Tn) -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌾 Silos y Silobolsas (Tn)</h2>
+                        <span class="badge-tag text-emerald" id="metric-granos-total-badge">{{ stock.granos_silos.total_general_tn }} Tn</span>
+                    </div>
+                    
+                    <!-- Soja Section -->
+                    <div class="grain-section">
+                        <div class="grain-header">
+                            <span class="grain-title">🌱 Soja Comercial</span>
+                            <strong class="grain-total text-emerald" id="metric-soja-tn">{{ stock.granos_silos.soja.total_tn }} Tn</strong>
+                        </div>
+                        <div class="grain-silos-list" id="soja-silos-container">
+                            {% for s in stock.granos_silos.soja.ubicaciones %}
+                            <div class="silo-row">
+                                <div class="silo-info">
+                                    <span class="silo-icon">{% if Silobolsa in s.tipo %}🥖{% else %}🏗️{% endif %}</span>
+                                    <span class="silo-name">{{ s.identificador }}</span>
+                                </div>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn }} Tn</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Trigo Section -->
+                    <div class="grain-section mt-2">
+                        <div class="grain-header">
+                            <span class="grain-title">🌾 Trigo Pan Grado 1</span>
+                            <strong class="grain-total text-cyan" id="metric-trigo-tn">{{ stock.granos_silos.trigo.total_tn }} Tn</strong>
+                        </div>
+                        <div class="grain-silos-list" id="trigo-silos-container">
+                            {% for s in stock.granos_silos.trigo.ubicaciones %}
+                            <div class="silo-row">
+                                <div class="silo-info">
+                                    <span class="silo-icon">{% if Silobolsa in s.tipo %}🥖{% else %}🏗️{% endif %}</span>
+                                    <span class="silo-name">{{ s.identificador }}</span>
+                                </div>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn }} Tn</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total Granos en Campo:</span>
+                            <strong class="tot-val text-emerald" id="metric-granos-total-tn">{{ stock.granos_silos.total_general_tn }} Tn</strong>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Agricultural Inputs Quick Card -->
                 <div class="dash-card">
-                    <h2 class="dash-card-title">📦 Semillas & Agroquímicos</h2>
+                    <h2 class="dash-card-title">📦 Galpón & Fitosanitarios</h2>
                     <div class="metrics-grid">
                         <div class="metric-item">
                             <span class="metric-val text-emerald" id="metric-sem-soja">{{ stock.semillas_soja }}</span>

@@ -3,19 +3,23 @@
 
 ---
 
-## 📋 DIRECTIVAS DE COMBUSTIBLE Y ACOPIO
-1. **Gestión de los 4 Depósitos:**
-   - Mantener la **Cisterna Planta (22.000 L)** siempre por encima de 5.000 L.
-   - Usar el **Tanque Grande (5.000 L)** para abastecer tractores en siembra continua.
-   - Usar el **Tanque Chico (3.000 L)** para auxilio y pulverizadora.
-   - Cuando la Cisterna Planta baje de 8.000 L, ordenar flete para retirar combustible de la cuenta de **Gasoil por Retirar (Acopio en YPF)**.
-2. **Transferencias y Consumos:** Cada reporte de maquinista debe descontar del tanque indicado (o del Tanque Chico/Grande si es en lote).
+## 📋 DIRECTIVAS OPERATIVAS Y ESTRATÉGICAS
 
-- [2026-10-08 18:44:43] Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande
-- [2026-10-08 18:45:06] Retiro de 2,000 L de acopio YPF hacia Tanque Chico
-- [2026-10-08 18:47:28] Retiro de 2,000 L de acopio YPF hacia Tanque Chico
-- [2026-10-08 20:34:34] Consumo/Retiro de 400 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
-- [2026-10-08 20:35:35] Consumo/Retiro de 200 L desde Cisterna Planta (Maquinaria de labor) reportado por Productor.
-- [2026-10-08 20:36:21] Consumo/Retiro de 150 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
-- [2026-10-08 20:36:34] Consumo/Retiro de 200 L desde Tanque Grande (Tractor John Deere) reportado por Productor.
-- [2026-10-08 20:36:43] Consumo/Retiro de 100 L desde Tanque Chico (Camioneta) reportado por Esteban Maquinista.
+1. **Gestión de Combustible (4 Depósitos):**
+   - Mantener la Cisterna Planta (22.000 L) por encima de 5.000 L.
+   - Usar Tanque Grande (5.000 L) para reabastecimiento en siembra y Tanque Chico (3.000 L) para auxilio rápido.
+   - Ordenar flete del Acopio YPF cuando el stock físico baje de 8.000 L.
+
+2. **Gestión de Semillas por Híbrido (Maíz en Bolsas):**
+   - Discriminar siempre el stock por híbrido (Dekalb DK 72-10, Pioneer P2089, Nidera AX 7784).
+   - Controlar las bolsas que están físicamente **En Planta** vs. las bolsas **Por Retirar en lugar específico** (distribuidores Bayer en Junín, AgroNorte en Pergamino o Cooperativa).
+   - Registrar los retiros y traslados de bolsas hacia la planta central antes de iniciar la siembra del Lote 2.
+
+3. **Granos Cosechados en Silos y Silobolsas (Toneladas):**
+   - Monitorear la **Soja** (540 Tn) y el **Trigo** (819 Tn) almacenados en toneladas.
+   - Revisar periódicamente la integridad física de los silobolsas en Lote 1, Lote 2 y Lote 3 (humedad entre 12% y 13.5%).
+   - Cualquier venta o entrega a acopio debe asentar las toneladas despachadas y el silo de origen.
+
+- [2026-10-08 20:46:58] Traslado de 40 bolsas de maíz Dekalb DK 72-10 VT3P desde Distribuidora Bayer Agro - Junín a Planta Central
+- [2026-10-08 20:47:58] Labor Siembra Lote 1 por Productor: 25.0 ha, -40 bolsas soja, -280.0 L de Tanque Grande.
+- [2026-10-08 20:49:13] Traslado de 40 bolsas de maíz Dekalb DK 72-10 VT3P desde Distribuidora Bayer Agro - Junín a Planta Central

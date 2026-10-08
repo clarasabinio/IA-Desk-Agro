@@ -1,0 +1,74 @@
+{
+  "descripcion": "Inventario de Granos Cosechados y Almacenados en Toneladas (Tn) en Silos y Silobolsas",
+  "soja": {
+    "especie": "Soja Comercial",
+    "unidad": "Toneladas (Tn)",
+    "ubicaciones": [
+      {
+        "id": "SILO-SOJ-01",
+        "tipo": "Silobolsa",
+        "identificador": "Silobolsa 1 - Lote 1",
+        "capacidad_max_tn": 250.0,
+        "stock_actual_tn": 240.0,
+        "humedad_pct": 13.2,
+        "calidad": "Grano comercial cámara",
+        "fecha_embolsado": "2026-05-18"
+      },
+      {
+        "id": "SILO-SOJ-02",
+        "tipo": "Silobolsa",
+        "identificador": "Silobolsa 2 - Cabecera Lote 2",
+        "capacidad_max_tn": 200.0,
+        "stock_actual_tn": 180.0,
+        "humedad_pct": 13.5,
+        "calidad": "Grano comercial cámara",
+        "fecha_embolsado": "2026-05-22"
+      },
+      {
+        "id": "SILO-SOJ-03",
+        "tipo": "Silo Aéreo Chapa",
+        "identificador": "Silo Aéreo Planta Central",
+        "capacidad_max_tn": 150.0,
+        "stock_actual_tn": 120.0,
+        "humedad_pct": 12.8,
+        "calidad": "Grano seleccionado",
+        "ubicacion_planta": "Batería Silos Este"
+      }
+    ],
+    "total_tn": 540.0
+  },
+  "trigo": {
+    "especie": "Trigo Pan Grado 1",
+    "unidad": "Toneladas (Tn)",
+    "ubicaciones": [
+      {
+        "id": "SILO-TRG-01",
+        "tipo": "Silobolsa",
+        "identificador": "Silobolsa Trigo Norte (Lote 3)",
+        "capacidad_max_tn": 550.0,
+        "stock_actual_tn": 510.0,
+        "humedad_pct": 12.4,
+        "peso_hectolitrico": 80.5,
+        "calidad": "Grado 1 Superior",
+        "fecha_embolsado": "2026-01-12"
+      },
+      {
+        "id": "SILO-TRG-02",
+        "tipo": "Silo Malla Chapa",
+        "identificador": "Silo Chapa 1 - Planta Central",
+        "capacidad_max_tn": 350.0,
+        "stock_actual_tn": 309.0,
+        "humedad_pct": 12.1,
+        "peso_hectolitrico": 81.0,
+        "calidad": "Grado 1",
+        "ubicacion_planta": "Silo pulmón planta"
+      }
+    ],
+    "total_tn": 819.0
+  },
+  "totales_generales": {
+    "soja_total_tn": 540.0,
+    "trigo_total_tn": 819.0,
+    "total_granos_almacenados_tn": 1359.0
+  }
+}

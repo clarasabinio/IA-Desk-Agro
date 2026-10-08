@@ -107,6 +107,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (metricGlifo && stockData.glifosato_lts !== undefined) {
             metricGlifo.textContent = `${stockData.glifosato_lts} L`;
         }
+
+        // Maíz por Híbrido (Bolsas en Planta vs Por Retirar)
+        if (stockData.maiz_totales) {
+            const mPlanta = document.getElementById("metric-maiz-planta");
+            const mRetiro = document.getElementById("metric-maiz-retiro");
+            const mTotal = document.getElementById("metric-maiz-total");
+            const mBadge = document.getElementById("metric-maiz-total-badge");
+            if (mPlanta) mPlanta.textContent = stockData.maiz_totales.bolsas_en_planta;
+            if (mRetiro) mRetiro.textContent = stockData.maiz_totales.bolsas_por_retirar;
+            if (mTotal) mTotal.textContent = `${stockData.maiz_totales.total_general_bolsas} bolsas`;
+            if (mBadge) mBadge.textContent = `${stockData.maiz_totales.total_general_bolsas} bolsas`;
+        }
+        if (stockData.maiz_hibridos && Array.isArray(stockData.maiz_hibridos)) {
+            stockData.maiz_hibridos.forEach(h => {
+                const elP = document.getElementById(`val-${h.id}-planta`);
+                const elR = document.getElementById(`val-${h.id}-retiro`);
+                if (elP) elP.textContent = `${h.en_planta_bolsas} b.`;
+                if (elR) elR.textContent = `${h.por_retirar_bolsas} b.`;
+            });
+        }
+
+        // Granos en Silos y Silobolsas (Toneladas)
+        if (stockData.granos_silos) {
+            const elSoja = document.getElementById("metric-soja-tn");
+            const elTrigo = document.getElementById("metric-trigo-tn");
+            const elTotal = document.getElementById("metric-granos-total-tn");
+            const elBadge = document.getElementById("metric-granos-total-badge");
+            if (elSoja && stockData.granos_silos.soja) elSoja.textContent = `${Number(stockData.granos_silos.soja.total_tn).toLocaleString("es-AR")} Tn`;
+            if (elTrigo && stockData.granos_silos.trigo) elTrigo.textContent = `${Number(stockData.granos_silos.trigo.total_tn).toLocaleString("es-AR")} Tn`;
+            if (elTotal && stockData.granos_silos.total_general_tn) elTotal.textContent = `${Number(stockData.granos_silos.total_general_tn).toLocaleString("es-AR")} Tn`;
+            if (elBadge && stockData.granos_silos.total_general_tn) elBadge.textContent = `${Number(stockData.granos_silos.total_general_tn).toLocaleString("es-AR")} Tn`;
+
+            if (stockData.granos_silos.soja && stockData.granos_silos.soja.ubicaciones) {
+                stockData.granos_silos.soja.ubicaciones.forEach(s => {
+                    const elS = document.getElementById(`val-silo-${s.id}`);
+                    if (elS) elS.textContent = `${Number(s.stock_actual_tn).toLocaleString("es-AR")} Tn`;
+                });
+            }
+            if (stockData.granos_silos.trigo && stockData.granos_silos.trigo.ubicaciones) {
+                stockData.granos_silos.trigo.ubicaciones.forEach(s => {
+                    const elS = document.getElementById(`val-silo-${s.id}`);
+                    if (elS) elS.textContent = `${Number(s.stock_actual_tn).toLocaleString("es-AR")} Tn`;
+                });
+            }
+        }
     };
 
     const appendUserMessage = (text) => {

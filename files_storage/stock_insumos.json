@@ -1,25 +1,71 @@
 {
-  "semillas": [
-    {
-      "id": "SEM-01",
-      "especie": "Soja",
-      "variedad": "Don Mario 46R18",
-      "formato": "Bolsas de 40 kg",
-      "stock_actual_bolsas": 440,
-      "stock_total_kg": 17600,
-      "proveedor": "Semillero Don Mario",
-      "poder_germinativo_pct": 94
-    },
-    {
-      "id": "SEM-02",
-      "especie": "Maíz",
-      "variedad": "Dekalb 72-10 VT Triple PRO",
-      "formato": "Bolsas de 80.000 semillas",
-      "stock_actual_bolsas": 220,
-      "proveedor": "Bayer CropScience",
-      "tratamiento": "Curasemilla fungicida e insecticida Acceleron"
+  "semillas_maiz": {
+    "descripcion": "Semillas de Maíz en bolsas clasificadas por híbrido y variedad",
+    "hibridos": [
+      {
+        "id": "MZ-DK7210",
+        "hibrido": "Dekalb DK 72-10 VT3P",
+        "variedad": "DK 72-10 (Ciclo intermedio)",
+        "proveedor": "Bayer CropScience",
+        "presentacion": "Bolsas de 80.000 semillas",
+        "en_planta_bolsas": 180,
+        "por_retirar_bolsas": 40,
+        "lugar_retiro": "Distribuidora Bayer Agro - Junín",
+        "total_bolsas": 220,
+        "tratamiento": "Curasemilla Acceleron"
+      },
+      {
+        "id": "MZ-P2089",
+        "hibrido": "Pioneer P2089 VYHR",
+        "variedad": "P2089 Leptra",
+        "proveedor": "Corteva Agriscience",
+        "presentacion": "Bolsas de 80.000 semillas",
+        "en_planta_bolsas": 100,
+        "por_retirar_bolsas": 60,
+        "lugar_retiro": "Semillería AgroNorte - Pergamino",
+        "total_bolsas": 160,
+        "tratamiento": "LumiGEN fungicida + insecticida"
+      },
+      {
+        "id": "MZ-AX7784",
+        "hibrido": "Nidera AX 7784 VIP3",
+        "variedad": "AX 7784 Viptera 3",
+        "proveedor": "Nidera Semillas",
+        "presentacion": "Bolsas de 80.000 semillas",
+        "en_planta_bolsas": 0,
+        "por_retirar_bolsas": 50,
+        "lugar_retiro": "Cooperativa Agrícola Ganadera",
+        "total_bolsas": 50,
+        "tratamiento": "Plenus insecticida"
+      }
+    ],
+    "totales": {
+      "bolsas_en_planta": 280,
+      "bolsas_por_retirar": 150,
+      "total_general_bolsas": 430
     }
-  ],
+  },
+  "semillas_soja": {
+    "descripcion": "Semillas de Soja fiscalizadas para siembra de lotes",
+    "variedades": [
+      {
+        "id": "SJ-DM46R18",
+        "variedad": "Don Mario DM 46R18 STS",
+        "proveedor": "Semillero Don Mario",
+        "presentacion": "Bolsas de 40 kg",
+        "en_planta_bolsas": 440,
+        "por_retirar_bolsas": 0,
+        "lugar_retiro": "Galpón 1 - Planta Central",
+        "total_bolsas": 440,
+        "poder_germinativo_pct": 94
+      }
+    ],
+    "totales": {
+      "bolsas_en_planta": 440,
+      "bolsas_por_retirar": 0,
+      "total_general_bolsas": 440
+    }
+  },
   "fertilizantes": [
     {
       "id": "FERT-01",
