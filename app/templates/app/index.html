@@ -1,0 +1,193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA Desk Agro — Estación de Operaciones Rurales</title>
+    <meta name="description" content="Asistente de inteligencia artificial y copiloto operativo para productores agropecuarios con persistencia local en files_storage y Tool Calling con Claude.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="agro-app-container">
+        <!-- Top Status Bar -->
+        <header class="agro-header">
+            <div class="header-brand">
+                <div class="brand-logo-badge">🌾</div>
+                <div class="brand-titles">
+                    <h1 class="brand-title">IA Desk Agro</h1>
+                    <span class="brand-subtitle">{{ field_name }} • {{ season }}</span>
+                </div>
+            </div>
+
+            <div class="header-center-info">
+                <div class="status-indicator-pill">
+                    <span class="live-dot"></span>
+                    <span>files_storage/ Enlazado</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="api-badge {% if has_anthropic_key %}api-active{% else %}api-demo{% endif %}">
+                    <span>⚡ {% if has_anthropic_key %}Claude 3.5 Sonnet (API Conectada){% else %}Modo Autónomo Local{% endif %}</span>
+                </div>
+                <button id="btn-open-inspector" class="btn-secondary" title="Ver archivos físicos en files_storage/">
+                    📁 Inspeccionar Archivos
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="agro-layout">
+            <!-- Left: Chat Workspace -->
+            <section class="chat-section">
+                <!-- Chat Action Header -->
+                <div class="chat-controls-bar">
+                    <div class="active-context-label">
+                        <span class="icon">🚜</span>
+                        <span>Copiloto de Campo: Consultas en lenguaje natural con Tool Calling</span>
+                    </div>
+                    <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación y ventana deslizante">
+                        🗑️ Limpiar Historial
+                    </button>
+                </div>
+
+                <!-- Messages Container -->
+                <div id="messages-list" class="messages-container">
+                    <!-- Welcome message -->
+                    <div class="message-card bot-card">
+                        <div class="avatar bot-avatar">🌾</div>
+                        <div class="message-body">
+                            <div class="message-meta">
+                                <span class="sender-name">IA Desk Agro</span>
+                                <span class="timestamp">Inicio de jornada</span>
+                            </div>
+                            <div class="message-content">
+                                <p>¡Buen día! Soy tu asistente operativo para <strong>Campo La Esperanza</strong>.</p>
+                                <p>Tengo acceso directo y autónomo a los archivos de la empresa en <code>files_storage/</code> para responderte con datos reales de lotes, combustible, insumos y maquinaria.</p>
+                                <p><em>Puedes hacerme una pregunta o pulsar alguna de las consultas rápidas aquí abajo:</em></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Query Chips -->
+                <div class="quick-chips-wrapper">
+                    <span class="chips-label">Consultas frecuentes de campo:</span>
+                    <div class="chips-container">
+                        <button class="chip-btn" data-query="¿Cuánto gasoil hay en el tanque cisterna y cuándo debemos pedir más?">
+                            ⛽ ¿Cuánto gasoil queda?
+                        </button>
+                        <button class="chip-btn" data-query="¿Qué lote se está sembrando hoy y cuál es la prioridad?">
+                            🌱 ¿Qué lote se siembra hoy?
+                        </button>
+                        <button class="chip-btn" data-query="¿Qué maquinaria y tractor tenemos disponible para trabajar?">
+                            🚜 Estado de maquinaria
+                        </button>
+                        <button class="chip-btn" data-query="Registrar que usamos 500 litros de gasoil en la siembra del Lote 1 con el John Deere">
+                            📝 Registrar consumo de gasoil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <form id="chat-form" class="chat-input-bar">
+                    <textarea 
+                        id="user-input" 
+                        placeholder="Pregúntale al copiloto del campo... (ej: '¿Cuánto gasoil hay?', '¿Qué fertilizante tenemos?') [Enter para enviar]"
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" id="btn-send" class="btn-primary">
+                        <span>Consultar</span>
+                        <span class="btn-arrow">➔</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right: Agro Quick Dashboard & Storage Overview -->
+            <aside class="agro-dashboard-sidebar">
+                <div class="dash-card">
+                    <h2 class="dash-card-title">🌾 Datos Clave de Campaña</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="metric-val" id="metric-lotes">120 ha</span>
+                            <span class="metric-lbl">En Siembra Activa (Lote 1)</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-val text-amber" id="metric-gasoil">8.500 L</span>
+                            <span class="metric-lbl">Gasoil Cisterna</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-val text-emerald">John Deere</span>
+                            <span class="metric-lbl">7200R Operativo</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-val text-cyan">Crucianelli</span>
+                            <span class="metric-lbl">Pionera Calibrada</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📁 Base de Datos Local (files_storage/)</h2>
+                        <span class="file-count-badge">{{ storage_files|length }} archivos</span>
+                    </div>
+                    <p class="dash-card-desc">
+                        La IA lee y escribe directamente en estos archivos físicos utilizando <strong>Tool Calling</strong>:
+                    </p>
+                    <div class="storage-files-list">
+                        {% for f in storage_files %}
+                        <div class="storage-file-row" data-filename="{{ f.name }}">
+                            <div class="file-info">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">{{ f.name }}</span>
+                            </div>
+                            <span class="file-size">{{ f.size_bytes }} B</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="dash-card info-card">
+                    <h3 class="info-card-title">💡 Arquitectura Masterclass IA Desk</h3>
+                    <ul class="info-card-list">
+                        <li><strong>Backend:</strong> Django modular (core + app)</li>
+                        <li><strong>Credenciales:</strong> <code>.env</code> con <code>python-dotenv</code></li>
+                        <li><strong>Motor IA:</strong> Anthropic Claude (Tool Calling autónomo)</li>
+                        <li><strong>Memoria:</strong> <code>files_storage/</code> + Ventana deslizante</li>
+                    </ul>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Storage Inspector Modal -->
+    <div id="inspector-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-icon">📂</span>
+                    <h3 id="modal-file-title">Inspeccionando files_storage/</h3>
+                </div>
+                <button id="modal-close-btn" class="modal-close">✕</button>
+            </div>
+            <div class="modal-tabs" id="modal-file-tabs">
+                <!-- Dynamically filled tabs -->
+            </div>
+            <div class="modal-body">
+                <pre id="modal-file-content"><code>Cargando contenido del archivo...</code></pre>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-footer-note">Los cambios realizados por Claude mediante <code>write_storage_file</code> se reflejan en tiempo real aquí.</span>
+                <button id="btn-refresh-inspector" class="btn-secondary">🔄 Recargar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
