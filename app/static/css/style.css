@@ -670,3 +670,175 @@ body {
 .text-amber { color: var(--amber-accent); }
 .text-emerald { color: var(--primary-emerald); }
 .text-cyan { color: var(--cyan-accent); }
+
+/* WhatsApp Simulator Styles */
+.btn-whatsapp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #059669;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+    transition: all var(--transition);
+}
+.btn-whatsapp-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.55);
+}
+
+.wa-modal-box {
+    max-width: 680px;
+}
+.wa-modal-header {
+    background: rgba(16, 185, 129, 0.1);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+}
+.wa-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+.wa-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #0a130f;
+}
+.wa-desc {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+.wa-presets-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+.wa-preset-btn {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.wa-preset-btn:hover {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+}
+.wa-preset-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.wa-audio-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+.wa-sender-lbl {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+.wa-preset-text {
+    font-size: 0.82rem;
+    color: var(--text-main);
+    font-style: italic;
+}
+
+.wa-custom-input-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.wa-input-lbl {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+#wa-custom-msg {
+    width: 100%;
+    background: #060b08;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: white;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    resize: none;
+    outline: none;
+}
+#wa-custom-msg:focus {
+    border-color: var(--primary-emerald);
+}
+.wa-input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.wa-audio-indicator {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+.wa-btn-send {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 0.85rem;
+}
+
+/* WhatsApp Message Bubble inside Chat Stream */
+.wa-chat-bubble {
+    background: rgba(5, 150, 105, 0.2) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+.wa-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+    color: #6ee7b7;
+    font-weight: 600;
+}
+.wa-waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 999px;
+    margin-bottom: 8px;
+    width: fit-content;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #a7f3d0;
+}
+.badge-live {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+}

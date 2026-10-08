@@ -1,0 +1,36 @@
+{
+  "tanque_cisterna": {
+    "capacidad_litros": 15000,
+    "stock_actual_litros": 7720.0,
+    "umbral_critico_alerta_litros": 5000,
+    "tipo_combustible": "Gasoil Grado 2 (Ultra Diesel)",
+    "ultima_actualizacion": "2026-10-08"
+  },
+  "entradas": [
+    {
+      "fecha": "2026-09-25",
+      "proveedor": "YPF Directo - AgroServicios Centro",
+      "litros": 5000,
+      "remito_nro": "R-0045-8921",
+      "precio_por_litro": 1150.0
+    }
+  ],
+  "salidas": [
+    {
+      "fecha": "2026-10-07",
+      "maquinaria": "Tractor John Deere 7200R",
+      "lote": "Lote 1 - La Esperanza",
+      "labor": "Siembra de soja",
+      "litros": 500,
+      "operario": "Juan González (Tractorista)"
+    },
+    {
+      "fecha": "2026-10-08",
+      "maquinaria": "Tractor John Deere 7200R",
+      "lote": "Lote 1 - La Esperanza",
+      "labor": "Siembra de soja (25.0 ha)",
+      "litros": 280.0,
+      "operario": "Juan González (Tractorista)"
+    }
+  ]
+}

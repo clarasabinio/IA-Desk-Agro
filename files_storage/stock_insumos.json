@@ -1,0 +1,83 @@
+{
+  "semillas": [
+    {
+      "id": "SEM-01",
+      "especie": "Soja",
+      "variedad": "Don Mario 46R18",
+      "formato": "Bolsas de 40 kg",
+      "stock_actual_bolsas": 440,
+      "stock_total_kg": 17600,
+      "proveedor": "Semillero Don Mario",
+      "poder_germinativo_pct": 94
+    },
+    {
+      "id": "SEM-02",
+      "especie": "Maíz",
+      "variedad": "Dekalb 72-10 VT Triple PRO",
+      "formato": "Bolsas de 80.000 semillas",
+      "stock_actual_bolsas": 220,
+      "proveedor": "Bayer CropScience",
+      "tratamiento": "Curasemilla fungicida e insecticida Acceleron"
+    }
+  ],
+  "fertilizantes": [
+    {
+      "id": "FERT-01",
+      "nombre": "Fosfato Monoamónico (MAP)",
+      "formula": "11-52-0",
+      "formato": "A granel / Big Bags",
+      "stock_actual_tn": 22.0,
+      "ubicacion": "Galpón 1 - Tinglado central"
+    },
+    {
+      "id": "FERT-02",
+      "nombre": "Urea Granulada",
+      "formula": "46-0-0",
+      "formato": "A granel con lona impermeable",
+      "stock_actual_tn": 18.0,
+      "ubicacion": "Galpón 1 - Sector este"
+    },
+    {
+      "id": "FERT-03",
+      "nombre": "MicroEssentials SZ",
+      "formula": "MAP + 10% S + 1% Zn",
+      "formato": "Big Bags de 1.000 kg",
+      "stock_actual_tn": 9.6,
+      "ubicacion": "Galpón 2"
+    }
+  ],
+  "fitosanitarios": [
+    {
+      "id": "FITO-01",
+      "nombre": "Glifosato 66% Concentrado Soluble",
+      "tipo": "Herbicida sistémico total",
+      "unidad": "Litros",
+      "stock_actual": 1200,
+      "proveedor": "Roundup Controlmax"
+    },
+    {
+      "id": "FITO-02",
+      "nombre": "2,4-D Enlist Colex-D",
+      "tipo": "Herbicida hormonal baja volatilidad",
+      "unidad": "Litros",
+      "stock_actual": 400,
+      "proveedor": "Corteva Agriscience"
+    },
+    {
+      "id": "FITO-03",
+      "nombre": "Coadyuvante Siliconado y Corrector Hídrico",
+      "tipo": "Tensioactivo / Antideriva",
+      "unidad": "Litros",
+      "stock_actual": 150,
+      "proveedor": "Rizobacter"
+    },
+    {
+      "id": "FITO-04",
+      "nombre": "Coragen (Clorantraniliprol)",
+      "tipo": "Insecticida para orugas defoliadoras",
+      "unidad": "Litros",
+      "stock_actual": 60,
+      "proveedor": "FMC Química"
+    }
+  ]
+}

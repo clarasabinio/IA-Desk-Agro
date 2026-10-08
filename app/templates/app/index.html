@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IA Desk Agro — Estación de Operaciones Rurales</title>
-    <meta name="description" content="Asistente de inteligencia artificial y copiloto operativo para productores agropecuarios con persistencia local en files_storage y Tool Calling con Claude.">
+    <title>IA Desk Agro — Control de Stock & Labores Rurales</title>
+    <meta name="description" content="Sistema integral de control de stock, gasoil y registro de labores agrícolas con Tool Calling de Claude y archivos locales.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -26,38 +26,38 @@
             <div class="header-center-info">
                 <div class="status-indicator-pill">
                     <span class="live-dot"></span>
-                    <span>files_storage/ Enlazado</span>
+                    <span>files_storage/ Sincronizado</span>
                 </div>
             </div>
 
             <div class="header-actions">
-                <div class="api-badge {% if has_anthropic_key %}api-active{% else %}api-demo{% endif %}">
-                    <span>⚡ {% if has_anthropic_key %}Claude 3.5 Sonnet (API Conectada){% else %}Modo Autónomo Local{% endif %}</span>
-                </div>
-                <button id="btn-open-inspector" class="btn-secondary" title="Ver archivos físicos en files_storage/">
-                    📁 Inspeccionar Archivos
+                <button id="btn-open-whatsapp" class="btn-whatsapp-pill" title="Simular reporte de WhatsApp de maquinistas">
+                    <span class="wa-icon">📱</span>
+                    <span>WhatsApp de Campo</span>
+                </button>
+                <button id="btn-open-inspector" class="btn-secondary" title="Ver planillas JSON y Markdown">
+                    📁 Ver Planillas
                 </button>
             </div>
         </header>
 
         <!-- Main Workspace -->
         <main class="agro-layout">
-            <!-- Left: Chat Workspace -->
+            <!-- Left: Chat & Interaction Section -->
             <section class="chat-section">
-                <!-- Chat Action Header -->
+                <!-- Controls bar -->
                 <div class="chat-controls-bar">
                     <div class="active-context-label">
                         <span class="icon">🚜</span>
-                        <span>Copiloto de Campo: Consultas en lenguaje natural con Tool Calling</span>
+                        <span>Copiloto de Campo: Consultas de Stock, Rendimientos y Labores</span>
                     </div>
-                    <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación y ventana deslizante">
+                    <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación">
                         🗑️ Limpiar Historial
                     </button>
                 </div>
 
-                <!-- Messages Container -->
+                <!-- Messages Stream -->
                 <div id="messages-list" class="messages-container">
-                    <!-- Welcome message -->
                     <div class="message-card bot-card">
                         <div class="avatar bot-avatar">🌾</div>
                         <div class="message-body">
@@ -66,29 +66,29 @@
                                 <span class="timestamp">Inicio de jornada</span>
                             </div>
                             <div class="message-content">
-                                <p>¡Buen día! Soy tu asistente operativo para <strong>Campo La Esperanza</strong>.</p>
-                                <p>Tengo acceso directo y autónomo a los archivos de la empresa en <code>files_storage/</code> para responderte con datos reales de lotes, combustible, insumos y maquinaria.</p>
-                                <p><em>Puedes hacerme una pregunta o pulsar alguna de las consultas rápidas aquí abajo:</em></p>
+                                <p>¡Buen día! Soy el copiloto operativo de <strong>Campo La Esperanza</strong>.</p>
+                                <p>Gestiono en tiempo real el stock de combustible en <code>stock_gasoil.json</code>, los insumos (semillas, fertilizantes y agroquímicos) en <code>stock_insumos.json</code> y el historial de laboreo en <code>registro_lotes.json</code>.</p>
+                                <p><em>Puedes consultar el estado del tanque, ver rendimientos de trilla, o usar el botón <strong>📱 WhatsApp de Campo</strong> arriba para simular notas de voz de los maquinistas.</em></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Query Chips -->
+                <!-- Quick Consultation Chips -->
                 <div class="quick-chips-wrapper">
-                    <span class="chips-label">Consultas frecuentes de campo:</span>
+                    <span class="chips-label">Consultas y acciones rápidas:</span>
                     <div class="chips-container">
-                        <button class="chip-btn" data-query="¿Cuánto gasoil hay en el tanque cisterna y cuándo debemos pedir más?">
-                            ⛽ ¿Cuánto gasoil queda?
+                        <button class="chip-btn" data-query="¿Cuánto gasoil queda en el tanque cisterna?">
+                            ⛽ Stock de Gasoil
                         </button>
-                        <button class="chip-btn" data-query="¿Qué lote se está sembrando hoy y cuál es la prioridad?">
-                            🌱 ¿Qué lote se siembra hoy?
+                        <button class="chip-btn" data-query="¿Qué stock de semillas y fertilizantes tenemos en galpón?">
+                            📦 Insumos en Galpón
                         </button>
-                        <button class="chip-btn" data-query="¿Qué maquinaria y tractor tenemos disponible para trabajar?">
-                            🚜 Estado de maquinaria
+                        <button class="chip-btn" data-query="¿Cuáles son los rendimientos de trilla registrados por hectárea?">
+                            🌾 Rendimientos de Cosecha
                         </button>
-                        <button class="chip-btn" data-query="Registrar que usamos 500 litros de gasoil en la siembra del Lote 1 con el John Deere">
-                            📝 Registrar consumo de gasoil
+                        <button class="chip-btn" data-query="¿Qué labores se realizaron en el Lote 1 La Esperanza?">
+                            🌱 Estado de Lote 1
                         </button>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                 <form id="chat-form" class="chat-input-bar">
                     <textarea 
                         id="user-input" 
-                        placeholder="Pregúntale al copiloto del campo... (ej: '¿Cuánto gasoil hay?', '¿Qué fertilizante tenemos?') [Enter para enviar]"
+                        placeholder="Escribe una consulta o indica un gasto... (ej: 'gasté 300 litros de gasoil en lote 1') [Enter para enviar]"
                         rows="1"
                     ></textarea>
                     <button type="submit" id="btn-send" class="btn-primary">
@@ -107,43 +107,50 @@
                 </form>
             </section>
 
-            <!-- Right: Agro Quick Dashboard & Storage Overview -->
+            <!-- Right: Live Agricultural Dashboard -->
             <aside class="agro-dashboard-sidebar">
                 <div class="dash-card">
-                    <h2 class="dash-card-title">🌾 Datos Clave de Campaña</h2>
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📊 Control Integral de Stock</h2>
+                        <span class="badge-live">En vivo</span>
+                    </div>
                     <div class="metrics-grid">
                         <div class="metric-item">
-                            <span class="metric-val" id="metric-lotes">120 ha</span>
-                            <span class="metric-lbl">En Siembra Activa (Lote 1)</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-val text-amber" id="metric-gasoil">{{ current_gasoil }} L</span>
+                            <span class="metric-val text-amber" id="metric-gasoil">{{ stock.gasoil_stock }} L</span>
                             <span class="metric-lbl">Gasoil Cisterna</span>
                         </div>
                         <div class="metric-item">
-                            <span class="metric-val text-emerald">John Deere</span>
-                            <span class="metric-lbl">7200R Operativo</span>
+                            <span class="metric-val text-emerald" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</span>
+                            <span class="metric-lbl">Semilla Soja DM46</span>
                         </div>
                         <div class="metric-item">
-                            <span class="metric-val text-cyan">Crucianelli</span>
-                            <span class="metric-lbl">Pionera Calibrada</span>
+                            <span class="metric-val text-cyan" id="metric-map">{{ stock.map_tn }} tn</span>
+                            <span class="metric-lbl">Fertilizante MAP</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-val text-emerald" id="metric-glifo">{{ stock.glifosato_lts }} L</span>
+                            <span class="metric-lbl">Glifosato 66%</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="dash-card">
                     <div class="dash-card-header-row">
-                        <h2 class="dash-card-title">📁 Base de Datos Local (files_storage/)</h2>
-                        <span class="file-count-badge">{{ storage_files|length }} archivos</span>
+                        <h2 class="dash-card-title">📁 Planillas Agropecuarias (files_storage/)</h2>
                     </div>
                     <p class="dash-card-desc">
-                        La IA lee y escribe directamente en estos archivos físicos utilizando <strong>Tool Calling</strong>:
+                        Gestionadas autónomamente por Claude mediante <strong>Tool Calling</strong>:
                     </p>
                     <div class="storage-files-list">
                         {% for f in storage_files %}
                         <div class="storage-file-row" data-filename="{{ f.name }}">
                             <div class="file-info">
-                                <span class="file-icon">📄</span>
+                                <span class="file-icon">
+                                    {% if 'gasoil' in f.name %}⛽
+                                    {% elif 'insumo' in f.name %}📦
+                                    {% elif 'lote' in f.name %}🌾
+                                    {% else %}📄{% endif %}
+                                </span>
                                 <span class="file-name">{{ f.name }}</span>
                             </div>
                             <span class="file-size">{{ f.size_bytes }} B</span>
@@ -153,16 +160,75 @@
                 </div>
 
                 <div class="dash-card info-card">
-                    <h3 class="info-card-title">💡 Arquitectura Masterclass IA Desk</h3>
+                    <h3 class="info-card-title">🚜 Arquitectura Masterclass IA Desk</h3>
                     <ul class="info-card-list">
-                        <li><strong>Backend:</strong> Django modular (core + app)</li>
-                        <li><strong>Credenciales:</strong> <code>.env</code> con <code>python-dotenv</code></li>
-                        <li><strong>Motor IA:</strong> Anthropic Claude (Tool Calling autónomo)</li>
-                        <li><strong>Memoria:</strong> <code>files_storage/</code> + Ventana deslizante</li>
+                        <li><strong>Herramientas Nativas:</strong> <code>read_file</code>, <code>write_file</code>, <code>append_memory</code>, <code>update_memory</code></li>
+                        <li><strong>Prompts:</strong> Cargados desde <code>app/prompts/system_prompt.txt</code></li>
+                        <li><strong>Entrada de Campo:</strong> Módulo WhatsApp integrado</li>
                     </ul>
                 </div>
             </aside>
         </main>
+    </div>
+
+    <!-- WhatsApp Field Simulator Modal -->
+    <div id="whatsapp-modal" class="modal-overlay hidden">
+        <div class="modal-box wa-modal-box">
+            <div class="modal-header wa-modal-header">
+                <div class="modal-title-wrap">
+                    <span class="wa-icon-large">📱</span>
+                    <div>
+                        <h3>Simulador de Reportes de WhatsApp de Campo</h3>
+                        <span class="wa-subtitle">Recepción de audios y textos informales de maquinistas y encargados</span>
+                    </div>
+                </div>
+                <button id="wa-modal-close-btn" class="modal-close">✕</button>
+            </div>
+            
+            <div class="wa-modal-body">
+                <p class="wa-desc">
+                    El personal de campo suele comunicarse de forma rápida e informal. Selecciona una nota de voz pregrabada o redacta un mensaje coloquial para que Claude lo procese, descuente insumos y actualice las planillas:
+                </p>
+
+                <div class="wa-presets-grid">
+                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que terminamos 25 hectáreas en el Lote 1 con el John Deere. Le gastamos 280 litros de gasoil del tanque y metimos 40 bolsas de semilla DM46.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:24 seg</span>
+                            <span class="wa-sender-lbl">Juan (Siembra)</span>
+                        </div>
+                        <p class="wa-preset-text">"Terminamos 25 ha en Lote 1. Gastamos 280 lts gasoil y 40 bolsas semilla DM46."</p>
+                    </button>
+
+                    <button class="wa-preset-btn" data-sender="Don Horacio (Pulverizador)" data-msg="Hola gente, pasamos la pulverizadora Pla en el Lote 2 en las 85 ha. Aplicamos 170 litros de glifosato. Gastamos 110 litros de gasoil.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:18 seg</span>
+                            <span class="wa-sender-lbl">Horacio (Fumigación)</span>
+                        </div>
+                        <p class="wa-preset-text">"Pulverizamos Lote 2 (85 ha). 170 L glifosato y 110 L gasoil."</p>
+                    </button>
+
+                    <button class="wa-preset-btn" data-sender="Carlos (Encargado Galpón)" data-msg="Llegó el camión cisterna de YPF, nos descargaron 4000 litros de gasoil en el tanque central con remito 4820.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:12 seg</span>
+                            <span class="wa-sender-lbl">Carlos (Cisterna)</span>
+                        </div>
+                        <p class="wa-preset-text">"Llegó camión YPF: 4.000 L de gasoil descargados en tanque con remito 4820."</p>
+                    </button>
+                </div>
+
+                <div class="wa-custom-input-box">
+                    <label class="wa-input-lbl">O redacta un mensaje libre de campo:</label>
+                    <textarea id="wa-custom-msg" rows="3" placeholder="Ej: 'Terminamos de trillar el lote 3, sacamos 450 mil kilos de trigo...'"></textarea>
+                    <div class="wa-input-footer">
+                        <span class="wa-audio-indicator">🎙️ Simula Nota de Voz de WhatsApp</span>
+                        <button id="btn-send-wa-custom" class="btn-primary wa-btn-send">
+                            <span>Enviar Reporte a Claude</span>
+                            <span>➔</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Storage Inspector Modal -->
@@ -171,18 +237,16 @@
             <div class="modal-header">
                 <div class="modal-title-wrap">
                     <span class="modal-icon">📂</span>
-                    <h3 id="modal-file-title">Inspeccionando files_storage/</h3>
+                    <h3 id="modal-file-title">Inspeccionando Planillas Agropecuarias</h3>
                 </div>
                 <button id="modal-close-btn" class="modal-close">✕</button>
             </div>
-            <div class="modal-tabs" id="modal-file-tabs">
-                <!-- Dynamically filled tabs -->
-            </div>
+            <div class="modal-tabs" id="modal-file-tabs"></div>
             <div class="modal-body">
-                <pre id="modal-file-content"><code>Cargando contenido del archivo...</code></pre>
+                <pre id="modal-file-content"><code>Cargando contenido...</code></pre>
             </div>
             <div class="modal-footer">
-                <span class="modal-footer-note">Los cambios realizados por Claude mediante <code>write_storage_file</code> se reflejan en tiempo real aquí.</span>
+                <span class="modal-footer-note">Planillas físicas de la empresa modificadas en tiempo real por Claude.</span>
                 <button id="btn-refresh-inspector" class="btn-secondary">🔄 Recargar</button>
             </div>
         </div>

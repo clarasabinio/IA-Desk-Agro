@@ -1,0 +1,91 @@
+{
+  "campana": "Gruesa 2026/2027",
+  "lotes": [
+    {
+      "id": "LOTE-01",
+      "nombre": "Lote 1 - La Esperanza",
+      "superficie_ha": 120,
+      "cultivo": "Soja de 1ra",
+      "variedad": "DM 46R18",
+      "estado_actual": "Siembra en progreso: 25.0 ha sumadas hoy",
+      "labores": [
+        {
+          "tipo": "Barbecho Químico",
+          "fecha": "2026-09-15",
+          "maquinaria": "Pulverizadora Pla MAP 3 3300",
+          "productos": [
+            {
+              "nombre": "Glifosato 66%",
+              "dosis_ha": 2.5,
+              "unidad": "L/ha"
+            },
+            {
+              "nombre": "2,4-D Enlist",
+              "dosis_ha": 0.8,
+              "unidad": "L/ha"
+            }
+          ]
+        },
+        {
+          "tipo": "Siembra y Fertilización",
+          "fecha": "2026-10-06",
+          "maquinaria": "Tractor JD 7200R + Sembradora Crucianelli 27 líneas",
+          "semilla": "DM 46R18 (65 kg/ha)",
+          "fertilizante": "MicroEssentials (80 kg/ha)",
+          "has_avanzadas": 90
+        }
+      ],
+      "cosecha": {
+        "fecha": null,
+        "humedad_pct": null,
+        "rinde_total_kg": null,
+        "rinde_kg_ha": null,
+        "rinde_qq_ha": null
+      }
+    },
+    {
+      "id": "LOTE-02",
+      "nombre": "Lote 2 - El Ombú",
+      "superficie_ha": 85,
+      "cultivo": "Maíz Tardío",
+      "variedad": "Dekalb 72-10",
+      "estado_actual": "Barbecho finalizado - Esperando fecha óptima",
+      "labores": [
+        {
+          "tipo": "Barbecho Químico Primavera",
+          "fecha": "2026-09-20",
+          "maquinaria": "Pulverizadora Pla MAP 3 3300",
+          "productos": [
+            {
+              "nombre": "Glifosato 66%",
+              "dosis_ha": 3.0,
+              "unidad": "L/ha"
+            }
+          ]
+        }
+      ],
+      "cosecha": {
+        "fecha": null,
+        "humedad_pct": null,
+        "rinde_total_kg": null,
+        "rinde_kg_ha": null,
+        "rinde_qq_ha": null
+      }
+    },
+    {
+      "id": "LOTE-03",
+      "nombre": "Lote 3 - Bajo Grande",
+      "superficie_ha": 210,
+      "cultivo": "Girasol / Soja 2da",
+      "variedad": null,
+      "estado_actual": "Rastrojo de trigo cosechado",
+      "labores": [],
+      "cosecha_previa_trigo": {
+        "fecha": "2026-01-10",
+        "rinde_total_kg": 819000,
+        "rinde_kg_ha": 3900.0,
+        "rinde_qq_ha": 39.0
+      }
+    }
+  ]
+}
