@@ -6,8 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnClearChat = document.getElementById('btn-clear-chat');
     const quickChips = document.querySelectorAll('.chip-btn');
     
-    // Live metrics
-    const metricGasoil = document.getElementById('metric-gasoil');
+    // Live metrics elements for the 4 fuel tanks
+    const metricCisterna = document.getElementById('metric-cisterna');
+    const barCisterna = document.getElementById('bar-cisterna');
+    const metricTGrande = document.getElementById('metric-t-grande');
+    const barTGrande = document.getElementById('bar-t-grande');
+    const metricTChico = document.getElementById('metric-t-chico');
+    const barTChico = document.getElementById('bar-t-chico');
+    const metricAcopio = document.getElementById('metric-acopio');
+    const metricTotCampo = document.getElementById('metric-tot-campo');
+    const metricTotAcopio = document.getElementById('metric-tot-acopio');
+
+    // Agricultural inputs metrics
     const metricSemSoja = document.getElementById('metric-sem-soja');
     const metricMap = document.getElementById('metric-map');
     const metricGlifo = document.getElementById('metric-glifo');
@@ -49,11 +59,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateLiveMetrics = (stockData) => {
         if (!stockData) return;
-        if (metricGasoil && stockData.gasoil_stock !== undefined) {
-            metricGasoil.textContent = `${Number(stockData.gasoil_stock).toLocaleString('es-AR')} L`;
+
+        // 1. Cisterna Planta
+        if (stockData.cisterna_planta) {
+            const actual = Number(stockData.cisterna_planta.actual);
+            const max = Number(stockData.cisterna_planta.max) || 22000;
+            if (metricCisterna) metricCisterna.textContent = `${actual.toLocaleString('es-AR')} L`;
+            if (barCisterna) barCisterna.style.width = `${Math.min(100, Math.round((actual / max) * 100))}%`;
         }
+
+        // 2. Tanque Grande
+        if (stockData.tanque_grande) {
+            const actual = Number(stockData.tanque_grande.actual);
+            const max = Number(stockData.tanque_grande.max) || 5000;
+            if (metricTGrande) metricTGrande.textContent = `${actual.toLocaleString('es-AR')} L`;
+            if (barTGrande) barTGrande.style.width = `${Math.min(100, Math.round((actual / max) * 100))}%`;
+        }
+
+        // 3. Tanque Chico
+        if (stockData.tanque_chico) {
+            const actual = Number(stockData.tanque_chico.actual);
+            const max = Number(stockData.tanque_chico.max) || 3000;
+            if (metricTChico) metricTChico.textContent = `${actual.toLocaleString('es-AR')} L`;
+            if (barTChico) barTChico.style.width = `${Math.min(100, Math.round((actual / max) * 100))}%`;
+        }
+
+        // 4. Acopio por Retirar
+        if (stockData.acopio_por_retirar !== undefined && metricAcopio) {
+            metricAcopio.textContent = `${Number(stockData.acopio_por_retirar).toLocaleString('es-AR')} L`;
+        }
+
+        // Totales
+        if (stockData.total_campo !== undefined && metricTotCampo) {
+            metricTotCampo.textContent = `${Number(stockData.total_campo).toLocaleString('es-AR')} L`;
+        }
+        if (stockData.total_con_acopio !== undefined && metricTotAcopio) {
+            metricTotAcopio.textContent = `${Number(stockData.total_con_acopio).toLocaleString('es-AR')} L`;
+        }
+
+        // Insumos
         if (metricSemSoja && stockData.semillas_soja !== undefined) {
-            metricSemSoja.textContent = `${stockData.semillas_soja} bolsas`;
+            metricSemSoja.textContent = stockData.semillas_soja;
         }
         if (metricMap && stockData.map_tn !== undefined) {
             metricMap.textContent = `${stockData.map_tn} tn`;
@@ -121,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolHtml += `
                     <div class="tool-header-row">
                         <span class="tool-icon">🔍</span>
-                        <span>Consultando planillas de stock y registros agronómicos...</span>
+                        <span>Consultando planillas de combustible e inventarios del campo...</span>
                     </div>
                 `;
             }
@@ -129,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toolHtml += `
                     <div class="tool-header-row" style="margin-top: 4px;">
                         <span class="tool-icon">💾</span>
-                        <span>Actualizando inventarios y bitácora de lote en tiempo real...</span>
+                        <span>Actualizando depósitos de gasoil y bitácora operativa en tiempo real...</span>
                     </div>
                 `;
             }
@@ -164,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-body">
                 <div class="loading-indicator">
                     <span class="spinner-dot">⚙️</span>
-                    <span>Procesando labores y ejecutando cálculos matemáticos con Claude...</span>
+                    <span>Procesando depósitos y ejecutando cálculos matemáticos con Claude...</span>
                 </div>
             </div>
         `;
@@ -177,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingCard) loadingCard.remove();
     };
 
-    // Chat submit
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = userInput.value.trim();
@@ -214,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // WhatsApp Simulation Handler
     const sendWhatsAppReport = async (msg, sender) => {
         whatsappModal.classList.add('hidden');
         appendWhatsAppMessage(msg, sender);
@@ -266,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sendWhatsAppReport(msg, "Encargado de Campo");
     });
 
-    // Quick chips
     quickChips.forEach(chip => {
         chip.addEventListener('click', () => {
             const query = chip.dataset.query;
@@ -292,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div class="message-content">
-                                <p>Historial reiniciado. ¿Qué dato de stock o labor deseas consultar?</p>
+                                <p>Historial reiniciado. ¿Qué dato de stock, depósitos de gasoil o labor deseas consultar?</p>
                             </div>
                         </div>
                     </div>
@@ -371,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = html.split('\n');
         let formatted = '';
         lines.forEach(line => {
-            if (line.trim().startsWith('- ')) {
+            if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
                 formatted += `<p style="margin-left: 14px;">• ${line.trim().substring(2)}</p>`;
             } else if (line.trim().startsWith('#')) {
                 const headerText = line.replace(/^#+\s*/, '');

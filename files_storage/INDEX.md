@@ -1,32 +1,27 @@
 # 🌾 ÍNDICE GENERAL DE DATOS Y OPERACIONES - CAMPO "LA ESPERANZA"
 *Empresa Agropecuaria Familiar - Campaña Gruesa 2026/2027*
 
-Este archivo sirve como catálogo dinámico y mapa de navegación para la IA y los administradores.
+---
+
+## ⛽ ESTRUCTURA DE COMBUSTIBLES (4 DEPÓSITOS Y ACOPIO)
+Gestionado en `stock_gasoil.json`:
+1. **Cisterna Planta:** Capacidad máxima de **22.000 Litros** (depósito central estacionario).
+2. **Tanque Grande:** Capacidad máxima de **5.000 Litros** (cisterna móvil de apoyo a siembra/cosecha).
+3. **Tanque Chico:** Capacidad máxima de **3.000 Litros** (carretón de auxilio rápido en lotes).
+4. **Gasoil por Retirar:** Saldo acopiado en YPF Directo pendiente de flete al establecimiento.
 
 ---
 
-## 📂 ESTRUCTURA DE ARCHIVOS DE LA EMPRESA
-1. **`stock_gasoil.json`**:
-   - Control estricto del tanque cisterna (capacidad: 15.000 L, umbral crítico: 5.000 L).
-   - Registro de entradas por compras a YPF Directo y salidas por consumo de maquinaria agrícola.
-
-2. **`stock_insumos.json`**:
-   - Solapa **Semillas**: Soja Don Mario 46R18 (bolsas de 40 kg), Maíz Dekalb 72-10 (bolsas 80k semillas).
-   - Solapa **Fertilizantes**: Fosfato Monoamónico (MAP), Urea Granulada, MicroEssentials SZ.
-   - Solapa **Fitosanitarios**: Glifosato 66%, 2,4-D Enlist, Coadyuvante Rizobacter, Coragen insecticida.
-
-3. **`registro_lotes.json`**:
-   - Control agronómico por lote (Lote 1 "La Esperanza", Lote 2 "El Ombú", Lote 3 "Bajo Grande").
-   - Historial detallado de labores: fechas, dosis por hectárea, maquinaria asignada.
-   - Registro de trilla y cosecha con cálculo de rendimiento (kg/ha y qq/ha).
-
-4. **`MEMORY.md`**:
-   - Memoria permanente de negocio, directivas estratégicas familiares y tareas operativas activas.
+## 📦 INSUMOS AGRÍCOLAS
+Gestionado en `stock_insumos.json`:
+- **Semillas:** Soja Don Mario 46R18, Maíz Dekalb 72-10 VT Triple PRO.
+- **Fertilizantes:** Fosfato Monoamónico (MAP), Urea Granulada, MicroEssentials.
+- **Fitosanitarios:** Glifosato 66%, 2,4-D Enlist, Coadyuvante Rizobacter, Coragen insecticida.
 
 ---
 
-## 🚜 MAQUINARIA PRINCIPAL DEL ESTABLECIMIENTO
-- Tractor John Deere 7200R (200 HP) - Operativo en siembra.
-- Sembradora Crucianelli Pionera (27 líneas a 52 cm) - Calibrada para soja.
-- Pulverizadora Autopropulsada Pla MAP 3 3300 - En galpón central con pastillas antideriva.
-- Cosechadora Case IH 7230 con plataforma draper de 35 pies.
+## 🌾 REGISTRO DE LOTES Y LABORES
+Gestionado en `registro_lotes.json`:
+- Lote 1 "La Esperanza" (120 ha - Soja 1ra en siembra).
+- Lote 2 "El Ombú" (85 ha - Maíz tardío en barbecho).
+- Lote 3 "Bajo Grande" (210 ha - Trigo cosechado a 3.900 kg/ha).

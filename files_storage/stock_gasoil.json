@@ -1,36 +1,83 @@
 {
-  "tanque_cisterna": {
-    "capacidad_litros": 15000,
-    "stock_actual_litros": 7720.0,
-    "umbral_critico_alerta_litros": 5000,
-    "tipo_combustible": "Gasoil Grado 2 (Ultra Diesel)",
-    "ultima_actualizacion": "2026-10-08"
+  "depositos": {
+    "cisterna_planta": {
+      "nombre": "Cisterna Planta",
+      "capacidad_max_litros": 22000,
+      "stock_actual_litros": 13000.0,
+      "umbral_alerta_litros": 5000,
+      "ubicacion": "Planta central - Tinglado principal"
+    },
+    "tanque_grande": {
+      "nombre": "Tanque Grande",
+      "capacidad_max_litros": 5000,
+      "stock_actual_litros": 5000,
+      "umbral_alerta_litros": 1000,
+      "ubicacion": "Cisterna de apoyo móvil en campo"
+    },
+    "tanque_chico": {
+      "nombre": "Tanque Chico",
+      "capacidad_max_litros": 3000,
+      "stock_actual_litros": 3000,
+      "umbral_alerta_litros": 600,
+      "ubicacion": "Carretón de auxilio rápido en lote"
+    },
+    "acopio_por_retirar": {
+      "nombre": "Gasoil por Retirar",
+      "litros_disponibles": 6000.0,
+      "proveedor": "YPF Directo - AgroServicios Centro",
+      "tipo": "Acopio pagado pendiente de retiro / flete"
+    }
+  },
+  "totales": {
+    "stock_fisico_campo_litros": 21000.0,
+    "stock_total_con_acopio_litros": 27000.0
   },
   "entradas": [
     {
       "fecha": "2026-09-25",
-      "proveedor": "YPF Directo - AgroServicios Centro",
-      "litros": 5000,
-      "remito_nro": "R-0045-8921",
-      "precio_por_litro": 1150.0
+      "deposito_destino": "Cisterna Planta",
+      "proveedor": "YPF Directo",
+      "litros": 10000,
+      "remito_nro": "R-0045-8921"
     }
   ],
   "salidas": [
     {
       "fecha": "2026-10-07",
+      "deposito_origen": "Tanque Grande",
       "maquinaria": "Tractor John Deere 7200R",
       "lote": "Lote 1 - La Esperanza",
-      "labor": "Siembra de soja",
       "litros": 500,
-      "operario": "Juan González (Tractorista)"
+      "operario": "Juan González"
     },
     {
       "fecha": "2026-10-08",
+      "deposito_origen": "Tanque Chico",
       "maquinaria": "Tractor John Deere 7200R",
       "lote": "Lote 1 - La Esperanza",
-      "labor": "Siembra de soja (25.0 ha)",
-      "litros": 280.0,
-      "operario": "Juan González (Tractorista)"
+      "litros": 280,
+      "operario": "Juan González"
+    }
+  ],
+  "transferencias_internas": [
+    {
+      "fecha": "2026-10-06",
+      "origen": "Cisterna Planta",
+      "destino": "Tanque Grande",
+      "litros": 2000,
+      "motivo": "Reabastecimiento para siembra Lote 1"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 1500.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 2,000 L de acopio YPF hacia Tanque Chico",
+      "litros": 2000.0,
+      "operario": "Productor"
     }
   ]
 }

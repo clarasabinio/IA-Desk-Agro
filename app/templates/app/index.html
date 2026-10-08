@@ -26,7 +26,7 @@
             <div class="header-center-info">
                 <div class="status-indicator-pill">
                     <span class="live-dot"></span>
-                    <span>files_storage/ Sincronizado</span>
+                    <span>4 Depósitos & Acopio Sincronizados</span>
                 </div>
             </div>
 
@@ -49,7 +49,7 @@
                 <div class="chat-controls-bar">
                     <div class="active-context-label">
                         <span class="icon">🚜</span>
-                        <span>Copiloto de Campo: Consultas de Stock, Rendimientos y Labores</span>
+                        <span>Copiloto de Campo: Stock de Combustible en 4 Depósitos, Insumos y Labores</span>
                     </div>
                     <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación">
                         🗑️ Limpiar Historial
@@ -67,8 +67,14 @@
                             </div>
                             <div class="message-content">
                                 <p>¡Buen día! Soy el copiloto operativo de <strong>Campo La Esperanza</strong>.</p>
-                                <p>Gestiono en tiempo real el stock de combustible en <code>stock_gasoil.json</code>, los insumos (semillas, fertilizantes y agroquímicos) en <code>stock_insumos.json</code> y el historial de laboreo en <code>registro_lotes.json</code>.</p>
-                                <p><em>Puedes consultar el estado del tanque, ver rendimientos de trilla, o usar el botón <strong>📱 WhatsApp de Campo</strong> arriba para simular notas de voz de los maquinistas.</em></p>
+                                <p>Llevo el control estricto de combustible en tus <strong>4 opciones de almacenamiento y acopio</strong>:</p>
+                                <ul>
+                                    <li>🏭 <strong>Cisterna Planta:</strong> Capacidad máx. 22.000 L</li>
+                                    <li>🚜 <strong>Tanque Grande:</strong> Capacidad máx. 5.000 L</li>
+                                    <li>🛢️ <strong>Tanque Chico:</strong> Capacidad máx. 3.000 L</li>
+                                    <li>📋 <strong>Gasoil por Retirar:</strong> Acopio pagado en YPF Directo pendiente de flete</li>
+                                </ul>
+                                <p><em>Puedes consultar saldos, registrar gastos en cualquier tanque o reportar traslados y retiros de acopio en lenguaje natural o vía WhatsApp.</em></p>
                             </div>
                         </div>
                     </div>
@@ -76,19 +82,22 @@
 
                 <!-- Quick Consultation Chips -->
                 <div class="quick-chips-wrapper">
-                    <span class="chips-label">Consultas y acciones rápidas:</span>
+                    <span class="chips-label">Consultas y acciones de combustible:</span>
                     <div class="chips-container">
-                        <button class="chip-btn" data-query="¿Cuánto gasoil queda en el tanque cisterna?">
-                            ⛽ Stock de Gasoil
+                        <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
+                            ⛽ Saldo de los 4 Depósitos
+                        </button>
+                        <button class="chip-btn" data-query="Pasar 1500 litros de la Cisterna Planta al Tanque Grande para la siembra">
+                            🚚 Pasar 1.500 L a Tanque Grande
+                        </button>
+                        <button class="chip-btn" data-query="Retirar 2000 litros del acopio hacia el Tanque Chico">
+                            📦 Retirar 2.000 L de Acopio
+                        </button>
+                        <button class="chip-btn" data-query="Gastamos 250 litros del Tanque Chico en el tractor John Deere">
+                            🛢️ Gasto Tanque Chico
                         </button>
                         <button class="chip-btn" data-query="¿Qué stock de semillas y fertilizantes tenemos en galpón?">
-                            📦 Insumos en Galpón
-                        </button>
-                        <button class="chip-btn" data-query="¿Cuáles son los rendimientos de trilla registrados por hectárea?">
-                            🌾 Rendimientos de Cosecha
-                        </button>
-                        <button class="chip-btn" data-query="¿Qué labores se realizaron en el Lote 1 La Esperanza?">
-                            🌱 Estado de Lote 1
+                            🌱 Insumos en Galpón
                         </button>
                     </div>
                 </div>
@@ -97,7 +106,7 @@
                 <form id="chat-form" class="chat-input-bar">
                     <textarea 
                         id="user-input" 
-                        placeholder="Escribe una consulta o indica un gasto... (ej: 'gasté 300 litros de gasoil en lote 1') [Enter para enviar]"
+                        placeholder="Escribe una consulta o movimiento... (ej: 'gasté 300 L del tanque chico', 'pasar 1000 L a tanque grande') [Enter]"
                         rows="1"
                     ></textarea>
                     <button type="submit" id="btn-send" class="btn-primary">
@@ -109,19 +118,76 @@
 
             <!-- Right: Live Agricultural Dashboard -->
             <aside class="agro-dashboard-sidebar">
+                <!-- 4 Fuel Storage Options Card -->
                 <div class="dash-card">
                     <div class="dash-card-header-row">
-                        <h2 class="dash-card-title">📊 Control Integral de Stock</h2>
+                        <h2 class="dash-card-title">⛽ Gasoil (4 Depósitos & Acopio)</h2>
                         <span class="badge-live">En vivo</span>
                     </div>
+
+                    <div class="fuel-tanks-list">
+                        <!-- Tank 1: Cisterna Planta -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🏭 Cisterna Planta (Máx 22.000 L)</span>
+                                <span class="tank-val" id="metric-cisterna">{{ stock.cisterna_planta.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar" id="bar-cisterna" style="width: 66%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tank 2: Tanque Grande -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🚜 Tanque Grande (Máx 5.000 L)</span>
+                                <span class="tank-val text-amber" id="metric-t-grande">{{ stock.tanque_grande.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar bar-amber" id="bar-t-grande" style="width: 70%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tank 3: Tanque Chico -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🛢️ Tanque Chico (Máx 3.000 L)</span>
+                                <span class="tank-val text-cyan" id="metric-t-chico">{{ stock.tanque_chico.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar bar-cyan" id="bar-t-chico" style="width: 60%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tank 4: Acopio por Retirar -->
+                        <div class="fuel-tank-item acopio-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">📋 Gasoil por Retirar (Acopio YPF)</span>
+                                <span class="tank-val text-emerald" id="metric-acopio">{{ stock.acopio_por_retirar }} L</span>
+                            </div>
+                            <span class="acopio-sub-lbl">Disponible en distribuidor para traslado</span>
+                        </div>
+                    </div>
+
+                    <div class="fuel-totals-box">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Total Físico en Campo:</span>
+                            <strong class="tot-val" id="metric-tot-campo">{{ stock.total_campo }} L</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total con Acopio:</span>
+                            <strong class="tot-val text-emerald" id="metric-tot-acopio">{{ stock.total_con_acopio }} L</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agricultural Inputs Quick Card -->
+                <div class="dash-card">
+                    <h2 class="dash-card-title">📦 Semillas & Agroquímicos</h2>
                     <div class="metrics-grid">
                         <div class="metric-item">
-                            <span class="metric-val text-amber" id="metric-gasoil">{{ stock.gasoil_stock }} L</span>
-                            <span class="metric-lbl">Gasoil Cisterna</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-val text-emerald" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</span>
-                            <span class="metric-lbl">Semilla Soja DM46</span>
+                            <span class="metric-val text-emerald" id="metric-sem-soja">{{ stock.semillas_soja }}</span>
+                            <span class="metric-lbl">Bolsas Soja DM46</span>
                         </div>
                         <div class="metric-item">
                             <span class="metric-val text-cyan" id="metric-map">{{ stock.map_tn }} tn</span>
@@ -131,16 +197,18 @@
                             <span class="metric-val text-emerald" id="metric-glifo">{{ stock.glifosato_lts }} L</span>
                             <span class="metric-lbl">Glifosato 66%</span>
                         </div>
+                        <div class="metric-item">
+                            <span class="metric-val text-amber">120 ha</span>
+                            <span class="metric-lbl">Lote 1 en siembra</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Planillas link -->
                 <div class="dash-card">
                     <div class="dash-card-header-row">
-                        <h2 class="dash-card-title">📁 Planillas Agropecuarias (files_storage/)</h2>
+                        <h2 class="dash-card-title">📁 Planillas Físicas (files_storage/)</h2>
                     </div>
-                    <p class="dash-card-desc">
-                        Gestionadas autónomamente por Claude mediante <strong>Tool Calling</strong>:
-                    </p>
                     <div class="storage-files-list">
                         {% for f in storage_files %}
                         <div class="storage-file-row" data-filename="{{ f.name }}">
@@ -158,15 +226,6 @@
                         {% endfor %}
                     </div>
                 </div>
-
-                <div class="dash-card info-card">
-                    <h3 class="info-card-title">🚜 Arquitectura Masterclass IA Desk</h3>
-                    <ul class="info-card-list">
-                        <li><strong>Herramientas Nativas:</strong> <code>read_file</code>, <code>write_file</code>, <code>append_memory</code>, <code>update_memory</code></li>
-                        <li><strong>Prompts:</strong> Cargados desde <code>app/prompts/system_prompt.txt</code></li>
-                        <li><strong>Entrada de Campo:</strong> Módulo WhatsApp integrado</li>
-                    </ul>
-                </div>
             </aside>
         </main>
     </div>
@@ -179,7 +238,7 @@
                     <span class="wa-icon-large">📱</span>
                     <div>
                         <h3>Simulador de Reportes de WhatsApp de Campo</h3>
-                        <span class="wa-subtitle">Recepción de audios y textos informales de maquinistas y encargados</span>
+                        <span class="wa-subtitle">Recepción de audios y textos con especificación de tanques y acopio</span>
                     </div>
                 </div>
                 <button id="wa-modal-close-btn" class="modal-close">✕</button>
@@ -187,38 +246,38 @@
             
             <div class="wa-modal-body">
                 <p class="wa-desc">
-                    El personal de campo suele comunicarse de forma rápida e informal. Selecciona una nota de voz pregrabada o redacta un mensaje coloquial para que Claude lo procese, descuente insumos y actualice las planillas:
+                    El personal de campo puede reportar consumo indicando el tanque de donde extrajo el combustible o avisar llegadas de flete:
                 </p>
 
                 <div class="wa-presets-grid">
-                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que terminamos 25 hectáreas en el Lote 1 con el John Deere. Le gastamos 280 litros de gasoil del tanque y metimos 40 bolsas de semilla DM46.">
+                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que cargamos 250 litros del Tanque Chico al John Deere y sembramos 20 hectáreas en el Lote 1 con 35 bolsas de semilla.">
                         <div class="wa-preset-top">
-                            <span class="wa-audio-badge">🎙️ Audio 0:24 seg</span>
+                            <span class="wa-audio-badge">🎙️ Audio 0:22 seg</span>
                             <span class="wa-sender-lbl">Juan (Siembra)</span>
                         </div>
-                        <p class="wa-preset-text">"Terminamos 25 ha en Lote 1. Gastamos 280 lts gasoil y 40 bolsas semilla DM46."</p>
+                        <p class="wa-preset-text">"Cargamos 250 L del Tanque Chico al John Deere, sembramos 20 ha con 35 bolsas."</p>
                     </button>
 
-                    <button class="wa-preset-btn" data-sender="Don Horacio (Pulverizador)" data-msg="Hola gente, pasamos la pulverizadora Pla en el Lote 2 en las 85 ha. Aplicamos 170 litros de glifosato. Gastamos 110 litros de gasoil.">
+                    <button class="wa-preset-btn" data-sender="Carlos (Encargado Galpón)" data-msg="Pasamos 1500 litros de la Cisterna Planta al Tanque Grande para tenerlo listo para la sembradora.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:16 seg</span>
+                            <span class="wa-sender-lbl">Carlos (Logística)</span>
+                        </div>
+                        <p class="wa-preset-text">"Pasamos 1.500 L de Cisterna Planta al Tanque Grande para la sembradora."</p>
+                    </button>
+
+                    <button class="wa-preset-btn" data-sender="Esteban (Administrador)" data-msg="Retiramos 3000 litros de gasoil del acopio de YPF Directo y los descargamos en la Cisterna Planta.">
                         <div class="wa-preset-top">
                             <span class="wa-audio-badge">🎙️ Audio 0:18 seg</span>
-                            <span class="wa-sender-lbl">Horacio (Fumigación)</span>
+                            <span class="wa-sender-lbl">Esteban (Acopio)</span>
                         </div>
-                        <p class="wa-preset-text">"Pulverizamos Lote 2 (85 ha). 170 L glifosato y 110 L gasoil."</p>
-                    </button>
-
-                    <button class="wa-preset-btn" data-sender="Carlos (Encargado Galpón)" data-msg="Llegó el camión cisterna de YPF, nos descargaron 4000 litros de gasoil en el tanque central con remito 4820.">
-                        <div class="wa-preset-top">
-                            <span class="wa-audio-badge">🎙️ Audio 0:12 seg</span>
-                            <span class="wa-sender-lbl">Carlos (Cisterna)</span>
-                        </div>
-                        <p class="wa-preset-text">"Llegó camión YPF: 4.000 L de gasoil descargados en tanque con remito 4820."</p>
+                        <p class="wa-preset-text">"Retiramos 3.000 L del acopio de YPF y los descargamos en Cisterna Planta."</p>
                     </button>
                 </div>
 
                 <div class="wa-custom-input-box">
                     <label class="wa-input-lbl">O redacta un mensaje libre de campo:</label>
-                    <textarea id="wa-custom-msg" rows="3" placeholder="Ej: 'Terminamos de trillar el lote 3, sacamos 450 mil kilos de trigo...'"></textarea>
+                    <textarea id="wa-custom-msg" rows="3" placeholder="Ej: 'Cargué 200 litros del tanque grande en la cosechadora...'"></textarea>
                     <div class="wa-input-footer">
                         <span class="wa-audio-indicator">🎙️ Simula Nota de Voz de WhatsApp</span>
                         <button id="btn-send-wa-custom" class="btn-primary wa-btn-send">

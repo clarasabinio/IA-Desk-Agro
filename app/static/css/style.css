@@ -842,3 +842,91 @@ body {
     border-radius: 999px;
     text-transform: uppercase;
 }
+
+/* 4 Fuel Tanks Specific Styles */
+.fuel-tanks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.fuel-tank-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.tank-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tank-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.tank-val {
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main);
+}
+.tank-progress-track {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.tank-progress-bar {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+.bar-amber {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.bar-cyan {
+    background: linear-gradient(135deg, #06b6d4, #0284c7);
+}
+
+.acopio-item {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+.acopio-sub-lbl {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+}
+
+.fuel-totals-box {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.fuel-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+}
+.tot-lbl {
+    color: var(--text-dim);
+}
+.tot-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+.highlight-row {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 4px;
+    font-size: 0.82rem;
+}
