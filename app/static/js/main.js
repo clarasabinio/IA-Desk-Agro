@@ -152,6 +152,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+
+        // Fertilizantes en Kilogramos (kg)
+        if (stockData.fertilizantes_totales) {
+            const elFG = document.getElementById("metric-fert-galpon");
+            const elFR = document.getElementById("metric-fert-retiro");
+            const elFT = document.getElementById("metric-fert-total");
+            const elFB = document.getElementById("metric-fert-total-badge");
+            if (elFG) elFG.textContent = `${Number(stockData.fertilizantes_totales.en_galpon_kg).toLocaleString("es-AR")} kg`;
+            if (elFR) elFR.textContent = `${Number(stockData.fertilizantes_totales.por_retirar_kg).toLocaleString("es-AR")} kg`;
+            if (elFT) elFT.textContent = `${Number(stockData.fertilizantes_totales.total_general_kg).toLocaleString("es-AR")} kg`;
+            if (elFB) elFB.textContent = `${Number(stockData.fertilizantes_totales.total_general_kg).toLocaleString("es-AR")} kg`;
+        }
+        if (stockData.fertilizantes && Array.isArray(stockData.fertilizantes)) {
+            stockData.fertilizantes.forEach(f => {
+                const elG = document.getElementById(`val-fert-${f.id}-galpon`);
+                const elR = document.getElementById(`val-fert-${f.id}-retiro`);
+                if (elG) elG.textContent = `${Number(f.en_galpon_kg).toLocaleString("es-AR")} kg`;
+                if (elR) elR.textContent = `${Number(f.por_retirar_kg).toLocaleString("es-AR")} kg`;
+            });
+        }
+
+        // Insumos & Fitosanitarios (En Galpón vs A Retirar)
+        if (stockData.fitosanitarios_totales) {
+            const elPG = document.getElementById("metric-fito-galpon");
+            const elPR = document.getElementById("metric-fito-retiro");
+            const elPB = document.getElementById("metric-fito-total-badge");
+            if (elPG) elPG.textContent = `${Number(stockData.fitosanitarios_totales.en_galpon_litros).toLocaleString("es-AR")} L`;
+            if (elPR) elPR.textContent = `${Number(stockData.fitosanitarios_totales.a_retirar_litros).toLocaleString("es-AR")} L`;
+            if (elPB) elPB.textContent = `${Number(stockData.fitosanitarios_totales.total_general_litros).toLocaleString("es-AR")} L`;
+        }
+        if (stockData.fitosanitarios && Array.isArray(stockData.fitosanitarios)) {
+            stockData.fitosanitarios.forEach(f => {
+                const elG = document.getElementById(`val-fito-${f.id}-galpon`);
+                const elR = document.getElementById(`val-fito-${f.id}-retiro`);
+                if (elG) elG.textContent = `${Number(f.en_galpon).toLocaleString("es-AR")} L`;
+                if (elR) elR.textContent = `${Number(f.a_retirar).toLocaleString("es-AR")} L`;
+            });
+        }
     };
 
     const appendUserMessage = (text) => {

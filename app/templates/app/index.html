@@ -85,19 +85,22 @@
                     <span class="chips-label">Consultas y acciones operativas:</span>
                     <div class="chips-container">
                         <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
-                            ⛽ Saldo de Gasoil
+                            ⛽ Saldo Gasoil
                         </button>
                         <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
                             🌽 Maíz por Híbrido
                         </button>
                         <button class="chip-btn" data-query="¿Cuántas toneladas de soja y trigo tenemos en silos y silobolsas?">
-                            🌾 Silos Soja & Trigo (Tn)
+                            🌾 Silos (Tn)
                         </button>
-                        <button class="chip-btn" data-query="Retiré 40 bolsas de maíz DK 72-10 de Bayer a la planta">
-                            🚚 Retirar 40 b. DK 72-10
+                        <button class="chip-btn" data-query="¿Cuánto fertilizante tenemos en kg en galpón y por retirar?">
+                            🧪 Fertilizantes en kg
                         </button>
-                        <button class="chip-btn" data-query="Pasar 1500 litros de la Cisterna Planta al Tanque Grande para la siembra">
-                            🚜 Pasar 1.500 L a Tanque Grande
+                        <button class="chip-btn" data-query="¿Qué insumos y fitosanitarios tenemos en galpón y a retirar?">
+                            📦 Insumos a Retirar
+                        </button>
+                        <button class="chip-btn" data-query="Retiré 4000 kg de MAP de YPF Agro al galpón">
+                            🚚 Retirar 4.000 kg MAP
                         </button>
                     </div>
                 </div>
@@ -280,25 +283,94 @@
                     </div>
                 </div>
 
-                <!-- Agricultural Inputs Quick Card -->
+                <!-- Fertilizantes en Kilogramos Card -->
                 <div class="dash-card">
-                    <h2 class="dash-card-title">📦 Galpón & Fitosanitarios</h2>
-                    <div class="metrics-grid">
-                        <div class="metric-item">
-                            <span class="metric-val text-emerald" id="metric-sem-soja">{{ stock.semillas_soja }}</span>
-                            <span class="metric-lbl">Bolsas Soja DM46</span>
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🧪 Fertilizantes (en Kilogramos)</h2>
+                        <span class="badge-tag text-cyan" id="metric-fert-total-badge">{{ stock.fertilizantes_totales.total_general_kg|floatformat:0 }} kg</span>
+                    </div>
+                    <div class="hibridos-list" id="fert-list-container">
+                        {% for f in stock.fertilizantes %}
+                        <div class="hibrido-card" id="card-fert-{{ f.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ f.nombre }}</strong>
+                                <span class="hibrido-provider">{{ f.formula }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏠 En Galpón:</span>
+                                    <strong class="loc-val text-emerald" id="val-fert-{{ f.id }}-galpon">{{ f.en_galpon_kg|floatformat:0 }} kg</strong>
+                                </div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 Por Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-fert-{{ f.id }}-retiro">{{ f.por_retirar_kg|floatformat:0 }} kg</strong>
+                                </div>
+                            </div>
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ f.lugar_retiro }}</span>
+                            </div>
                         </div>
-                        <div class="metric-item">
-                            <span class="metric-val text-cyan" id="metric-map">{{ stock.map_tn }} tn</span>
-                            <span class="metric-lbl">Fertilizante MAP</span>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">En Galpón Central:</span>
+                            <strong class="tot-val text-emerald" id="metric-fert-galpon">{{ stock.fertilizantes_totales.en_galpon_kg|floatformat:0 }} kg</strong>
                         </div>
-                        <div class="metric-item">
-                            <span class="metric-val text-emerald" id="metric-glifo">{{ stock.glifosato_lts }} L</span>
-                            <span class="metric-lbl">Glifosato 66%</span>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Por Retirar en Proveedor:</span>
+                            <strong class="tot-val text-amber" id="metric-fert-retiro">{{ stock.fertilizantes_totales.por_retirar_kg|floatformat:0 }} kg</strong>
                         </div>
-                        <div class="metric-item">
-                            <span class="metric-val text-amber">120 ha</span>
-                            <span class="metric-lbl">Lote 1 en siembra</span>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total General Fertilizantes:</span>
+                            <strong class="tot-val text-cyan" id="metric-fert-total">{{ stock.fertilizantes_totales.total_general_kg|floatformat:0 }} kg</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insumos & Fitosanitarios Card (En Galpón vs A Retirar) -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📦 Insumos & Agroquímicos</h2>
+                        <span class="badge-tag text-emerald" id="metric-fito-total-badge">{{ stock.fitosanitarios_totales.total_general_litros|floatformat:0 }} L</span>
+                    </div>
+                    <div class="hibridos-list" id="fito-list-container">
+                        {% for f in stock.fitosanitarios %}
+                        <div class="hibrido-card" id="card-fito-{{ f.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ f.nombre }}</strong>
+                                <span class="hibrido-provider">{{ f.tipo }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏠 En Galpón:</span>
+                                    <strong class="loc-val text-emerald" id="val-fito-{{ f.id }}-galpon">{{ f.en_galpon|floatformat:0 }} L</strong>
+                                </div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 A Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-fito-{{ f.id }}-retiro">{{ f.a_retirar|floatformat:0 }} L</strong>
+                                </div>
+                            </div>
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ f.lugar_retiro }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Fitosanitarios en Galpón:</span>
+                            <strong class="tot-val text-emerald" id="metric-fito-galpon">{{ stock.fitosanitarios_totales.en_galpon_litros|floatformat:0 }} L</strong>
+                        </div>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Fitosanitarios a Retirar:</span>
+                            <strong class="tot-val text-amber" id="metric-fito-retiro">{{ stock.fitosanitarios_totales.a_retirar_litros|floatformat:0 }} L</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Semillas Soja DM46 Galpón:</span>
+                            <strong class="tot-val text-cyan" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</strong>
                         </div>
                     </div>
                 </div>

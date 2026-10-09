@@ -11,15 +11,27 @@
    - Ordenar flete del Acopio YPF cuando el stock físico baje de 8.000 L.
 
 2. **Gestión de Semillas por Híbrido (Maíz en Bolsas):**
-   - Discriminar siempre el stock por híbrido (Dekalb DK 72-10, Pioneer P2089, Nidera AX 7784).
-   - Controlar las bolsas que están físicamente **En Planta** vs. las bolsas **Por Retirar en lugar específico** (distribuidores Bayer en Junín, AgroNorte en Pergamino o Cooperativa).
-   - Registrar los retiros y traslados de bolsas hacia la planta central antes de iniciar la siembra del Lote 2.
+   - Discriminar stock por híbrido (Dekalb DK 72-10, Pioneer P2089, Nidera AX 7784).
+   - Controlar bolsas **En Planta** vs. bolsas **Por Retirar en lugar específico** (Bayer Junín, AgroNorte Pergamino o Cooperativa).
 
-3. **Granos Cosechados en Silos y Silobolsas (Toneladas):**
+3. **Fertilizantes en Kilogramos (kg) e Insumos con Opción Dual:**
+   - Expresar siempre los fertilizantes en **Kilogramos (kg)** (MAP, Urea, MicroEssentials).
+   - Discriminar tanto fertilizantes como agroquímicos/fitosanitarios en dos categorías:
+     • **En Galpón:** Stock físico disponible en galpón del campo.
+     • **A Retirar / Por Retirar:** Comprado y pendiente de flete en distribuidor o lugar determinado.
+   - Registrar traslados de insumos desde distribuidores al galpón antes de aplicar en lotes.
+
+4. **Granos Cosechados en Silos y Silobolsas (Toneladas):**
    - Monitorear la **Soja** (540 Tn) y el **Trigo** (819 Tn) almacenados en toneladas.
-   - Revisar periódicamente la integridad física de los silobolsas en Lote 1, Lote 2 y Lote 3 (humedad entre 12% y 13.5%).
-   - Cualquier venta o entrega a acopio debe asentar las toneladas despachadas y el silo de origen.
+   - Monitorear integridad y humedad en silobolsas de Lote 1, Lote 2 y Lote 3.
 
-- [2026-10-08 20:46:58] Traslado de 40 bolsas de maíz Dekalb DK 72-10 VT3P desde Distribuidora Bayer Agro - Junín a Planta Central
-- [2026-10-08 20:47:58] Labor Siembra Lote 1 por Productor: 25.0 ha, -40 bolsas soja, -280.0 L de Tanque Grande.
-- [2026-10-08 20:49:13] Traslado de 40 bolsas de maíz Dekalb DK 72-10 VT3P desde Distribuidora Bayer Agro - Junín a Planta Central
+- [2026-10-08 21:06:05] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:06:27] Consumo/Retiro de 300 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
+- [2026-10-08 21:09:05] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:09:11] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:09:17] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:09:27] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:09:36] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
+- [2026-10-08 21:20:24] Traslado de 4,000 kg de Fosfato Monoamónico (MAP) desde YPF Agro Directo - Junín al Galpón Central
+- [2026-10-08 21:20:46] Traslado de 200 L de Glifosato 66% Concentrado Soluble desde Agroquímica Central - Junín al Galpón Central
+- [2026-10-08 21:33:03] Traslado de 150 L de 2,4-D Enlist Colex-D desde Corteva Agriscience - Distribuidora Pergamino al Galpón Central

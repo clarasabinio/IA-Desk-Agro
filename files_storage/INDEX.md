@@ -15,10 +15,10 @@ Gestionado en `stock_gasoil.json`:
 ## 🌽 SEMILLAS EN BOLSAS POR HÍBRIDO Y VARIEDAD
 Gestionado en `stock_insumos.json`:
 - **Maíz en bolsas:**
-  - **Dekalb DK 72-10 VT3P:** 140 bolsas en Planta Central | 80 bolsas por retirar en *Distribuidora Bayer Agro - Junín*. (Total: 220 bolsas).
-  - **Pioneer P2089 VYHR:** 100 bolsas en Planta Central | 60 bolsas por retirar en *Semillería AgroNorte - Pergamino*. (Total: 160 bolsas).
+  - **Dekalb DK 72-10 VT3P:** 180 bolsas en Planta | 40 bolsas por retirar en *Distribuidora Bayer Agro - Junín*. (Total: 220 bolsas).
+  - **Pioneer P2089 VYHR:** 100 bolsas en Planta | 60 bolsas por retirar en *Semillería AgroNorte - Pergamino*. (Total: 160 bolsas).
   - **Nidera AX 7784 VIP3:** 0 bolsas en Planta | 50 bolsas por retirar en *Cooperativa Agrícola Ganadera*. (Total: 50 bolsas).
-  - *Total Maíz:* **430 bolsas** (240 en Planta Central | 190 por retirar).
+  - *Total Maíz:* **430 bolsas** (280 en Planta | 150 por retirar).
 - **Soja en bolsas:**
   - **Don Mario DM 46R18 STS:** 440 bolsas en Galpón 1 (Planta Central).
 
@@ -37,10 +37,24 @@ Gestionado en `stock_granos_silos.json`:
 
 ---
 
-## 📦 FERTILIZANTES Y FITOSANITARIOS
+## 🧪 FERTILIZANTES EN KILOGRAMOS (EN GALPÓN & POR RETIRAR)
 Gestionado en `stock_insumos.json`:
-- **Fertilizantes:** Fosfato Monoamónico MAP (22.0 tn), Urea Granulada (18.0 tn), MicroEssentials SZ (9.6 tn).
-- **Fitosanitarios:** Glifosato 66% (1.200 L), 2,4-D Enlist (400 L), Coadyuvante (150 L), Coragen (60 L).
+- **Fosfato Monoamónico (MAP 11-52-0):**
+  - En galpón: 14.000 kg | Por retirar: 8.000 kg en *YPF Agro Directo - Junín*. (Total: 22.000 kg).
+- **Urea Granulada (46-0-0):**
+  - En galpón: 10.000 kg | Por retirar: 8.000 kg en *ACA (Asociación Cooperativas Argentinas) - Junín*. (Total: 18.000 kg).
+- **MicroEssentials SZ (MAP+S+Zn):**
+  - En galpón: 5.600 kg | Por retirar: 4.000 kg en *Bunge Fertilizantes - Pergamino*. (Total: 9.600 kg).
+- *Totales Fertilizantes:* **29.600 kg en galpón** | **20.000 kg por retirar** | **Total: 49.600 kg**.
+
+---
+
+## 📦 INSUMOS & FITOSANITARIOS (EN GALPÓN & A RETIRAR)
+Gestionado en `stock_insumos.json`:
+- **Glifosato 66%:** 800 L en galpón | 400 L a retirar en *Agroquímica Central - Junín*. (Total: 1.200 L).
+- **2,4-D Enlist Colex-D:** 250 L en galpón | 150 L a retirar en *Corteva Agriscience - Pergamino*. (Total: 400 L).
+- **Coadyuvante Siliconado:** 100 L en galpón | 50 L a retirar en *Rizobacter - Junín*. (Total: 150 L).
+- **Coragen (Clorantraniliprol):** 40 L en galpón | 20 L a retirar en *FMC Química - AgroServicios*. (Total: 60 L).
 
 ---
 

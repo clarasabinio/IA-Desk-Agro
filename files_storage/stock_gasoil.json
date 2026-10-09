@@ -3,14 +3,14 @@
     "cisterna_planta": {
       "nombre": "Cisterna Planta",
       "capacidad_max_litros": 22000,
-      "stock_actual_litros": 12800.0,
+      "stock_actual_litros": 14600.0,
       "umbral_alerta_litros": 5000,
       "ubicacion": "Planta central - Tinglado principal"
     },
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 4000.0,
+      "stock_actual_litros": 3700.0,
       "umbral_alerta_litros": 1000,
       "ubicacion": "Cisterna de apoyo móvil en campo"
     },
@@ -23,14 +23,14 @@
     },
     "acopio_por_retirar": {
       "nombre": "Gasoil por Retirar",
-      "litros_disponibles": 4000.0,
+      "litros_disponibles": 2200.0,
       "proveedor": "YPF Directo - AgroServicios Centro",
       "tipo": "Acopio pagado pendiente de retiro / flete"
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 19550.0,
-    "stock_total_con_acopio_litros": 23550.0
+    "stock_fisico_campo_litros": 21050.0,
+    "stock_total_con_acopio_litros": 23250.0
   },
   "entradas": [
     {
@@ -99,6 +99,13 @@
       "maquinaria": "Camioneta",
       "litros": 100.0,
       "operario": "Esteban Maquinista"
+    },
+    {
+      "fecha": "2026-10-08",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Maquinaria de labor",
+      "litros": 300.0,
+      "operario": "Productor"
     }
   ],
   "transferencias_internas": [
@@ -125,6 +132,42 @@
       "fecha": "2026-10-08",
       "motivo": "Retiro de 2,000 L de acopio YPF hacia Tanque Chico",
       "litros": 2000.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-08",
+      "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
+      "litros": 300.0,
       "operario": "Productor"
     }
   ]

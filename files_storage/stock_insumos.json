@@ -72,24 +72,36 @@
       "nombre": "Fosfato Monoamónico (MAP)",
       "formula": "11-52-0",
       "formato": "A granel / Big Bags",
-      "stock_actual_tn": 22.0,
-      "ubicacion": "Galpón 1 - Tinglado central"
+      "unidad": "Kilogramos (kg)",
+      "en_galpon_kg": 18000.0,
+      "por_retirar_kg": 4000.0,
+      "lugar_retiro": "YPF Agro Directo - Junín",
+      "total_kg": 22000.0,
+      "ubicacion_galpon": "Galpón 1 - Tinglado central"
     },
     {
       "id": "FERT-02",
       "nombre": "Urea Granulada",
       "formula": "46-0-0",
       "formato": "A granel con lona impermeable",
-      "stock_actual_tn": 18.0,
-      "ubicacion": "Galpón 1 - Sector este"
+      "unidad": "Kilogramos (kg)",
+      "en_galpon_kg": 10000.0,
+      "por_retirar_kg": 8000.0,
+      "lugar_retiro": "ACA (Asociación de Cooperativas Argentinas) - Junín",
+      "total_kg": 18000.0,
+      "ubicacion_galpon": "Galpón 1 - Sector este"
     },
     {
       "id": "FERT-03",
       "nombre": "MicroEssentials SZ",
       "formula": "MAP + 10% S + 1% Zn",
       "formato": "Big Bags de 1.000 kg",
-      "stock_actual_tn": 9.6,
-      "ubicacion": "Galpón 2"
+      "unidad": "Kilogramos (kg)",
+      "en_galpon_kg": 5600.0,
+      "por_retirar_kg": 4000.0,
+      "lugar_retiro": "Bunge Fertilizantes - Pergamino",
+      "total_kg": 9600.0,
+      "ubicacion_galpon": "Galpón 2"
     }
   ],
   "fitosanitarios": [
@@ -98,7 +110,10 @@
       "nombre": "Glifosato 66% Concentrado Soluble",
       "tipo": "Herbicida sistémico total",
       "unidad": "Litros",
-      "stock_actual": 1200,
+      "en_galpon": 1000.0,
+      "a_retirar": 200.0,
+      "lugar_retiro": "Agroquímica Central - Junín",
+      "total": 1200.0,
       "proveedor": "Roundup Controlmax"
     },
     {
@@ -106,7 +121,10 @@
       "nombre": "2,4-D Enlist Colex-D",
       "tipo": "Herbicida hormonal baja volatilidad",
       "unidad": "Litros",
-      "stock_actual": 400,
+      "en_galpon": 400.0,
+      "a_retirar": 0.0,
+      "lugar_retiro": "Corteva Agriscience - Distribuidora Pergamino",
+      "total": 400.0,
       "proveedor": "Corteva Agriscience"
     },
     {
@@ -114,7 +132,10 @@
       "nombre": "Coadyuvante Siliconado y Corrector Hídrico",
       "tipo": "Tensioactivo / Antideriva",
       "unidad": "Litros",
-      "stock_actual": 150,
+      "en_galpon": 100.0,
+      "a_retirar": 50.0,
+      "lugar_retiro": "Rizobacter - Sucursal Junín",
+      "total": 150.0,
       "proveedor": "Rizobacter"
     },
     {
@@ -122,8 +143,21 @@
       "nombre": "Coragen (Clorantraniliprol)",
       "tipo": "Insecticida para orugas defoliadoras",
       "unidad": "Litros",
-      "stock_actual": 60,
+      "en_galpon": 40.0,
+      "a_retirar": 20.0,
+      "lugar_retiro": "FMC Química - AgroServicios Centro",
+      "total": 60.0,
       "proveedor": "FMC Química"
     }
-  ]
+  ],
+  "fertilizantes_totales": {
+    "en_galpon_kg": 33600.0,
+    "por_retirar_kg": 16000.0,
+    "total_general_kg": 49600.0
+  },
+  "fitosanitarios_totales": {
+    "en_galpon_litros": 1540.0,
+    "a_retirar_litros": 270.0,
+    "total_general_litros": 1810.0
+  }
 }
