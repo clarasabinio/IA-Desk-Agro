@@ -14,7 +14,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # Hosts permitidos para entorno local
 allowed_hosts_raw = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
-ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
+ALLOWED_HOSTS = ['*']
 if '*' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
 

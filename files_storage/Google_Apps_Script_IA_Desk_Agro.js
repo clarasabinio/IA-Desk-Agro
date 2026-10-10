@@ -1,30 +1,17 @@
-/**
- * ==============================================================================
- * IA DESK AGRO - SCRIPT DE AUTO-SINCRONIZACIÓN CON GOOGLE SHEETS
- * Establecimiento Agropecuario "La Esperanza" (Campaña 2026/2027)
- * ==============================================================================
- * 
- * INSTRUCCIONES RÁPIDAS DE INSTALACIÓN (30 SEGUNDOS):
- * 1. En la carpeta de Drive (https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing),
- *    abre tu hoja de cálculo o sube "IA_Desk_Agro_Consolidado.xlsx" y ábrela con Google Sheets.
- * 2. En el menú superior, ve a: Extensiones > Apps Script.
- * 3. Borra todo el código que aparezca y pega este archivo completo.
- * 4. Haz clic en "Guardar" (ícono de disco) y luego recarga la hoja de cálculo.
- * 5. ¡Listo! Aparecerá el nuevo menú "🚜 IA Desk Agro" con el botón "🔄 Sincronizar Todo Ahora".
- */
+// IA DESK AGRO - SCRIPT DE AUTO-SINCRONIZACION GOOGLE SHEETS
+// Establecimiento Agropecuario "La Esperanza" (Campana 2026/2027)
 
-// URL base de tu servidor local de IA Desk Agro (puedes cambiarlo si usas túnel o ngrok)
-var DEFAULT_API_URL = "http://127.0.0.1:8000/api/sheets/live-data/";
+var DEFAULT_API_URL = "https://violet-years-carry.loca.lt/api/sheets/live-data/";
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
-  ui.createMenu('🚜 IA Desk Agro')
-    .addItem('🔄 Sincronizar Todo Ahora', 'sincronizarIADesk')
+  ui.createMenu('IA Desk Agro')
+    .addItem('Sincronizar Todo Ahora', 'sincronizarIADesk')
     .addSeparator()
-    .addItem('⏱️ Activar Auto-Sincronización (Cada 5 min)', 'crearTriggerAutomatico')
-    .addItem('🛑 Desactivar Auto-Sincronización', 'eliminarTriggers')
+    .addItem('Activar Auto-Sincronizacion (Cada 5 min)', 'crearTriggerAutomatico')
+    .addItem('Desactivar Auto-Sincronizacion', 'eliminarTriggers')
     .addSeparator()
-    .addItem('⚙️ Configurar URL de IA Desk', 'configurarUrl')
+    .addItem('Configurar URL Servidor', 'configurarUrl')
     .addToUi();
 }
 
@@ -37,8 +24,8 @@ function configurarUrl() {
   var ui = SpreadsheetApp.getUi();
   var actual = getApiUrl();
   var respuesta = ui.prompt(
-    'Configuración de Servidor IA Desk Agro',
-    'Ingresa la URL del endpoint live-data (ej: http://127.0.0.1:8000/api/sheets/live-data/ o tu túnel ngrok):',
+    'Configuracion de Servidor IA Desk Agro',
+    'Ingresa la URL del endpoint live-data:',
     ui.ButtonSet.OK_CANCEL
   );
 
@@ -46,7 +33,7 @@ function configurarUrl() {
     var nuevaUrl = respuesta.getResponseText().trim();
     if (nuevaUrl) {
       PropertiesService.getScriptProperties().setProperty('API_URL', nuevaUrl);
-      ui.alert('✅ URL guardada: ' + nuevaUrl);
+      ui.alert('URL guardada: ' + nuevaUrl);
     }
   }
 }
@@ -56,40 +43,55 @@ function sincronizarIADesk() {
   var url = getApiUrl();
 
   try {
-    var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    var options = {
+      muteHttpExceptions: true,
+      headers: {
+        "Bypass-Tunnel-Reminder": "true"
+      }
+    };
+    var response = UrlFetchApp.fetch(url, options);
     if (response.getResponseCode() !== 200) {
       SpreadsheetApp.getUi().alert(
-        '⚠️ No se pudo conectar con IA Desk Agro local (' + response.getResponseCode() + ').\n\n' +
-        'Asegúrate de que el servidor Django esté corriendo en http://127.0.0.1:8000/\n' +
-        'o utiliza ngrok/localtunnel si ejecutas Google Sheets desde la nube.'
+        'No se pudo conectar con IA Desk Agro (' + response.getResponseCode() + ').\n\n' +
+        'Verifica que el servidor local este ejecutandose.'
       );
       return;
     }
 
     var data = JSON.parse(response.getContentText());
     if (data.status !== "success") {
-      throw new Error("Respuesta no válida del servidor.");
+      throw new Error("Respuesta no valida del servidor.");
     }
 
     // 1. Actualizar Combustibles
     actualizarCombustibles(ss, data.combustibles);
 
     // 2. Actualizar Fertilizantes
-    actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
+    if (data.insumos_fertilizantes && data.insumos_fertilizantes.fertilizantes) {
+      actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
+    }
 
     // 3. Actualizar Insumos y Fitosanitarios
-    actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
+    if (data.insumos_fertilizantes && data.insumos_fertilizantes.fitosanitarios) {
+      actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
+    }
 
-    // 4. Actualizar Semillas Maíz
-    actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
+    // 4. Actualizar Semillas Maiz
+    if (data.insumos_fertilizantes && data.insumos_fertilizantes.semillas_maiz) {
+      actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
+    }
 
     // 5. Actualizar Granos en Silos
-    actualizarGranos(ss, data.granos_silos);
+    if (data.granos_silos) {
+      actualizarGranos(ss, data.granos_silos);
+    }
 
-    // 6. Actualizar Bitácora
-    actualizarBitacora(ss, data.bitacora_reciente);
+    // 6. Actualizar Bitacora
+    if (data.bitacora_reciente) {
+      actualizarBitacora(ss, data.bitacora_reciente);
+    }
 
-    SpreadsheetApp.getActiveSpreadsheet().toast('✅ Datos de IA Desk Agro sincronizados con éxito', 'IA Desk Agro', 5);
+    SpreadsheetApp.getActiveSpreadsheet().toast('Datos de IA Desk Agro sincronizados con exito', 'IA Desk Agro', 5);
 
   } catch (err) {
     SpreadsheetApp.getUi().alert('Error al sincronizar: ' + err.message);
@@ -98,7 +100,7 @@ function sincronizarIADesk() {
 
 function actualizarCombustibles(ss, cData) {
   var sheet = ss.getSheetByName('Combustibles');
-  if (!sheet) return;
+  if (!sheet || !cData) return;
   var deps = cData.depositos || {};
 
   sheet.getRange("D5").setValue(deps.cisterna_planta ? deps.cisterna_planta.stock_actual_litros : 0);
@@ -176,6 +178,23 @@ function actualizarBitacora(ss, lineas) {
   }
 }
 
+function crearTriggerAutomatico() {
+  eliminarTriggers();
+  ScriptApp.newTrigger('sincronizarIADesk')
+    .timeBased()
+    .everyMinutes(5)
+    .create();
+  SpreadsheetApp.getUi().alert('Sincronizacion automatica activada cada 5 minutos.');
+}
+
+function eliminarTriggers() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  SpreadsheetApp.getUi().alert('Sincronizacion automatica detenida.');
+}
+
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
@@ -201,21 +220,4 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-}
-
-function crearTriggerAutomatico() {
-  eliminarTriggers();
-  ScriptApp.newTrigger('sincronizarIADesk')
-    .timeBased()
-    .everyMinutes(5)
-    .create();
-  SpreadsheetApp.getUi().alert('⏱️ Sincronización automática activada cada 5 minutos.');
-}
-
-function eliminarTriggers() {
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    ScriptApp.deleteTrigger(triggers[i]);
-  }
-  SpreadsheetApp.getUi().alert('🛑 Sincronización automática detenida.');
 }
