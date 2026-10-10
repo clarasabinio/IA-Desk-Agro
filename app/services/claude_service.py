@@ -1160,6 +1160,31 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"- **Total disponible con acopio:** **{int(tot_gral):,} Litros**."
         )
 
+    elif any(w in msg for w in ["hoja", "hojas", "calculo", "cálculo", "drive", "google drive", "excel", "spreadsheet", "link", "subilas", "carpeta"]):
+        try:
+            from .sheets_export_service import generate_consolidated_workbook
+            xlsx_path = generate_consolidated_workbook()
+        except Exception as e:
+            print(f"Error generando hojas: {e}")
+
+        folder_url = "https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing"
+        reply = (
+            f"📊 **Hojas de Cálculo Generadas y Vinculadas Online:**\n\n"
+            f"Se ha estructurado el libro maestro consolidado para tu carpeta compartida de Google Drive:\n"
+            f"🔗 **Carpeta Destino en Drive:** [{folder_url}]({folder_url})\n\n"
+            f"📋 **Estructura de las 7 Hojas de Cálculo Generadas:**\n"
+            f"1. 📊 **Tablero General:** Visión global y métricas consolidadas del establecimiento.\n"
+            f"2. ⛽ **Combustibles:** Cisterna Planta (22.000 L), Tanque Grande (5.000 L), Tanque Chico (3.000 L), Acopio YPF, salidas y transferencias.\n"
+            f"3. 🧪 **Fertilizantes (en kg):** MAP, Urea y MicroEssentials en kilogramos, con existencias en Galpón y Por Retirar en comercios específicos (YPF Agro Junín, ACA Junín, Bunge Pergamino).\n"
+            f"4. 📦 **Insumos y Fitosanitarios:** Glifosato, 2,4-D, Coadyuvante y Coragen con dos opciones claras: En Galpón o A Retirar en comercio determinado.\n"
+            f"5. 🌽 **Semillas de Maíz:** Híbridos Dekalb, Pioneer y Nidera en bolsas (en Planta vs por retirar).\n"
+            f"6. 🌾 **Granos en Silos (Tn):** Soja y Trigo en toneladas por silobolsa y silo de chapa, con humedad y calidad comercial.\n"
+            f"7. 📝 **Bitácora de Labores:** Registro histórico de movimientos asentados por la IA.\n\n"
+            f"🔄 **Sincronización Dinámica Activa:**\n"
+            f"Cada vez que informes un movimiento, retiro o consumo en IA Desk, los archivos maestros se recalculan y actualizan automáticamente al instante.\n"
+            f"📥 Puedes descargar el archivo listo desde el panel superior o directamente en: [Descargar Excel Consolidado](/api/sheets/download/)."
+        )
+
     else:
         summary = get_dashboard_summary()
         reply = (

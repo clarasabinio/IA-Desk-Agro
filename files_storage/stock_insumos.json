@@ -85,8 +85,8 @@
       "formula": "46-0-0",
       "formato": "A granel con lona impermeable",
       "unidad": "Kilogramos (kg)",
-      "en_galpon_kg": 10000.0,
-      "por_retirar_kg": 8000.0,
+      "en_galpon_kg": 11000.0,
+      "por_retirar_kg": 7000.0,
       "lugar_retiro": "ACA (Asociación de Cooperativas Argentinas) - Junín",
       "total_kg": 18000.0,
       "ubicacion_galpon": "Galpón 1 - Sector este"
@@ -151,8 +151,8 @@
     }
   ],
   "fertilizantes_totales": {
-    "en_galpon_kg": 33600.0,
-    "por_retirar_kg": 16000.0,
+    "en_galpon_kg": 34600.0,
+    "por_retirar_kg": 15000.0,
     "total_general_kg": 49600.0
   },
   "fitosanitarios_totales": {

@@ -31,6 +31,13 @@
             </div>
 
             <div class="header-actions">
+                <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-pill" title="Abrir carpeta compartida en Google Drive">
+                    <span class="drive-icon">📊</span>
+                    <span>Google Drive Online</span>
+                </a>
+                <a href="/api/sheets/download/" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Descargar libro Excel consolidado">
+                    📥 Descargar Excel
+                </a>
                 <button id="btn-open-whatsapp" class="btn-whatsapp-pill" title="Simular reporte de WhatsApp de maquinistas">
                     <span class="wa-icon">📱</span>
                     <span>WhatsApp de Campo</span>
@@ -371,6 +378,48 @@
                         <div class="fuel-total-row highlight-row">
                             <span class="tot-lbl">Semillas Soja DM46 Galpón:</span>
                             <strong class="tot-val text-cyan" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Drive & Online Spreadsheets Card -->
+                <div class="dash-card drive-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📊 Hojas de Cálculo & Drive Online</h2>
+                        <span class="tank-status-tag status-active">🟢 En Línea</span>
+                    </div>
+                    <div class="drive-sync-body">
+                        <p class="drive-desc-text">
+                            Hojas de cálculo en la nube vinculadas a la carpeta compartida de Google Drive. Se actualizan automáticamente ante cada movimiento registrado por la IA.
+                        </p>
+                        <div class="drive-meta-box">
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Carpeta Drive:</span>
+                                <span class="meta-val">IA Desk Agro</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Archivo Maestro:</span>
+                                <span class="meta-val">IA_Desk_Agro_Consolidado.xlsx</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Pestañas:</span>
+                                <span class="meta-val">7 Hojas conectadas</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Último movimiento:</span>
+                                <span class="meta-val" id="drive-last-sync">Automático al instante</span>
+                            </div>
+                        </div>
+                        <div class="drive-action-buttons">
+                            <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-action">
+                                🌐 Abrir Carpeta en Google Drive
+                            </a>
+                            <a href="/api/sheets/download/" class="btn-download-action">
+                                📥 Descargar Archivo (.xlsx)
+                            </a>
+                            <button id="btn-sync-sheets-now" class="btn-sync-action">
+                                🔄 Forzar Sincronización Ahora
+                            </button>
                         </div>
                     </div>
                 </div>

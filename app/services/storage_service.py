@@ -30,24 +30,40 @@ def read_file(filename: str) -> str:
         return f"[ERROR] No se pudo leer '{filename}': {str(e)}"
 
 def write_file(filename: str, content: str) -> str:
-    """Crea o sobrescribe un archivo en files_storage/"""
+    """Crea o sobrescribe un archivo en files_storage/ y regenera las hojas de cálculo"""
     file_path = _get_safe_path(filename)
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
+
+        # Disparar auto-sincronización y regeneración de hojas de cálculo
+        if any(k in filename for k in ["stock_", "registro_lotes", "MEMORY"]):
+            try:
+                from .google_sheets_service import on_movement_recorded
+                on_movement_recorded()
+            except Exception as ex:
+                print(f"[AUTO-SYNC NOTICE] No se pudo ejecutar sincronización automática: {ex}")
+
         return f"[OK] Archivo '{filename}' guardado exitosamente ({len(content)} bytes)."
     except Exception as e:
         return f"[ERROR] No se pudo escribir '{filename}': {str(e)}"
 
 def append_memory(entry: str) -> str:
-    """Agrega una nueva entrada fechada a MEMORY.md"""
+    """Agrega una nueva entrada fechada a MEMORY.md y actualiza la bitácora de las hojas"""
     memory_path = STORAGE_DIR / 'MEMORY.md'
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     formatted_entry = f"\n- [{timestamp}] {entry.strip()}"
     try:
         with open(memory_path, 'a', encoding='utf-8') as f:
             f.write(formatted_entry)
+
+        try:
+            from .google_sheets_service import on_movement_recorded
+            on_movement_recorded()
+        except Exception:
+            pass
+
         return f"[OK] Entrada agregada a la memoria de negocio ({timestamp})."
     except Exception as e:
         return f"[ERROR] No se pudo agregar a MEMORY.md: {str(e)}"
@@ -58,6 +74,13 @@ def update_memory(content: str) -> str:
     try:
         with open(memory_path, 'w', encoding='utf-8') as f:
             f.write(content)
+
+        try:
+            from .google_sheets_service import on_movement_recorded
+            on_movement_recorded()
+        except Exception:
+            pass
+
         return f"[OK] MEMORY.md actualizado exitosamente."
     except Exception as e:
         return f"[ERROR] No se pudo actualizar MEMORY.md: {str(e)}"

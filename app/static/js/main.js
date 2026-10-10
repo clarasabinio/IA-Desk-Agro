@@ -509,6 +509,35 @@ document.addEventListener('DOMContentLoaded', () => {
         return formatted;
     }
 
+    const btnSyncSheets = document.getElementById('btn-sync-sheets-now');
+    const driveLastSync = document.getElementById('drive-last-sync');
+
+    if (btnSyncSheets) {
+        btnSyncSheets.addEventListener('click', async () => {
+            const originalText = btnSyncSheets.innerHTML;
+            btnSyncSheets.innerHTML = '🔄 Sincronizando...';
+            btnSyncSheets.disabled = true;
+
+            try {
+                const res = await fetch('/api/sheets/sync/', { method: 'POST' });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    if (driveLastSync) {
+                        const now = new Date();
+                        driveLastSync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    }
+                    alert('✅ Hojas de cálculo sincronizadas con éxito.\nEl archivo IA_Desk_Agro_Consolidado.xlsx y los CSVs han sido actualizados con los últimos movimientos.');
+                }
+            } catch (err) {
+                console.error('Error sincronizando hojas:', err);
+                alert('⚠️ Error al sincronizar hojas de cálculo.');
+            } finally {
+                btnSyncSheets.innerHTML = originalText;
+                btnSyncSheets.disabled = false;
+            }
+        });
+    }
+
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;

@@ -35,3 +35,4 @@
 - [2026-10-08 21:20:24] Traslado de 4,000 kg de Fosfato Monoamónico (MAP) desde YPF Agro Directo - Junín al Galpón Central
 - [2026-10-08 21:20:46] Traslado de 200 L de Glifosato 66% Concentrado Soluble desde Agroquímica Central - Junín al Galpón Central
 - [2026-10-08 21:33:03] Traslado de 150 L de 2,4-D Enlist Colex-D desde Corteva Agriscience - Distribuidora Pergamino al Galpón Central
+- [2026-10-10 11:47:00] Traslado de 1,000 kg de Urea Granulada desde ACA (Asociación de Cooperativas Argentinas) - Junín al Galpón Central

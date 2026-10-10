@@ -10,4 +10,10 @@ urlpatterns = [
     path('api/storage/', views.api_storage_list, name='api_storage_list'),
     path('api/storage/<str:filename>/', views.api_storage_file_content, name='api_storage_file_content'),
     path('api/reset-history/', views.api_reset_history, name='api_reset_history'),
+    
+    # Endpoints de Hojas de Cálculo & Google Drive
+    path('api/sheets/download/', views.api_sheets_download_view, name='api_sheets_download'),
+    path('api/sheets/live-data/', views.api_sheets_live_data_view, name='api_sheets_live_data'),
+    path('api/sheets/csv/<str:module_name>/', views.api_sheets_csv_view, name='api_sheets_csv'),
+    path('api/sheets/sync/', views.api_sheets_sync_now_view, name='api_sheets_sync_now'),
 ]
