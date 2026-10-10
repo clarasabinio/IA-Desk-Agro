@@ -1,17 +1,28 @@
-// IA DESK AGRO - SCRIPT DE AUTO-SINCRONIZACION GOOGLE SHEETS
-// Establecimiento Agropecuario "La Esperanza" (Campana 2026/2027)
+// ============================================================================
+// IA DESK AGRO - SCRIPT DE AUTO-SINCRONIZACION GOOGLE SHEETS & DRIVE
+// Compatible con:
+// 1. Libro Consolidado General (Combustibles, Insumos, Granos, Bitacora)
+// 2. Libros por Cultivo: Maíz, Soja Primera, Soja Segunda, Trigo (Solapas por Campo y Lote)
+// Establecimiento Agropecuario "La Esperanza" (Campaña 2026/2027)
+// ============================================================================
 
 var DEFAULT_API_URL = "https://violet-years-carry.loca.lt/api/sheets/live-data/";
 
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
-  ui.createMenu('IA Desk Agro')
-    .addItem('Sincronizar Todo Ahora', 'sincronizarIADesk')
+  ui.createMenu('🚜 IA Desk Agro')
+    .addItem('🔄 Sincronizar Esta Hoja (Detección Automática)', 'sincronizarIADesk')
     .addSeparator()
-    .addItem('Activar Auto-Sincronizacion (Cada 5 min)', 'crearTriggerAutomatico')
-    .addItem('Desactivar Auto-Sincronizacion', 'eliminarTriggers')
+    .addItem('🌽 Sincronizar Cultivo Maíz (Por Campos)', 'sincronizarMaiz')
+    .addItem('🌱 Sincronizar Soja Primera (Por Campos)', 'sincronizarSojaPrimera')
+    .addItem('🌿 Sincronizar Soja Segunda (Por Campos)', 'sincronizarSojaSegunda')
+    .addItem('🌾 Sincronizar Cultivo Trigo (Por Campos)', 'sincronizarTrigo')
+    .addItem('📊 Sincronizar Consolidado General', 'sincronizarConsolidado')
     .addSeparator()
-    .addItem('Configurar URL Servidor', 'configurarUrl')
+    .addItem('⏰ Activar Auto-Sincronización (Cada 5 min)', 'crearTriggerAutomatico')
+    .addItem('🛑 Desactivar Auto-Sincronización', 'eliminarTriggers')
+    .addSeparator()
+    .addItem('⚙️ Configurar URL Servidor IA Desk', 'configurarUrl')
     .addToUi();
 }
 
@@ -24,8 +35,8 @@ function configurarUrl() {
   var ui = SpreadsheetApp.getUi();
   var actual = getApiUrl();
   var respuesta = ui.prompt(
-    'Configuracion de Servidor IA Desk Agro',
-    'Ingresa la URL del endpoint live-data:',
+    'Configuración de Servidor IA Desk Agro',
+    'Ingresa la URL pública de live-data (ej. https://violet-years-carry.loca.lt/api/sheets/live-data/):',
     ui.ButtonSet.OK_CANCEL
   );
 
@@ -33,69 +44,161 @@ function configurarUrl() {
     var nuevaUrl = respuesta.getResponseText().trim();
     if (nuevaUrl) {
       PropertiesService.getScriptProperties().setProperty('API_URL', nuevaUrl);
-      ui.alert('URL guardada: ' + nuevaUrl);
+      ui.alert('URL guardada exitosamente: ' + nuevaUrl);
     }
   }
 }
 
+function fetchIADeskData() {
+  var url = getApiUrl();
+  var options = {
+    muteHttpExceptions: true,
+    headers: {
+      "Bypass-Tunnel-Reminder": "true"
+    }
+  };
+  var response = UrlFetchApp.fetch(url, options);
+  if (response.getResponseCode() !== 200) {
+    throw new Error('No se pudo conectar con IA Desk Agro (Código ' + response.getResponseCode() + '). Verifica que el túnel esté activo.');
+  }
+  var data = JSON.parse(response.getContentText());
+  if (data.status !== "success") {
+    throw new Error('Respuesta no válida del servidor.');
+  }
+  return data;
+}
+
 function sincronizarIADesk() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var url = getApiUrl();
+  var name = ss.getName().toLowerCase();
 
   try {
-    var options = {
-      muteHttpExceptions: true,
-      headers: {
-        "Bypass-Tunnel-Reminder": "true"
-      }
-    };
-    var response = UrlFetchApp.fetch(url, options);
-    if (response.getResponseCode() !== 200) {
-      SpreadsheetApp.getUi().alert(
-        'No se pudo conectar con IA Desk Agro (' + response.getResponseCode() + ').\n\n' +
-        'Verifica que el servidor local este ejecutandose.'
-      );
-      return;
+    var data = fetchIADeskData();
+
+    if (name.indexOf('maiz') !== -1 || name.indexOf('maíz') !== -1) {
+      actualizarCultivo(ss, 'maiz', data.cultivos ? data.cultivos.maiz : null);
+    } else if (name.indexOf('segunda') !== -1 || name.indexOf('2da') !== -1) {
+      actualizarCultivo(ss, 'soja_segunda', data.cultivos ? data.cultivos.soja_segunda : null);
+    } else if (name.indexOf('soja') !== -1) {
+      actualizarCultivo(ss, 'soja_primera', data.cultivos ? data.cultivos.soja_primera : null);
+    } else if (name.indexOf('trigo') !== -1) {
+      actualizarCultivo(ss, 'trigo', data.cultivos ? data.cultivos.trigo : null);
+    } else {
+      // Por defecto o consolidado maestro
+      actualizarConsolidado(ss, data);
     }
 
-    var data = JSON.parse(response.getContentText());
-    if (data.status !== "success") {
-      throw new Error("Respuesta no valida del servidor.");
-    }
-
-    // 1. Actualizar Combustibles
-    actualizarCombustibles(ss, data.combustibles);
-
-    // 2. Actualizar Fertilizantes
-    if (data.insumos_fertilizantes && data.insumos_fertilizantes.fertilizantes) {
-      actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
-    }
-
-    // 3. Actualizar Insumos y Fitosanitarios
-    if (data.insumos_fertilizantes && data.insumos_fertilizantes.fitosanitarios) {
-      actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
-    }
-
-    // 4. Actualizar Semillas Maiz
-    if (data.insumos_fertilizantes && data.insumos_fertilizantes.semillas_maiz) {
-      actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
-    }
-
-    // 5. Actualizar Granos en Silos
-    if (data.granos_silos) {
-      actualizarGranos(ss, data.granos_silos);
-    }
-
-    // 6. Actualizar Bitacora
-    if (data.bitacora_reciente) {
-      actualizarBitacora(ss, data.bitacora_reciente);
-    }
-
-    SpreadsheetApp.getActiveSpreadsheet().toast('Datos de IA Desk Agro sincronizados con exito', 'IA Desk Agro', 5);
-
+    SpreadsheetApp.getActiveSpreadsheet().toast('Hoja sincronizada correctamente con IA Desk Agro', '✅ IA Desk Agro', 5);
   } catch (err) {
     SpreadsheetApp.getUi().alert('Error al sincronizar: ' + err.message);
   }
+}
+
+function sincronizarMaiz() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    var data = fetchIADeskData();
+    actualizarCultivo(ss, 'maiz', data.cultivos ? data.cultivos.maiz : null);
+    ss.toast('Cultivo de Maíz sincronizado por campos', '🌽 Maíz', 5);
+  } catch(e) { SpreadsheetApp.getUi().alert('Error: ' + e.message); }
+}
+
+function sincronizarSojaPrimera() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    var data = fetchIADeskData();
+    actualizarCultivo(ss, 'soja_primera', data.cultivos ? data.cultivos.soja_primera : null);
+    ss.toast('Soja 1ra sincronizada por campos', '🌱 Soja 1ra', 5);
+  } catch(e) { SpreadsheetApp.getUi().alert('Error: ' + e.message); }
+}
+
+function sincronizarSojaSegunda() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    var data = fetchIADeskData();
+    actualizarCultivo(ss, 'soja_segunda', data.cultivos ? data.cultivos.soja_segunda : null);
+    ss.toast('Soja 2da sincronizada por campos', '🌿 Soja 2da', 5);
+  } catch(e) { SpreadsheetApp.getUi().alert('Error: ' + e.message); }
+}
+
+function sincronizarTrigo() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    var data = fetchIADeskData();
+    actualizarCultivo(ss, 'trigo', data.cultivos ? data.cultivos.trigo : null);
+    ss.toast('Cultivo de Trigo sincronizado por campos', '🌾 Trigo', 5);
+  } catch(e) { SpreadsheetApp.getUi().alert('Error: ' + e.message); }
+}
+
+function sincronizarConsolidado() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    var data = fetchIADeskData();
+    actualizarConsolidado(ss, data);
+    ss.toast('Consolidado general maestro sincronizado', '📊 Consolidado', 5);
+  } catch(e) { SpreadsheetApp.getUi().alert('Error: ' + e.message); }
+}
+
+// -------------------------------------------------------------
+// ACTUALIZACION DE SOLAPAS POR CAMPO PARA UN CULTIVO
+// -------------------------------------------------------------
+function actualizarCultivo(ss, cropKey, cData) {
+  if (!cData) return;
+
+  var campos = ['La Esperanza', 'El Ombu', 'San Jose'];
+  var headersLabores = [
+    'FECHA', 'LOTE', 'SUPERFICIE (HA)', 'LABOR REALIZADA', 'MAQUINARIA / EQUIPO',
+    'OPERARIO', 'GASOIL (L)', 'DEPÓSITO ORIGEN', 'SEMILLA USADA', 'FERTILIZANTE (KG)',
+    'INSUMOS / FITO (L)', 'RINDE / COSECHA', 'ESTADO / OBSERVACIONES'
+  ];
+
+  for (var i = 0; i < campos.length; i++) {
+    var campoNom = campos[i];
+    var sheetNom = 'Campo ' + campoNom;
+    var sheet = ss.getSheetByName(sheetNom);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetNom);
+    }
+
+    var filas = (cData.campos && cData.campos[campoNom]) ? cData.campos[campoNom] : [];
+    
+    // Encabezados en fila 4 si no existen
+    if (sheet.getRange(4, 1).getValue() === "") {
+      sheet.getRange(4, 1, 1, headersLabores.length).setValues([headersLabores]);
+      sheet.getRange(4, 1, 1, headersLabores.length).setFontWeight("bold");
+    }
+
+    // Escribir labores
+    if (filas.length > 0) {
+      sheet.getRange(5, 1, filas.length, headersLabores.length).setValues(filas);
+    }
+  }
+
+  // Actualizar Resumen si existe solapa
+  var resSheet = ss.getSheetByName('Resumen 🌽') || ss.getSheetByName('Resumen 🌱') || ss.getSheetByName('Resumen 🌿') || ss.getSheetByName('Resumen 🌾') || ss.getSheetByName('Resumen');
+  if (resSheet && cData.resumen && cData.resumen.length > 0) {
+    resSheet.getRange(5, 1, cData.resumen.length, cData.resumen[0].length).setValues(cData.resumen);
+  }
+}
+
+// -------------------------------------------------------------
+// ACTUALIZACION DEL LIBRO CONSOLIDADO GENERAL
+// -------------------------------------------------------------
+function actualizarConsolidado(ss, data) {
+  actualizarCombustibles(ss, data.combustibles);
+  if (data.insumos_fertilizantes) {
+    if (data.insumos_fertilizantes.fertilizantes) {
+      actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
+    }
+    if (data.insumos_fertilizantes.fitosanitarios) {
+      actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
+    }
+    if (data.insumos_fertilizantes.semillas_maiz) {
+      actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
+    }
+  }
+  if (data.granos_silos) actualizarGranos(ss, data.granos_silos);
+  if (data.bitacora_reciente) actualizarBitacora(ss, data.bitacora_reciente);
 }
 
 function actualizarCombustibles(ss, cData) {
@@ -184,7 +287,7 @@ function crearTriggerAutomatico() {
     .timeBased()
     .everyMinutes(5)
     .create();
-  SpreadsheetApp.getUi().alert('Sincronizacion automatica activada cada 5 minutos.');
+  SpreadsheetApp.getUi().alert('Sincronización automática activada cada 5 minutos.');
 }
 
 function eliminarTriggers() {
@@ -192,28 +295,14 @@ function eliminarTriggers() {
   for (var i = 0; i < triggers.length; i++) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
-  SpreadsheetApp.getUi().alert('Sincronizacion automatica detenida.');
+  SpreadsheetApp.getUi().alert('Sincronización automática detenida.');
 }
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (data.combustibles) actualizarCombustibles(ss, data.combustibles);
-    if (data.insumos_fertilizantes) {
-      if (data.insumos_fertilizantes.fertilizantes) {
-        actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
-      }
-      if (data.insumos_fertilizantes.fitosanitarios) {
-        actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
-      }
-      if (data.insumos_fertilizantes.semillas_maiz) {
-        actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
-      }
-    }
-    if (data.granos_silos) actualizarGranos(ss, data.granos_silos);
-    if (data.bitacora_reciente) actualizarBitacora(ss, data.bitacora_reciente);
-
+    actualizarConsolidado(ss, data);
     return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Hojas actualizadas" }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {

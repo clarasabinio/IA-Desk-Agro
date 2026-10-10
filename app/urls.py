@@ -13,6 +13,7 @@ urlpatterns = [
     
     # Endpoints de Hojas de Cálculo & Google Drive
     path('api/sheets/download/', views.api_sheets_download_view, name='api_sheets_download'),
+    path('api/sheets/download/<str:crop_name>/', views.api_sheets_download_view, name='api_crop_sheets_download'),
     path('api/sheets/live-data/', views.api_sheets_live_data_view, name='api_sheets_live_data'),
     path('api/sheets/csv/<str:module_name>/', views.api_sheets_csv_view, name='api_sheets_csv'),
     path('api/sheets/sync/', views.api_sheets_sync_now_view, name='api_sheets_sync_now'),

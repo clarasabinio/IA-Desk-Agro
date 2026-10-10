@@ -8,10 +8,10 @@
         "variedad": "DK 72-10 (Ciclo intermedio)",
         "proveedor": "Bayer CropScience",
         "presentacion": "Bolsas de 80.000 semillas",
-        "en_planta_bolsas": 180,
+        "en_planta_bolsas": 0,
         "por_retirar_bolsas": 40,
         "lugar_retiro": "Distribuidora Bayer Agro - Junín",
-        "total_bolsas": 220,
+        "total_bolsas": 40,
         "tratamiento": "Curasemilla Acceleron"
       },
       {
@@ -40,9 +40,9 @@
       }
     ],
     "totales": {
-      "bolsas_en_planta": 280,
+      "bolsas_en_planta": 100,
       "bolsas_por_retirar": 150,
-      "total_general_bolsas": 430
+      "total_general_bolsas": 250
     }
   },
   "semillas_soja": {
@@ -73,10 +73,10 @@
       "formula": "11-52-0",
       "formato": "A granel / Big Bags",
       "unidad": "Kilogramos (kg)",
-      "en_galpon_kg": 18000.0,
+      "en_galpon_kg": 6000.0,
       "por_retirar_kg": 4000.0,
       "lugar_retiro": "YPF Agro Directo - Junín",
-      "total_kg": 22000.0,
+      "total_kg": 10000.0,
       "ubicacion_galpon": "Galpón 1 - Tinglado central"
     },
     {
@@ -151,9 +151,9 @@
     }
   ],
   "fertilizantes_totales": {
-    "en_galpon_kg": 34600.0,
+    "en_galpon_kg": 22600.0,
     "por_retirar_kg": 15000.0,
-    "total_general_kg": 49600.0
+    "total_general_kg": 37600.0
   },
   "fitosanitarios_totales": {
     "en_galpon_litros": 1540.0,

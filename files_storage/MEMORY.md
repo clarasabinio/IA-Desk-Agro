@@ -36,3 +36,7 @@
 - [2026-10-08 21:20:46] Traslado de 200 L de Glifosato 66% Concentrado Soluble desde Agroquímica Central - Junín al Galpón Central
 - [2026-10-08 21:33:03] Traslado de 150 L de 2,4-D Enlist Colex-D desde Corteva Agriscience - Distribuidora Pergamino al Galpón Central
 - [2026-10-10 11:47:00] Traslado de 1,000 kg de Urea Granulada desde ACA (Asociación de Cooperativas Argentinas) - Junín al Galpón Central
+- [2026-10-10 12:25:29] Labor Pasada de Rastra de Discos en Campo La Esperanza (Lote 2 - Maíz): 45.0 ha, -240 L Tanque Grande
+- [2026-10-10 12:26:02] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
+- [2026-10-10 12:26:21] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
+- [2026-10-10 12:26:35] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)

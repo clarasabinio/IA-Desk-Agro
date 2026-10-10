@@ -410,12 +410,49 @@
                                 <span class="meta-val" id="drive-last-sync">Automático al instante</span>
                             </div>
                         </div>
+                        <!-- Hojas por Cultivo (Solapas por Campo & Lote) -->
+                        <div class="crop-sheets-container" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div style="font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-dim); margin-bottom: 8px;">
+                                🌾 Libros por Cultivo (Solapas por Campo & Lote)
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <a href="/api/sheets/download/maiz/" class="crop-sheet-btn" style="background: rgba(180, 83, 9, 0.15); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #fef3c7; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌽 Maíz</div>
+                                        <div style="font-size: 0.71rem; color: #fcd34d;">3 Campos • Lote 2 y Norte A</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/soja_primera/" class="crop-sheet-btn" style="background: rgba(27, 94, 32, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #d1fae5; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌱 Soja Primera</div>
+                                        <div style="font-size: 0.71rem; color: #6ee7b7;">3 Campos • Lote 1 y Norte B</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/soja_segunda/" class="crop-sheet-btn" style="background: rgba(15, 118, 110, 0.15); border: 1px solid rgba(20, 184, 166, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #ccfbf1; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌿 Soja Segunda</div>
+                                        <div style="font-size: 0.71rem; color: #5eead4;">3 Campos • Lote 3 y Norte C</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/trigo/" class="crop-sheet-btn" style="background: rgba(146, 64, 14, 0.15); border: 1px solid rgba(180, 83, 9, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #fde68a; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌾 Trigo Pan</div>
+                                        <div style="font-size: 0.71rem; color: #fde047;">3 Campos • Labores y Cosecha</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                            </div>
+                        </div>
+
                         <div class="drive-action-buttons">
                             <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-action">
                                 🌐 Abrir Carpeta en Google Drive
                             </a>
                             <a href="/api/sheets/download/" class="btn-download-action">
-                                📥 Descargar Archivo (.xlsx)
+                                📥 Descargar Consolidado (.xlsx)
                             </a>
                             <button id="btn-sync-sheets-now" class="btn-sync-action">
                                 🔄 Forzar Sincronización Ahora

@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Dict, Any, List, Optional
 from django.shortcuts import render
 from django.http import JsonResponse, HttpRequest, HttpResponse, FileResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -124,16 +125,41 @@ def api_reset_history(request: HttpRequest):
 # ==============================================================
 
 @require_http_methods(["GET"])
-def api_sheets_download_view(request: HttpRequest):
-    """Permite descargar directamente el archivo Excel .xlsx consolidado"""
-    xlsx_path = settings.FILES_STORAGE_DIR / "IA_Desk_Agro_Consolidado.xlsx"
-    if not xlsx_path.exists():
-        xlsx_path = generate_consolidated_workbook()
+def api_sheets_download_view(request: HttpRequest, crop_name: Optional[str] = None):
+    """Permite descargar el archivo Excel consolidado o uno de los 4 libros de cultivos por campo"""
+    target_crop = crop_name or request.GET.get("crop", "consolidado")
+    target_crop = target_crop.lower().strip()
+
+    crop_map = {
+        "consolidado": ("IA_Desk_Agro_Consolidado.xlsx", None),
+        "maiz": ("IA_Desk_Agro_Maiz.xlsx", "maiz"),
+        "maíz": ("IA_Desk_Agro_Maiz.xlsx", "maiz"),
+        "soja_primera": ("IA_Desk_Agro_Soja_Primera.xlsx", "soja_primera"),
+        "soja-primera": ("IA_Desk_Agro_Soja_Primera.xlsx", "soja_primera"),
+        "soja1": ("IA_Desk_Agro_Soja_Primera.xlsx", "soja_primera"),
+        "soja_segunda": ("IA_Desk_Agro_Soja_Segunda.xlsx", "soja_segunda"),
+        "soja-segunda": ("IA_Desk_Agro_Soja_Segunda.xlsx", "soja_segunda"),
+        "soja2": ("IA_Desk_Agro_Soja_Segunda.xlsx", "soja_segunda"),
+        "trigo": ("IA_Desk_Agro_Trigo.xlsx", "trigo")
+    }
+
+    if target_crop not in crop_map:
+        target_crop = "consolidado"
+
+    filename, crop_key = crop_map[target_crop]
+    file_path = settings.FILES_STORAGE_DIR / filename
+
+    if not file_path.exists():
+        if crop_key:
+            from .services.crop_sheets_service import generate_crop_workbook
+            file_path = generate_crop_workbook(crop_key)
+        else:
+            file_path = generate_consolidated_workbook()
 
     return FileResponse(
-        open(xlsx_path, "rb"),
+        open(file_path, "rb"),
         as_attachment=True,
-        filename="IA_Desk_Agro_Consolidado.xlsx",
+        filename=filename,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
@@ -174,15 +200,17 @@ def api_sheets_csv_view(request: HttpRequest, module_name: str):
 @csrf_exempt
 @require_http_methods(["POST", "GET"])
 def api_sheets_sync_now_view(request: HttpRequest):
-    """Fuerza la regeneración de las hojas y devuelve el estado"""
+    """Fuerza la regeneración de las 5 hojas y devuelve el estado"""
     try:
+        from .services.crop_sheets_service import generate_all_crop_workbooks
         xlsx_path = generate_consolidated_workbook()
+        crop_files = generate_all_crop_workbooks()
         folder_id = get_drive_folder_id()
         folder_url = f"https://drive.google.com/drive/folders/{folder_id}?usp=sharing"
         return JsonResponse({
             "status": "success",
-            "message": "Hojas de cálculo regeneradas y sincronizadas.",
-            "file": xlsx_path.name,
+            "message": "5 Hojas de cálculo regeneradas y sincronizadas exitosamente (Consolidado + Maíz, Soja 1ra, Soja 2da, Trigo).",
+            "files": [xlsx_path.name] + [p.name for p in crop_files.values()],
             "google_drive_folder_url": folder_url
         })
     except Exception as e:

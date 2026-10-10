@@ -22,7 +22,11 @@ def on_movement_recorded():
     try:
         # 1. Regenerar libro consolidado Excel y CSVs
         xlsx_path = generate_consolidated_workbook()
-        print(f"[AUTO-SYNC] Hojas de cálculo regeneradas exitosamente: {xlsx_path.name}")
+        
+        # 2. Regenerar las 4 hojas de cálculo por cultivo con solapas por campo (Maíz, Soja 1ra, Soja 2da, Trigo)
+        from .crop_sheets_service import generate_all_crop_workbooks
+        crop_files = generate_all_crop_workbooks()
+        print(f"[AUTO-SYNC] Hojas de cálculo regeneradas exitosamente: {xlsx_path.name} y 4 libros de cultivos.")
         
         # 2. Si hay Google Sheets API configurado, enviar actualización
         sheet_id = get_google_sheet_id()
@@ -90,11 +94,26 @@ def get_live_json_payload() -> Dict[str, Any]:
     except Exception:
         memory = []
 
+    # Datos de cultivos y labores por campo (Maíz, Soja 1ra, Soja 2da, Trigo)
+    from .crop_sheets_service import get_lotes_data, get_resumen_rows_for_crop, get_labores_rows
+    lotes_json = get_lotes_data()
+    cultivos_payload = {}
+    for crop_key in ["maiz", "soja_primera", "soja_segunda", "trigo"]:
+        cultivos_payload[crop_key] = {
+            "resumen": get_resumen_rows_for_crop(crop_key, lotes_json),
+            "campos": {
+                "La Esperanza": get_labores_rows(crop_key, "La Esperanza", lotes_json),
+                "El Ombu": get_labores_rows(crop_key, "El Ombu", lotes_json),
+                "San Jose": get_labores_rows(crop_key, "San Jose", lotes_json),
+            }
+        }
+
     return {
         "status": "success",
         "timestamp": STORAGE_DIR.stat().st_mtime,
         "combustibles": gasoil,
         "insumos_fertilizantes": insumos,
         "granos_silos": granos,
+        "cultivos": cultivos_payload,
         "bitacora_reciente": memory[-20:]
     }

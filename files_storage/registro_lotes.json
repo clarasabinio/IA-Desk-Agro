@@ -62,6 +62,36 @@
               "unidad": "L/ha"
             }
           ]
+        },
+        {
+          "fecha": "2026-10-10",
+          "lote": "Lote 2",
+          "superficie_ha": 45.0,
+          "labor": "Pasada de Rastra de Discos",
+          "maquinaria": "Tractor John Deere 7200R + Rastra de Discos",
+          "operario": "Productor",
+          "combustible_litros": 240.0,
+          "deposito_combustible": "Tanque Grande",
+          "semilla": "-",
+          "fertilizante": "-",
+          "insumos": "-",
+          "rinde": "-",
+          "observaciones": "Labor reportada por Productor"
+        },
+        {
+          "fecha": "2026-10-10",
+          "lote": "Lote 2",
+          "superficie_ha": 50.0,
+          "labor": "Siembra",
+          "maquinaria": "Tractor JD 7200R + Sembradora Crucianelli 27 líneas",
+          "operario": "Productor",
+          "combustible_litros": 300.0,
+          "deposito_combustible": "Tanque Grande",
+          "semilla": "Dekalb DK 72-10 VT3P (60 bolsas)",
+          "fertilizante": "Fosfato Monoamónico (MAP) (4,000 kg)",
+          "insumos": "-",
+          "rinde": "-",
+          "observaciones": "Labor reportada por Productor"
         }
       ],
       "cosecha": {

@@ -399,6 +399,257 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     executed_tools = []
 
     # ==============================================================
+    # 0. REGISTRO INTEGRAL DE LABORES A CAMPO (DISCO, SIEMBRA, FERTILIZACIÓN, PULVERIZACIÓN, TRILLA)
+    # Conectado a gastos de combustible, semillas, fertilizantes y hojas de cálculo por cultivo
+    # ==============================================================
+    is_labor_verb = any(w in msg for w in [
+        "disco", "rastra", "descompactador", "cincel", "arado",
+        "sembr", "siembra", "sembrando",
+        "fertiliz", "refertiliz", "fertilizando", "voleo",
+        "pulveriz", "pulverizando", "fumig", "barbecho",
+        "trill", "trillando", "cosech", "cosechando"
+    ])
+    has_lot_or_ha = any(w in msg for w in ["lote", "ha", "has", "hect", "campo", "esperanza", "ombu", "ombú", "san jose", "san josé"])
+    has_spending = any(w in msg for w in ["gast", "us", "consum", "aplic", "carg", "tir", "met", "pasamos", "hicimos", "rind", "qq"])
+    is_query_msg = any(w in msg for w in ["?", "¿", "cuanto", "cuánto", "saldo", "listar", "ver", "stock", "estado"]) or msg.strip().startswith("que ") or msg.strip().startswith("qué ")
+
+    is_field_labor_action = (is_labor_verb and (has_lot_or_ha or has_spending)) and not is_query_msg
+
+    if is_field_labor_action:
+        from .crop_sheets_service import append_labor_to_crop, generate_crop_workbook
+
+        # 1. Determinar el Cultivo
+        if any(w in msg for w in ["maiz", "maíz", "dk", "pioneer", "nidera"]) or "lote 2" in msg:
+            crop_key = "maiz"
+            crop_name = "Maíz"
+            crop_icon = "🌽"
+            sheet_name = "IA_Desk_Agro_Maiz.xlsx"
+        elif any(w in msg for w in ["segunda", "2da", "rastrojo"]) or ("soja" in msg and any(w in msg for w in ["trigo", "segunda", "2da"])):
+            crop_key = "soja_segunda"
+            crop_name = "Soja de Segunda"
+            crop_icon = "🌿"
+            sheet_name = "IA_Desk_Agro_Soja_Segunda.xlsx"
+        elif any(w in msg for w in ["soja", "dm46"]) or "lote 1" in msg:
+            crop_key = "soja_primera"
+            crop_name = "Soja de Primera"
+            crop_icon = "🌱"
+            sheet_name = "IA_Desk_Agro_Soja_Primera.xlsx"
+        elif any(w in msg for w in ["trigo", "fina"]) or "lote 3" in msg:
+            crop_key = "trigo"
+            crop_name = "Trigo Pan"
+            crop_icon = "🌾"
+            sheet_name = "IA_Desk_Agro_Trigo.xlsx"
+        else:
+            crop_key = "soja_primera"
+            crop_name = "Soja de Primera"
+            crop_icon = "🌱"
+            sheet_name = "IA_Desk_Agro_Soja_Primera.xlsx"
+
+        # 2. Determinar Campo y Lote
+        if any(w in msg for w in ["ombu", "ombú", "norte"]):
+            campo_nombre = "El Ombu"
+            campo_display = "Campo El Ombú"
+        elif any(w in msg for w in ["san jose", "san josé", "sur"]):
+            campo_nombre = "San Jose"
+            campo_display = "Campo San José"
+        else:
+            campo_nombre = "La Esperanza"
+            campo_display = "Campo La Esperanza"
+
+        lote_id = "Lote 1"
+        if "lote 2" in msg:
+            lote_id = "Lote 2"
+        elif "lote 3" in msg:
+            lote_id = "Lote 3"
+        elif "norte a" in msg or "lote norte" in msg:
+            lote_id = "Lote Norte A"
+        elif "norte b" in msg:
+            lote_id = "Lote Norte B"
+        elif "sur 1" in msg:
+            lote_id = "Lote Sur 1"
+        elif "sur 2" in msg:
+            lote_id = "Lote Sur 2"
+        elif "sur 3" in msg:
+            lote_id = "Lote Sur 3"
+
+        # Hectáreas trabajadas
+        ha_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:hect[áa]reas?|has? )", msg)
+        has_done = float(ha_match.group(1).replace(".", "").replace(",", ".")) if ha_match else 35.0
+
+        # 3. Labor y Maquinaria
+        if any(w in msg for w in ["disco", "rastra", "descompactador"]):
+            labor_nombre = "Pasada de Rastra de Discos"
+            maquinaria = "Tractor John Deere 7200R + Rastra de Discos"
+        elif any(w in msg for w in ["sembr", "siembra"]):
+            labor_nombre = "Siembra"
+            maquinaria = "Tractor JD 7200R + Sembradora Crucianelli 27 líneas"
+        elif any(w in msg for w in ["fertiliz", "urea", "map"]):
+            labor_nombre = "Fertilización a Campo"
+            maquinaria = "Fertilizadora al voleo Altina"
+        elif any(w in msg for w in ["pulveriz", "fumig", "barbecho"]):
+            labor_nombre = "Pulverización / Barbecho Químico"
+            maquinaria = "Pulverizadora Pla MAP 3 3300"
+        elif any(w in msg for w in ["trill", "cosech"]):
+            labor_nombre = "Trilla y Cosecha"
+            maquinaria = "Cosechadora Case IH 7250 + Draper 35 pies"
+        else:
+            labor_nombre = "Labor Agrícola General"
+            maquinaria = "Maquinaria de labor"
+
+        # 4. Descuento de Combustible (Gasoil)
+        liters_spent = extract_liters(user_message, default=200.0)
+        tank_key = identify_tank(user_message)
+        if tank_key == "acopio_por_retirar":
+            tank_key = "tanque_grande"
+
+        gasoil_raw, meta_g = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
+        executed_tools.append(meta_g)
+        gasoil_json = json.loads(gasoil_raw)
+        deps = gasoil_json["depositos"]
+
+        deps[tank_key]["stock_actual_litros"] = max(0.0, deps[tank_key]["stock_actual_litros"] - liters_spent)
+        gasoil_json["totales"]["stock_fisico_campo_litros"] = (
+            deps["cisterna_planta"]["stock_actual_litros"] +
+            deps["tanque_grande"]["stock_actual_litros"] +
+            deps["tanque_chico"]["stock_actual_litros"]
+        )
+        gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
+            gasoil_json["totales"]["stock_fisico_campo_litros"] +
+            deps["acopio_por_retirar"]["litros_disponibles"]
+        )
+        gasoil_json.setdefault("salidas", []).append({
+            "fecha": today_str,
+            "deposito_origen": deps[tank_key]["nombre"],
+            "maquinaria": maquinaria,
+            "labor": f"{labor_nombre} en {lote_id} ({has_done} ha)",
+            "litros": liters_spent,
+            "operario": sender_name
+        })
+        _, w_g = execute_native_tool("write_file", {"filename": "stock_gasoil.json", "content": json.dumps(gasoil_json, indent=2, ensure_ascii=False)})
+        executed_tools.append(w_g)
+
+        # 5. Descuento de Insumos / Fertilizantes / Semillas
+        insumos_raw, meta_i = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
+        executed_tools.append(meta_i)
+        insumos_json = json.loads(insumos_raw)
+
+        detalles_insumos = []
+        semilla_str = "-"
+        fert_str = "-"
+        fito_str = "-"
+        rinde_str = "-"
+
+        # Descuento de Semilla si es siembra
+        if "siembr" in labor_nombre.lower():
+            if crop_key == "maiz":
+                bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
+                bags_qty = int(float(bags_match.group(1).replace(".", "").replace(",", "."))) if bags_match else int(has_done * 1.2)
+                hibridos = insumos_json.get("semillas_maiz", {}).get("hibridos", [])
+                target_h = next((h for h in hibridos if "DK" in h["id"]), hibridos[0]) if hibridos else None
+                if target_h:
+                    target_h["en_planta_bolsas"] = max(0, target_h["en_planta_bolsas"] - bags_qty)
+                    target_h["total_bolsas"] = target_h["en_planta_bolsas"] + target_h["por_retirar_bolsas"]
+                    tot_p = sum(h["en_planta_bolsas"] for h in hibridos)
+                    insumos_json["semillas_maiz"]["totales"]["bolsas_en_planta"] = tot_p
+                    insumos_json["semillas_maiz"]["totales"]["total_general_bolsas"] = tot_p + insumos_json["semillas_maiz"]["totales"]["bolsas_por_retirar"]
+                    semilla_str = f"{target_h['hibrido']} ({bags_qty} bolsas)"
+                    detalles_insumos.append(f"🌱 Semilla descontada: {bags_qty} bolsas de {target_h['hibrido']} (Quedan {target_h['en_planta_bolsas']} en galpón)")
+            elif "soja" in crop_key:
+                bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
+                bags_qty = int(float(bags_match.group(1).replace(".", "").replace(",", "."))) if bags_match else int(has_done * 1.25)
+                var_soja = insumos_json.get("semillas_soja", {}).get("variedades", [])
+                if var_soja:
+                    var_soja[0]["en_planta_bolsas"] = max(0, var_soja[0].get("en_planta_bolsas", 440) - bags_qty)
+                    var_soja[0]["total_bolsas"] = var_soja[0]["en_planta_bolsas"]
+                    insumos_json["semillas_soja"]["totales"] = {"bolsas_en_planta": var_soja[0]["en_planta_bolsas"], "bolsas_por_retirar": 0, "total_general_bolsas": var_soja[0]["en_planta_bolsas"]}
+                    semilla_str = f"DM 46R18 ({bags_qty} bolsas)"
+                    detalles_insumos.append(f"🌱 Semilla descontada: {bags_qty} bolsas de DM 46R18 (Quedan {var_soja[0]['en_planta_bolsas']} en galpón)")
+
+        # Descuento de Fertilizante si se indica
+        if any(w in msg for w in ["fertiliz", "map", "urea", "microessentials", "fosfato"]):
+            kg_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:kg|kilos?|kilogramos?)", msg)
+            kg_spent = float(kg_match.group(1).replace(".", "").replace(",", ".")) if kg_match else (has_done * 80.0)
+            ferts = insumos_json.get("fertilizantes", [])
+            target_f = ferts[0]
+            if "urea" in msg:
+                target_f = next((f for f in ferts if "Urea" in f["nombre"]), ferts[1])
+            elif "micro" in msg:
+                target_f = next((f for f in ferts if "Micro" in f["nombre"]), ferts[2])
+
+            target_f["en_galpon_kg"] = max(0.0, target_f["en_galpon_kg"] - kg_spent)
+            target_f["total_kg"] = target_f["en_galpon_kg"] + target_f["por_retirar_kg"]
+            insumos_json["fertilizantes_totales"]["en_galpon_kg"] = sum(f["en_galpon_kg"] for f in ferts)
+            insumos_json["fertilizantes_totales"]["total_general_kg"] = sum(f["total_kg"] for f in ferts)
+            fert_str = f"{target_f['nombre']} ({int(kg_spent):,} kg)"
+            detalles_insumos.append(f"🧪 Fertilizante aplicado: {int(kg_spent):,} kg de {target_f['nombre']} (Quedan {int(target_f['en_galpon_kg']):,} kg en galpón)")
+
+        # Cosecha / Trilla si aplica
+        if "trill" in labor_nombre.lower() or "cosech" in labor_nombre.lower():
+            qq_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:qq|quintales?)", msg)
+            rinde_qq = float(qq_match.group(1).replace(".", "").replace(",", ".")) if qq_match else 39.0
+            tn_total = round((has_done * rinde_qq * 100) / 1000.0, 1)
+            rinde_str = f"{rinde_qq} qq/ha ({tn_total} Tn)"
+            detalles_insumos.append(f"🌾 Cosecha obtenida: {rinde_qq} qq/ha ({tn_total} Toneladas totales)")
+
+        _, w_i = execute_native_tool("write_file", {"filename": "stock_insumos.json", "content": json.dumps(insumos_json, indent=2, ensure_ascii=False)})
+        executed_tools.append(w_i)
+
+        # 6. Registrar Labor en el Lote y Regenerar Hoja de Cálculo del Cultivo
+        labor_registro = {
+            "fecha": today_str,
+            "lote": lote_id,
+            "superficie_ha": has_done,
+            "labor": labor_nombre,
+            "maquinaria": maquinaria,
+            "operario": sender_name,
+            "combustible_litros": liters_spent,
+            "deposito_combustible": deps[tank_key]["nombre"],
+            "semilla": semilla_str,
+            "fertilizante": fert_str,
+            "insumos": fito_str,
+            "rinde": rinde_str,
+            "observaciones": f"Labor reportada por {sender_name}"
+        }
+        append_labor_to_crop(crop_key, campo_nombre, lote_id, labor_registro)
+
+        # 7. Memoria de negocio
+        memo_entry = f"Labor {labor_nombre} en {campo_display} ({lote_id} - {crop_name}): {has_done} ha, -{int(liters_spent)} L {deps[tank_key]['nombre']}"
+        if semilla_str != "-":
+            memo_entry += f", semilla: {semilla_str}"
+        if fert_str != "-":
+            memo_entry += f", fert: {fert_str}"
+        _, w_m = execute_native_tool("append_memory", {"entry": memo_entry})
+        executed_tools.append(w_m)
+
+        # 8. Respuesta explicativa rica
+        detalles_texto = "\n".join([f"• {d}" for d in detalles_insumos]) if detalles_insumos else "• Laboreo mecánico de suelo sin insumos aplicados."
+        reply = (
+            f"{crop_icon} **Labor Registrada y Vinculada a Hojas de Cálculo:**\n\n"
+            f"📋 **Detalle de la Operación:**\n"
+            f"- **Cultivo:** **{crop_name}** | **Establecimiento:** **{campo_display}**\n"
+            f"- **Lote asignado:** **{lote_id}** ({has_done} hectáreas trabajadas)\n"
+            f"- **Labor realizada:** **{labor_nombre}** ({maquinaria})\n"
+            f"- **Operario a cargo:** *{sender_name}*\n\n"
+            f"⛽ **Conexión con Gastos de Combustible:**\n"
+            f"- **Gasoil consumido:** **{int(liters_spent):,} Litros** descontados de **{deps[tank_key]['nombre']}**\n"
+            f"- **Remanente en {deps[tank_key]['nombre']}:** **{int(deps[tank_key]['stock_actual_litros']):,} Litros** ({round(deps[tank_key]['stock_actual_litros']/deps[tank_key]['capacidad_max_litros']*100)}% lleno)\n"
+            f"- **Stock físico total en campo:** {int(gasoil_json['totales']['stock_fisico_campo_litros']):,} Litros\n\n"
+            f"📦 **Conexión con Semillas / Fertilizantes / Cosecha:**\n"
+            f"{detalles_texto}\n\n"
+            f"📊 **Hojas de Cálculo Actualizadas en Tiempo Real:**\n"
+            f"• Solapa **'Campo {campo_nombre}'** en **{sheet_name}** actualizada con la labor y gastos.\n"
+            f"• Libro Maestro **IA_Desk_Agro_Consolidado.xlsx** recalculado en Google Drive."
+        )
+
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
+    # ==============================================================
     # 1. CASO SEMILLAS DE MAÍZ POR HÍBRIDO (BOLSAS EN PLANTA O POR RETIRAR)
     # ==============================================================
     is_corn_seed_query_or_action = (
