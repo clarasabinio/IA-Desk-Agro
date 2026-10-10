@@ -148,12 +148,59 @@ function actualizarSemillas(ss, mData) {
 function actualizarGranos(ss, gData) {
   var sheet = ss.getSheetByName('Granos Silos (Tn)');
   if (!sheet || !gData) return;
-  // Actualizar totales y ubicaciones
+
+  var sojaUbic = (gData.soja && gData.soja.ubicaciones) || [];
+  var trigoUbic = (gData.trigo && gData.trigo.ubicaciones) || [];
+  var allUbic = sojaUbic.concat(trigoUbic);
+
+  for (var i = 0; i < allUbic.length; i++) {
+    var row = 5 + i;
+    sheet.getRange(row, 4).setValue(allUbic[i].stock_actual_tn || 0);
+    sheet.getRange(row, 5).setValue(allUbic[i].capacidad_max_tn || 0);
+  }
 }
 
 function actualizarBitacora(ss, lineas) {
   var sheet = ss.getSheetByName('Bitacora de Labores');
   if (!sheet || !lineas) return;
+
+  for (var i = 0; i < lineas.length; i++) {
+    var row = 5 + i;
+    var line = lineas[lineas.length - 1 - i];
+    var parts = line.split("] ");
+    var dt = parts.length > 1 ? parts[0].replace("- [", "") : "Reciente";
+    var desc = parts.length > 1 ? parts[1] : line;
+    sheet.getRange(row, 1).setValue(dt);
+    sheet.getRange(row, 2).setValue(desc);
+    sheet.getRange(row, 4).setValue("Asentado");
+  }
+}
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (data.combustibles) actualizarCombustibles(ss, data.combustibles);
+    if (data.insumos_fertilizantes) {
+      if (data.insumos_fertilizantes.fertilizantes) {
+        actualizarFertilizantes(ss, data.insumos_fertilizantes.fertilizantes, data.insumos_fertilizantes.fertilizantes_totales);
+      }
+      if (data.insumos_fertilizantes.fitosanitarios) {
+        actualizarInsumos(ss, data.insumos_fertilizantes.fitosanitarios, data.insumos_fertilizantes.fitosanitarios_totales);
+      }
+      if (data.insumos_fertilizantes.semillas_maiz) {
+        actualizarSemillas(ss, data.insumos_fertilizantes.semillas_maiz);
+      }
+    }
+    if (data.granos_silos) actualizarGranos(ss, data.granos_silos);
+    if (data.bitacora_reciente) actualizarBitacora(ss, data.bitacora_reciente);
+
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Hojas actualizadas" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function crearTriggerAutomatico() {
