@@ -428,7 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div class="message-content">
-                                <p>¡Hola! Historial reiniciado. ¿En qué puedo ayudarte hoy?</p>
+                                <p>¡Hola! Bienvenido a IA Desk Agro, tu copiloto operativo.</p>
+                                <p>¿En qué puedo ayudarte hoy?</p>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,16 @@
 {
   "max_history_turns": 10,
-  "messages": []
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hola",
+      "timestamp": "2026-10-12 13:31:38"
+    },
+    {
+      "role": "assistant",
+      "content": "¡Hola! Bienvenido a **IA Desk Agro**, tu copiloto operativo.\n\n¿En qué puedo ayudarte hoy?",
+      "tools_invoked": [],
+      "timestamp": "2026-10-12 13:31:38"
+    }
+  ]
 }

@@ -319,7 +319,7 @@ def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name:
         (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
     )
     if is_pure_greeting and not is_whatsapp:
-        reply = "¡Hola! Bienvenido a **IA Desk Agro**, copiloto operativo de **Campo La Esperanza**.\n\n¿En qué puedo ayudarte hoy?"
+        reply = "¡Hola! Bienvenido a **IA Desk Agro**, tu copiloto operativo.\n\n¿En qué puedo ayudarte hoy?"
         append_to_history(user_message, reply, [])
         return {
             "response": reply,
@@ -432,7 +432,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
     )
     if is_pure_greeting and not is_whatsapp:
-        reply = "¡Hola! Bienvenido a **IA Desk Agro**, copiloto operativo de **Campo La Esperanza**.\n\n¿En qué puedo ayudarte hoy?"
+        reply = "¡Hola! Bienvenido a **IA Desk Agro**, tu copiloto operativo.\n\n¿En qué puedo ayudarte hoy?"
         append_to_history(user_message, reply, [])
         return {
             "response": reply,
