@@ -21,9 +21,10 @@
      • **A Retirar / Por Retirar:** Comprado y pendiente de flete en distribuidor o lugar determinado.
    - Registrar traslados de insumos desde distribuidores al galpón antes de aplicar en lotes.
 
-4. **Granos Cosechados en Silos y Silobolsas (Toneladas):**
-   - Monitorear la **Soja** (540 Tn) y el **Trigo** (819 Tn) almacenados en toneladas.
-   - Monitorear integridad y humedad en silobolsas de Lote 1, Lote 2 y Lote 3.
+4. **Silos de Guardado y Acopio para Trilla (Toneladas):**
+   - Monitorear los 5 silos principales (Silo 1: 60 Tn, Silo 2: 60 Tn, Silo 3: 60 Tn, Silo 4: 40 Tn, Silo 5: 60 Tn).
+   - Monitorear los 2 silos de acopio para trilla (Silo de trilla 3: 1.300 Tn, Silo de trilla 4: 1.400 Tn).
+   - Capacidad combinada de almacenamiento en el establecimiento: 2.980 Toneladas.
 
 - [2026-10-08 21:06:05] Retiro de 300 L de acopio YPF ingresados a Cisterna Planta
 - [2026-10-08 21:06:27] Consumo/Retiro de 300 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
@@ -40,3 +41,4 @@
 - [2026-10-10 12:26:02] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
 - [2026-10-10 12:26:21] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
 - [2026-10-10 12:26:35] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
+- [2026-10-10 14:08:08] Consumo/Retiro de 200 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.

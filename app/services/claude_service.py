@@ -197,19 +197,30 @@ def get_dashboard_summary() -> Dict[str, Any]:
     except Exception as e:
         print(f"Error parsing stock_insumos.json: {e}")
 
-    # 3. Granos en Silos y Silobolsas (Toneladas)
+    # 3. Granos en Silos de Guardado y Acopio (Toneladas)
     try:
         gr = json.loads(read_file("stock_granos_silos.json"))
+        principales = gr.get("silos_principales", [])
+        trilla = gr.get("silos_trilla", [])
+
+        stock_princ = sum(s.get("stock_actual_tn", 0) for s in principales)
+        cap_princ = sum(s.get("capacidad_max_tn", 0) for s in principales)
+        stock_trilla = sum(s.get("stock_actual_tn", 0) for s in trilla)
+        cap_trilla = sum(s.get("capacidad_max_tn", 0) for s in trilla)
+        tot_stock = stock_princ + stock_trilla
+        tot_cap = cap_princ + cap_trilla
+
         summary["granos_silos"] = {
-            "soja": {
-                "total_tn": gr.get("soja", {}).get("total_tn", 540.0),
-                "ubicaciones": gr.get("soja", {}).get("ubicaciones", [])
-            },
-            "trigo": {
-                "total_tn": gr.get("trigo", {}).get("total_tn", 819.0),
-                "ubicaciones": gr.get("trigo", {}).get("ubicaciones", [])
-            },
-            "total_general_tn": gr.get("totales_generales", {}).get("total_granos_almacenados_tn", 1359.0)
+            "silos_principales": principales,
+            "silos_trilla": trilla,
+            "stock_principales_tn": round(stock_princ, 1),
+            "capacidad_principales_tn": round(cap_princ, 1),
+            "stock_trilla_tn": round(stock_trilla, 1),
+            "capacidad_trilla_tn": round(cap_trilla, 1),
+            "total_general_tn": round(tot_stock, 1),
+            "capacidad_total_tn": round(tot_cap, 1),
+            "soja": gr.get("soja", {"total_tn": round(sum(s.get("stock_actual_tn", 0) for s in principales + trilla if s.get("cultivo") == "Soja"), 1)}),
+            "trigo": gr.get("trigo", {"total_tn": round(sum(s.get("stock_actual_tn", 0) for s in principales + trilla if s.get("cultivo") == "Trigo"), 1)}),
         }
     except Exception as e:
         print(f"Error parsing stock_granos_silos.json: {e}")
@@ -300,6 +311,22 @@ def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name:
     api_key = settings.ANTHROPIC_API_KEY
     system_prompt = load_system_prompt()
     executed_tools_log = []
+
+    # Saludo inicial: solo saludar al usuario sin datos de combustible ni inventario
+    clean_msg = user_message.lower().strip().rstrip("!?.")
+    is_pure_greeting = (
+        clean_msg in ["hola", "buen dia", "buen día", "buenos dias", "buenos días", "buenas", "buenas tardes", "buenas noches", "saludos", "hola que tal", "hola qué tal", "que tal", "qué tal", "hola como estas", "hola cómo estás", "hola esteban"] or
+        (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
+    )
+    if is_pure_greeting and not is_whatsapp:
+        reply = "¡Hola! Bienvenido a **IA Desk Agro**, copiloto operativo de **Campo La Esperanza**.\n\n¿En qué puedo ayudarte hoy?"
+        append_to_history(user_message, reply, [])
+        return {
+            "response": reply,
+            "tool_calls": [],
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
 
     if is_whatsapp:
         prompt_input = f"[REPORTE DE WHATSAPP DE: {sender_name}]:\n\"{user_message}\"\n\nInterpreta las labores, haz los descuentos matemáticos precisos en los depósitos de combustible, semillas por híbrido o granos en silos usando las herramientas nativas, y confirma sin nombrar archivos técnicos."
@@ -397,6 +424,22 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     msg = user_message.lower()
     today_str = datetime.now().strftime("%Y-%m-%d")
     executed_tools = []
+
+    # Saludo inicial: solo saludar al usuario
+    clean_msg = msg.strip().rstrip("!?.")
+    is_pure_greeting = (
+        clean_msg in ["hola", "buen dia", "buen día", "buenos dias", "buenos días", "buenas", "buenas tardes", "buenas noches", "saludos", "hola que tal", "hola qué tal", "que tal", "qué tal", "hola como estas", "hola cómo estás", "hola esteban"] or
+        (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
+    )
+    if is_pure_greeting and not is_whatsapp:
+        reply = "¡Hola! Bienvenido a **IA Desk Agro**, copiloto operativo de **Campo La Esperanza**.\n\n¿En qué puedo ayudarte hoy?"
+        append_to_history(user_message, reply, [])
+        return {
+            "response": reply,
+            "tool_calls": [],
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
 
     # ==============================================================
     # 0. REGISTRO INTEGRAL DE LABORES A CAMPO (DISCO, SIEMBRA, FERTILIZACIÓN, PULVERIZACIÓN, TRILLA)
@@ -769,11 +812,11 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
 
     # ==============================================================
-    # 2. CASO GRANOS EN TONELADAS EN SILOS / SILOBOLSAS (SOJA Y TRIGO)
+    # 2. CASO GRANOS EN SILOS DE GUARDADO Y ACOPIO (5 PRINCIPALES + 2 DE TRILLA)
     # ==============================================================
     is_grain_silo_query_or_action = (
-        any(w in msg for w in ["silobolsa", "silobolsas", "silo", "silos", "grano", "granos"]) or
-        (any(w in msg for w in ["soja", "trigo"]) and any(w in msg for w in ["tonelada", "toneladas", "tn", "acopiad", "guardad", "cosechad"]))
+        any(w in msg for w in ["silo", "silos", "trilla", "acopio", "grano", "granos", "silobolsa", "silobolsas"]) or
+        (any(w in msg for w in ["soja", "trigo", "maiz", "maíz"]) and any(w in msg for w in ["tonelada", "toneladas", "tn", "acopiad", "guardad", "cosechad", "capacidad"]))
     ) and not any(w in msg for w in ["sembr", "siembra", "sembrando"])
 
     if is_grain_silo_query_or_action:
@@ -781,68 +824,98 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         executed_tools.append(meta_gr)
         granos_json = json.loads(granos_raw)
 
-        soja_dict = granos_json.get("soja", {})
-        trigo_dict = granos_json.get("trigo", {})
+        principales = granos_json.get("silos_principales", [])
+        trilla = granos_json.get("silos_trilla", [])
+        all_silos = principales + trilla
 
-        is_dispatch = any(w in msg for w in ["carg", "vend", "entreg", "despach", "sacar", "retiro"]) and any(char.isdigit() for char in user_message)
+        is_dispatch = any(w in msg for w in ["carg", "vend", "entreg", "despach", "sacar", "retiro", "descarg"]) and any(char.isdigit() for char in user_message)
 
         if is_dispatch:
             tn_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:toneladas?|tn )?", msg)
             tn_qty = float(tn_match.group(1).replace(".", "").replace(",", ".")) if tn_match else 30.0
 
-            if "trigo" in msg:
-                target_crop = trigo_dict
-                crop_name = "Trigo"
-            else:
-                target_crop = soja_dict
-                crop_name = "Soja"
+            # Buscar silo por nombre o número
+            target_silo = None
+            if "trilla 4" in msg or "silo 4 de trilla" in msg:
+                target_silo = next((s for s in trilla if "4" in s.get("nombre", "")), None)
+            elif "trilla 3" in msg or "silo 3 de trilla" in msg or "trilla" in msg:
+                target_silo = next((s for s in trilla if "3" in s.get("nombre", "")), trilla[0] if trilla else None)
+            elif "silo 5" in msg:
+                target_silo = next((s for s in principales if "5" in s.get("nombre", "")), None)
+            elif "silo 4" in msg:
+                target_silo = next((s for s in principales if "4" in s.get("nombre", "")), None)
+            elif "silo 3" in msg:
+                target_silo = next((s for s in principales if "3" in s.get("nombre", "")), None)
+            elif "silo 2" in msg:
+                target_silo = next((s for s in principales if "2" in s.get("nombre", "")), None)
+            elif "silo 1" in msg:
+                target_silo = next((s for s in principales if "1" in s.get("nombre", "")), None)
 
-            target_silo = target_crop.get("ubicaciones", [])[0]
-            if "2" in msg and len(target_crop.get("ubicaciones", [])) > 1:
-                target_silo = target_crop.get("ubicaciones", [])[1]
-            elif any(w in msg for w in ["aéreo", "aereo", "chapa", "planta"]) and len(target_crop.get("ubicaciones", [])) > 2:
-                target_silo = target_crop.get("ubicaciones", [])[2]
+            if not target_silo:
+                # Si se menciona un cultivo, buscar el primer silo con stock de ese cultivo
+                if "trigo" in msg:
+                    target_silo = next((s for s in all_silos if s.get("cultivo") == "Trigo" and s.get("stock_actual_tn", 0) > 0), all_silos[2])
+                elif "maiz" in msg or "maíz" in msg:
+                    target_silo = next((s for s in all_silos if s.get("cultivo") == "Maíz" and s.get("stock_actual_tn", 0) > 0), all_silos[4])
+                else:
+                    target_silo = next((s for s in all_silos if s.get("cultivo") == "Soja" and s.get("stock_actual_tn", 0) > 0), all_silos[0])
 
             dispatched = min(target_silo["stock_actual_tn"], tn_qty)
-            target_silo["stock_actual_tn"] -= dispatched
+            target_silo["stock_actual_tn"] = round(target_silo["stock_actual_tn"] - dispatched, 1)
 
-            tot_crop = sum(u["stock_actual_tn"] for u in target_crop["ubicaciones"])
-            target_crop["total_tn"] = tot_crop
-            granos_json["totales_generales"]["total_granos_almacenados_tn"] = (
-                granos_json["soja"]["total_tn"] + granos_json["trigo"]["total_tn"]
-            )
+            # Recalcular totales
+            stock_p = sum(s.get("stock_actual_tn", 0) for s in principales)
+            stock_t = sum(s.get("stock_actual_tn", 0) for s in trilla)
+            granos_json["totales_generales"]["stock_principales_tn"] = round(stock_p, 1)
+            granos_json["totales_generales"]["stock_trilla_tn"] = round(stock_t, 1)
+            granos_json["totales_generales"]["total_granos_almacenados_tn"] = round(stock_p + stock_t, 1)
 
             _, meta_w = execute_native_tool("write_file", {"filename": "stock_granos_silos.json", "content": json.dumps(granos_json, indent=2, ensure_ascii=False)})
             executed_tools.append(meta_w)
 
-            motivo = f"Despacho/Carga de {dispatched} Tn de {crop_name} desde {target_silo['identificador']} a camión puerto"
+            # Generar CSV y hojas en segundo plano
+            try:
+                from .sheets_export_service import generate_consolidated_workbook
+                generate_consolidated_workbook()
+            except Exception:
+                pass
+
+            motivo = f"Despacho/Carga de {dispatched} Tn desde {target_silo['nombre']} ({target_silo.get('cultivo', 'Grano')}) a camión puerto"
             _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
             executed_tools.append(meta_m)
 
             reply = (
                 f"🚛 **Despacho de Granos Registrado:**\n\n"
-                f"- **Cereal:** **{crop_name}**.\n"
+                f"- **Origen:** **{target_silo['nombre']}** ({target_silo.get('tipo', 'Silo')}).\n"
+                f"- **Cultivo:** **{target_silo.get('cultivo', 'Grano')}**.\n"
                 f"- **Toneladas despachadas:** **{dispatched} Tn**.\n"
-                f"- **Origen:** *{target_silo['identificador']}* ({target_silo['tipo']}).\n"
-                f"- **Stock remanente en ese silo:** **{target_silo['stock_actual_tn']:,} Tn**.\n"
-                f"- **Stock total acumulado de {crop_name}:** **{tot_crop:,} Tn**.\n\n"
-                f"👉 **Total Granos Almacenados en Campo:** **{granos_json['totales_generales']['total_granos_almacenados_tn']:,} Toneladas**."
+                f"- **Stock remanente en ese silo:** **{target_silo['stock_actual_tn']:,} Tn** (Cap. máx: {int(target_silo['capacidad_max_tn'])} Tn).\n\n"
+                f"📊 **Subtotal Silos Principales:** **{stock_p:,} Tn** | **Subtotal Silos Trilla:** **{stock_t:,} Tn**.\n"
+                f"👉 **Total Acopio Almacenado:** **{round(stock_p + stock_t, 1):,} Toneladas** (de 2.980 Tn capacidad total)."
             )
             append_to_history(user_message, reply, executed_tools)
             return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
 
         else:
-            soja_items = [f"  • {s['identificador']}: **{s['stock_actual_tn']:,} Tn** ({s.get('humedad_pct', 13.0)}% humedad - {s['tipo']})" for s in soja_dict.get("ubicaciones", [])]
-            trigo_items = [f"  • {s['identificador']}: **{s['stock_actual_tn']:,} Tn** ({s.get('humedad_pct', 12.2)}% humedad - PH {s.get('peso_hectolitrico', 80.5)})" for s in trigo_dict.get("ubicaciones", [])]
+            p_items = [f"  • **{s['nombre']}:** **{s['stock_actual_tn']:,} Tn** (Capacidad máxima: **{int(s['capacidad_max_tn'])} Tn** | {s.get('cultivo', 'Grano')} - {s.get('humedad_pct', 13.0)}% hum.)" for s in principales]
+            t_items = [f"  • **{s['nombre']}:** **{s['stock_actual_tn']:,} Tn** (Capacidad máxima: **{int(s['capacidad_max_tn'])} Tn** | {s.get('cultivo', 'Grano')} - {s.get('humedad_pct', 12.0)}% hum.)" for s in trilla]
+
+            tot_p_stock = sum(s.get("stock_actual_tn", 0) for s in principales)
+            tot_p_cap = sum(s.get("capacidad_max_tn", 0) for s in principales)
+            tot_t_stock = sum(s.get("stock_actual_tn", 0) for s in trilla)
+            tot_t_cap = sum(s.get("capacidad_max_tn", 0) for s in trilla)
+            tot_gen_stock = tot_p_stock + tot_t_stock
+            tot_gen_cap = tot_p_cap + tot_t_cap
 
             reply = (
-                f"🌾 **Inventario de Granos en Silos y Silobolsas (Toneladas):**\n\n"
-                f"**1. 🌱 Soja Comercial:** **{soja_dict['total_tn']:,} Toneladas**\n" +
-                "\n".join(soja_items) +
-                f"\n\n**2. 🌾 Trigo Pan Grado 1:** **{trigo_dict['total_tn']:,} Toneladas**\n" +
-                "\n".join(trigo_items) +
-                f"\n\n📊 **Total Granos Almacenados en el Establecimiento:** **{granos_json['totales_generales']['total_granos_almacenados_tn']:,} Toneladas**.\n\n"
-                f"Todos los silobolsas y silos se encuentran bajo monitoreo de humedad y temperatura."
+                f"🌾 **Estado y Capacidad de Silos de Guardado y Acopio (Toneladas):**\n\n"
+                f"**1. 🏗️ Silos Principales (5 unidades):**\n" +
+                "\n".join(p_items) +
+                f"\n  👉 *Subtotal Silos Principales:* **{tot_p_stock:,.1f} Tn** almacenadas / **{tot_p_cap:,.0f} Tn** de capacidad máxima.\n\n"
+                f"**2. 🚜 Silos de Acopio para Trilla (2 unidades adicionales):**\n" +
+                "\n".join(t_items) +
+                f"\n  👉 *Subtotal Silos de Trilla:* **{tot_t_stock:,.1f} Tn** almacenadas / **{tot_t_cap:,.0f} Tn** de capacidad máxima.\n\n"
+                f"📊 **Capacidad Total del Establecimiento:** **{tot_gen_stock:,.1f} Tn** acopiadas sobre un total de **{tot_gen_cap:,.0f} Tn** de capacidad máxima combinada."
             )
             append_to_history(user_message, reply, executed_tools)
             return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
@@ -1440,13 +1513,13 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         summary = get_dashboard_summary()
         reply = (
             f"🚜 **IA Desk Agro - Copiloto de Operaciones:**\n\n"
-            f"He verificado los inventarios del establecimiento:\n"
-            f"- **Combustible:** {summary['total_campo']:,} L en campo | {summary['total_con_acopio']:,} L con acopio YPF.\n"
-            f"- **Fertilizantes:** {int(summary['fertilizantes_totales']['en_galpon_kg']):,} kg en galpón | {int(summary['fertilizantes_totales']['por_retirar_kg']):,} kg por retirar ({int(summary['fertilizantes_totales']['total_general_kg']):,} kg total).\n"
-            f"- **Insumos/Fitosanitarios:** {int(summary['fitosanitarios_totales']['en_galpon_litros']):,} L en galpón | {int(summary['fitosanitarios_totales']['a_retirar_litros']):,} L a retirar ({int(summary['fitosanitarios_totales']['total_general_litros']):,} L total).\n"
-            f"- **Maíz por Híbrido:** {summary['maiz_totales']['en_planta']} bolsas en Planta | {summary['maiz_totales']['por_retirar']} bolsas por retirar ({summary['semillas_maiz']} total).\n"
-            f"- **Granos en Silos/Silobolsas:** {summary['granos_silos']['soja']['total_tn']:,} Tn de Soja | {summary['granos_silos']['trigo']['total_tn']:,} Tn de Trigo.\n\n"
-            f"¿Qué labor, movimiento de insumos, fertilizantes o combustible deseas consultar o registrar?"
+            f"He verificado los registros generales del establecimiento:\n"
+            f"- **Silos Principales (5 unidades):** {summary['granos_silos']['stock_principales_tn']} / {summary['granos_silos']['capacidad_principales_tn']} Tn.\n"
+            f"- **Silos de Trilla (2 unidades):** {summary['granos_silos']['stock_trilla_tn']} / {summary['granos_silos']['capacidad_trilla_tn']} Tn.\n"
+            f"- **Fertilizantes:** {int(summary['fertilizantes_totales']['total_general_kg']):,} kg disponibles.\n"
+            f"- **Insumos/Fitosanitarios:** {int(summary['fitosanitarios_totales']['total_general_litros']):,} L disponibles.\n"
+            f"- **Semillas de Maíz:** {summary['semillas_maiz']} bolsas totales.\n\n"
+            f"¿Qué labor, movimiento de insumos, fertilizantes, silos o combustible deseas consultar o registrar?"
         )
 
     append_to_history(user_message, reply, executed_tools)

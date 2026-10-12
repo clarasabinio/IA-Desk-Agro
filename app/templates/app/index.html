@@ -56,7 +56,7 @@
                 <div class="chat-controls-bar">
                     <div class="active-context-label">
                         <span class="icon">🚜</span>
-                        <span>Copiloto de Campo: Stock de Combustible en 4 Depósitos, Insumos y Labores</span>
+                        <span>Copiloto de Campo: Silos de Guardado, Insumos y Labores</span>
                     </div>
                     <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación">
                         🗑️ Limpiar Historial
@@ -73,15 +73,8 @@
                                 <span class="timestamp">Inicio de jornada</span>
                             </div>
                             <div class="message-content">
-                                <p>¡Buen día! Soy el copiloto operativo de <strong>Campo La Esperanza</strong>.</p>
-                                <p>Llevo el control estricto de combustible en tus <strong>4 opciones de almacenamiento y acopio</strong>:</p>
-                                <ul>
-                                    <li>🏭 <strong>Cisterna Planta:</strong> Capacidad máx. 22.000 L</li>
-                                    <li>🚜 <strong>Tanque Grande:</strong> Capacidad máx. 5.000 L</li>
-                                    <li>🛢️ <strong>Tanque Chico:</strong> Capacidad máx. 3.000 L</li>
-                                    <li>📋 <strong>Gasoil por Retirar:</strong> Acopio pagado en YPF Directo pendiente de flete</li>
-                                </ul>
-                                <p><em>Puedes consultar saldos, registrar gastos en cualquier tanque o reportar traslados y retiros de acopio en lenguaje natural o vía WhatsApp.</em></p>
+                                <p>¡Hola! Bienvenido a <strong>IA Desk Agro</strong>, tu copiloto operativo para <strong>Campo La Esperanza</strong>.</p>
+                                <p>¿En qué puedo ayudarte hoy?</p>
                             </div>
                         </div>
                     </div>
@@ -97,8 +90,8 @@
                         <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
                             🌽 Maíz por Híbrido
                         </button>
-                        <button class="chip-btn" data-query="¿Cuántas toneladas de soja y trigo tenemos en silos y silobolsas?">
-                            🌾 Silos (Tn)
+                        <button class="chip-btn" data-query="¿Cuál es el estado y capacidad de los silos principales y silos de trilla?">
+                            🌾 Silos y Acopio (Tn)
                         </button>
                         <button class="chip-btn" data-query="¿Cuánto fertilizante tenemos en kg en galpón y por retirar?">
                             🧪 Fertilizantes en kg
@@ -237,46 +230,48 @@
                     </div>
                 </div>
 
-                <!-- Grains in Silos & Silobolsas Card (Tn) -->
+                <!-- Silos de Guardado y Acopio (Tn) Card -->
                 <div class="dash-card">
                     <div class="dash-card-header-row">
-                        <h2 class="dash-card-title">🌾 Silos y Silobolsas (Tn)</h2>
-                        <span class="badge-tag text-emerald" id="metric-granos-total-badge">{{ stock.granos_silos.total_general_tn }} Tn</span>
+                        <h2 class="dash-card-title">🌾 Silos de Guardado y Acopio</h2>
+                        <span class="badge-tag text-emerald" id="metric-granos-total-badge">{{ stock.granos_silos.total_general_tn }} / {{ stock.granos_silos.capacidad_total_tn }} Tn</span>
                     </div>
                     
-                    <!-- Soja Section -->
+                    <!-- Silos Principales (5 unidades) -->
                     <div class="grain-section">
                         <div class="grain-header">
-                            <span class="grain-title">🌱 Soja Comercial</span>
-                            <strong class="grain-total text-emerald" id="metric-soja-tn">{{ stock.granos_silos.soja.total_tn }} Tn</strong>
+                            <span class="grain-title">🏗️ Silos Principales (5 unidades)</span>
+                            <strong class="grain-total text-emerald" id="metric-principales-tn">{{ stock.granos_silos.stock_principales_tn }} / {{ stock.granos_silos.capacidad_principales_tn }} Tn</strong>
                         </div>
-                        <div class="grain-silos-list" id="soja-silos-container">
-                            {% for s in stock.granos_silos.soja.ubicaciones %}
+                        <div class="grain-silos-list" id="principales-silos-container">
+                            {% for s in stock.granos_silos.silos_principales %}
                             <div class="silo-row">
                                 <div class="silo-info">
-                                    <span class="silo-icon">{% if Silobolsa in s.tipo %}🥖{% else %}🏗️{% endif %}</span>
-                                    <span class="silo-name">{{ s.identificador }}</span>
+                                    <span class="silo-icon">🏗️</span>
+                                    <span class="silo-name"><strong>{{ s.nombre }}</strong> <span class="text-muted">({{ s.cultivo }})</span></span>
+                                    <span class="badge-tag" style="font-size: 0.65rem; padding: 1px 6px;">Máx {{ s.capacidad_max_tn|floatformat:0 }} Tn</span>
                                 </div>
-                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn }} Tn</span>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn|floatformat:1 }} Tn</span>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Trigo Section -->
+                    <!-- Silos de Acopio para Trilla (2 unidades adicionales) -->
                     <div class="grain-section mt-2">
                         <div class="grain-header">
-                            <span class="grain-title">🌾 Trigo Pan Grado 1</span>
-                            <strong class="grain-total text-cyan" id="metric-trigo-tn">{{ stock.granos_silos.trigo.total_tn }} Tn</strong>
+                            <span class="grain-title">🚜 Silos de Acopio para Trilla (2 unidades)</span>
+                            <strong class="grain-total text-cyan" id="metric-trilla-tn">{{ stock.granos_silos.stock_trilla_tn }} / {{ stock.granos_silos.capacidad_trilla_tn }} Tn</strong>
                         </div>
-                        <div class="grain-silos-list" id="trigo-silos-container">
-                            {% for s in stock.granos_silos.trigo.ubicaciones %}
+                        <div class="grain-silos-list" id="trilla-silos-container">
+                            {% for s in stock.granos_silos.silos_trilla %}
                             <div class="silo-row">
                                 <div class="silo-info">
-                                    <span class="silo-icon">{% if Silobolsa in s.tipo %}🥖{% else %}🏗️{% endif %}</span>
-                                    <span class="silo-name">{{ s.identificador }}</span>
+                                    <span class="silo-icon">🌾</span>
+                                    <span class="silo-name"><strong>{{ s.nombre }}</strong> <span class="text-muted">({{ s.cultivo }})</span></span>
+                                    <span class="badge-tag" style="font-size: 0.65rem; padding: 1px 6px;">Máx {{ s.capacidad_max_tn|floatformat:0 }} Tn</span>
                                 </div>
-                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn }} Tn</span>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn|floatformat:1 }} Tn</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -284,7 +279,7 @@
 
                     <div class="fuel-totals-box mt-2">
                         <div class="fuel-total-row highlight-row">
-                            <span class="tot-lbl">Total Granos en Campo:</span>
+                            <span class="tot-lbl">Total Acopiado en Silos:</span>
                             <strong class="tot-val text-emerald" id="metric-granos-total-tn">{{ stock.granos_silos.total_general_tn }} Tn</strong>
                         </div>
                     </div>

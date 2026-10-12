@@ -10,7 +10,7 @@
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 2560.0,
+      "stock_actual_litros": 2360.0,
       "umbral_alerta_litros": 1000,
       "ubicacion": "Cisterna de apoyo móvil en campo"
     },
@@ -29,8 +29,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 19910.0,
-    "stock_total_con_acopio_litros": 22110.0
+    "stock_fisico_campo_litros": 19710.0,
+    "stock_total_con_acopio_litros": 21910.0
   },
   "entradas": [
     {
@@ -137,6 +137,13 @@
       "maquinaria": "Tractor JD 7200R + Sembradora Crucianelli 27 líneas",
       "labor": "Siembra en Lote 2 (50.0 ha)",
       "litros": 300.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-10",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Maquinaria de labor",
+      "litros": 200.0,
       "operario": "Productor"
     }
   ],

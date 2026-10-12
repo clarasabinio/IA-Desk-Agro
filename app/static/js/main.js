@@ -128,25 +128,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Granos en Silos y Silobolsas (Toneladas)
+        // Granos en Silos de Guardado y Acopio (Toneladas)
         if (stockData.granos_silos) {
-            const elSoja = document.getElementById("metric-soja-tn");
-            const elTrigo = document.getElementById("metric-trigo-tn");
+            const gs = stockData.granos_silos;
             const elTotal = document.getElementById("metric-granos-total-tn");
             const elBadge = document.getElementById("metric-granos-total-badge");
-            if (elSoja && stockData.granos_silos.soja) elSoja.textContent = `${Number(stockData.granos_silos.soja.total_tn).toLocaleString("es-AR")} Tn`;
-            if (elTrigo && stockData.granos_silos.trigo) elTrigo.textContent = `${Number(stockData.granos_silos.trigo.total_tn).toLocaleString("es-AR")} Tn`;
-            if (elTotal && stockData.granos_silos.total_general_tn) elTotal.textContent = `${Number(stockData.granos_silos.total_general_tn).toLocaleString("es-AR")} Tn`;
-            if (elBadge && stockData.granos_silos.total_general_tn) elBadge.textContent = `${Number(stockData.granos_silos.total_general_tn).toLocaleString("es-AR")} Tn`;
+            const elPrinc = document.getElementById("metric-principales-tn");
+            const elTrilla = document.getElementById("metric-trilla-tn");
 
-            if (stockData.granos_silos.soja && stockData.granos_silos.soja.ubicaciones) {
-                stockData.granos_silos.soja.ubicaciones.forEach(s => {
+            if (elTotal && gs.total_general_tn !== undefined) {
+                elTotal.textContent = `${Number(gs.total_general_tn).toLocaleString("es-AR")} Tn`;
+            }
+            if (elBadge && gs.total_general_tn !== undefined && gs.capacidad_total_tn !== undefined) {
+                elBadge.textContent = `${Number(gs.total_general_tn).toLocaleString("es-AR")} / ${Number(gs.capacidad_total_tn).toLocaleString("es-AR")} Tn`;
+            }
+            if (elPrinc && gs.stock_principales_tn !== undefined && gs.capacidad_principales_tn !== undefined) {
+                elPrinc.textContent = `${Number(gs.stock_principales_tn).toLocaleString("es-AR")} / ${Number(gs.capacidad_principales_tn).toLocaleString("es-AR")} Tn`;
+            }
+            if (elTrilla && gs.stock_trilla_tn !== undefined && gs.capacidad_trilla_tn !== undefined) {
+                elTrilla.textContent = `${Number(gs.stock_trilla_tn).toLocaleString("es-AR")} / ${Number(gs.capacidad_trilla_tn).toLocaleString("es-AR")} Tn`;
+            }
+
+            if (gs.silos_principales && Array.isArray(gs.silos_principales)) {
+                gs.silos_principales.forEach(s => {
                     const elS = document.getElementById(`val-silo-${s.id}`);
                     if (elS) elS.textContent = `${Number(s.stock_actual_tn).toLocaleString("es-AR")} Tn`;
                 });
             }
-            if (stockData.granos_silos.trigo && stockData.granos_silos.trigo.ubicaciones) {
-                stockData.granos_silos.trigo.ubicaciones.forEach(s => {
+            if (gs.silos_trilla && Array.isArray(gs.silos_trilla)) {
+                gs.silos_trilla.forEach(s => {
                     const elS = document.getElementById(`val-silo-${s.id}`);
                     if (elS) elS.textContent = `${Number(s.stock_actual_tn).toLocaleString("es-AR")} Tn`;
                 });
@@ -418,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div class="message-content">
-                                <p>Historial reiniciado. ¿Qué dato de stock, depósitos de gasoil o labor deseas consultar?</p>
+                                <p>¡Hola! Historial reiniciado. ¿En qué puedo ayudarte hoy?</p>
                             </div>
                         </div>
                     </div>

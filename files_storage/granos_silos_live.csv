@@ -1,6 +1,8 @@
-Cultivo,Tipo,Identificador,Stock_Actual_Tn,Capacidad_Max_Tn,Humedad_Pct
-Soja,Silobolsa,Silobolsa 1 - Lote 1,240.0,250.0,13.2
-Soja,Silobolsa,Silobolsa 2 - Cabecera Lote 2,180.0,200.0,13.5
-Soja,Silo Aéreo Chapa,Silo Aéreo Planta Central,120.0,150.0,12.8
-Trigo,Silobolsa,Silobolsa Trigo Norte (Lote 3),510.0,550.0,12.4
-Trigo,Silo Malla Chapa,Silo Chapa 1 - Planta Central,309.0,350.0,12.1
+Categoria,Identificador,Capacidad_Max_Tn,Stock_Actual_Tn,Cultivo,Humedad_Pct,Estado
+Silos Principales,Silo 1,60.0,45.0,Soja,13.0,Operativo
+Silos Principales,Silo 2,60.0,50.0,Soja,13.2,Operativo
+Silos Principales,Silo 3,60.0,40.0,Trigo,12.0,Operativo
+Silos Principales,Silo 4,40.0,25.0,Trigo,12.4,Operativo
+Silos Principales,Silo 5,60.0,35.0,Maíz,14.1,Operativo
+Silos de Trilla,Silo de trilla 3,1300.0,850.0,Trigo,12.2,Operativo
+Silos de Trilla,Silo de trilla 4,1400.0,920.0,Soja,13.5,Operativo

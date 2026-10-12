@@ -1,74 +1,150 @@
 {
-  "descripcion": "Inventario de Granos Cosechados y Almacenados en Toneladas (Tn) en Silos y Silobolsas",
+  "descripcion": "Inventario de Granos y Capacidad de Silos de Guardado y Acopio (Toneladas)",
+  "silos_principales": [
+    {
+      "id": "SILO-01",
+      "nombre": "Silo 1",
+      "tipo": "Silo Principal",
+      "capacidad_max_tn": 60.0,
+      "stock_actual_tn": 45.0,
+      "cultivo": "Soja",
+      "humedad_pct": 13.0,
+      "calidad": "Cámara estándar",
+      "estado": "Operativo"
+    },
+    {
+      "id": "SILO-02",
+      "nombre": "Silo 2",
+      "tipo": "Silo Principal",
+      "capacidad_max_tn": 60.0,
+      "stock_actual_tn": 50.0,
+      "cultivo": "Soja",
+      "humedad_pct": 13.2,
+      "calidad": "Cámara estándar",
+      "estado": "Operativo"
+    },
+    {
+      "id": "SILO-03",
+      "nombre": "Silo 3",
+      "tipo": "Silo Principal",
+      "capacidad_max_tn": 60.0,
+      "stock_actual_tn": 40.0,
+      "cultivo": "Trigo",
+      "humedad_pct": 12.0,
+      "calidad": "Grado 1 Superior",
+      "estado": "Operativo"
+    },
+    {
+      "id": "SILO-04",
+      "nombre": "Silo 4",
+      "tipo": "Silo Principal",
+      "capacidad_max_tn": 40.0,
+      "stock_actual_tn": 25.0,
+      "cultivo": "Trigo",
+      "humedad_pct": 12.4,
+      "calidad": "Grado 1",
+      "estado": "Operativo"
+    },
+    {
+      "id": "SILO-05",
+      "nombre": "Silo 5",
+      "tipo": "Silo Principal",
+      "capacidad_max_tn": 60.0,
+      "stock_actual_tn": 35.0,
+      "cultivo": "Maíz",
+      "humedad_pct": 14.1,
+      "calidad": "Comercial seco",
+      "estado": "Operativo"
+    }
+  ],
+  "silos_trilla": [
+    {
+      "id": "SILO-TRILLA-03",
+      "nombre": "Silo de trilla 3",
+      "tipo": "Silo de acopio para trilla",
+      "capacidad_max_tn": 1300.0,
+      "stock_actual_tn": 850.0,
+      "cultivo": "Trigo",
+      "humedad_pct": 12.2,
+      "calidad": "Grado 1 Acopio",
+      "estado": "Operativo"
+    },
+    {
+      "id": "SILO-TRILLA-04",
+      "nombre": "Silo de trilla 4",
+      "tipo": "Silo de acopio para trilla",
+      "capacidad_max_tn": 1400.0,
+      "stock_actual_tn": 920.0,
+      "cultivo": "Soja",
+      "humedad_pct": 13.5,
+      "calidad": "Cámara Acopio",
+      "estado": "Operativo"
+    }
+  ],
   "soja": {
-    "especie": "Soja Comercial",
-    "unidad": "Toneladas (Tn)",
+    "total_tn": 1015.0,
     "ubicaciones": [
       {
-        "id": "SILO-SOJ-01",
-        "tipo": "Silobolsa",
-        "identificador": "Silobolsa 1 - Lote 1",
-        "capacidad_max_tn": 250.0,
-        "stock_actual_tn": 240.0,
-        "humedad_pct": 13.2,
-        "calidad": "Grano comercial cámara",
-        "fecha_embolsado": "2026-05-18"
+        "id": "SILO-01",
+        "tipo": "Silo Principal",
+        "identificador": "Silo 1",
+        "capacidad_max_tn": 60.0,
+        "stock_actual_tn": 45.0,
+        "humedad_pct": 13.0
       },
       {
-        "id": "SILO-SOJ-02",
-        "tipo": "Silobolsa",
-        "identificador": "Silobolsa 2 - Cabecera Lote 2",
-        "capacidad_max_tn": 200.0,
-        "stock_actual_tn": 180.0,
-        "humedad_pct": 13.5,
-        "calidad": "Grano comercial cámara",
-        "fecha_embolsado": "2026-05-22"
+        "id": "SILO-02",
+        "tipo": "Silo Principal",
+        "identificador": "Silo 2",
+        "capacidad_max_tn": 60.0,
+        "stock_actual_tn": 50.0,
+        "humedad_pct": 13.2
       },
       {
-        "id": "SILO-SOJ-03",
-        "tipo": "Silo Aéreo Chapa",
-        "identificador": "Silo Aéreo Planta Central",
-        "capacidad_max_tn": 150.0,
-        "stock_actual_tn": 120.0,
-        "humedad_pct": 12.8,
-        "calidad": "Grano seleccionado",
-        "ubicacion_planta": "Batería Silos Este"
+        "id": "SILO-TRILLA-04",
+        "tipo": "Silo de acopio para trilla",
+        "identificador": "Silo de trilla 4",
+        "capacidad_max_tn": 1400.0,
+        "stock_actual_tn": 920.0,
+        "humedad_pct": 13.5
       }
-    ],
-    "total_tn": 540.0
+    ]
   },
   "trigo": {
-    "especie": "Trigo Pan Grado 1",
-    "unidad": "Toneladas (Tn)",
+    "total_tn": 915.0,
     "ubicaciones": [
       {
-        "id": "SILO-TRG-01",
-        "tipo": "Silobolsa",
-        "identificador": "Silobolsa Trigo Norte (Lote 3)",
-        "capacidad_max_tn": 550.0,
-        "stock_actual_tn": 510.0,
-        "humedad_pct": 12.4,
-        "peso_hectolitrico": 80.5,
-        "calidad": "Grado 1 Superior",
-        "fecha_embolsado": "2026-01-12"
+        "id": "SILO-03",
+        "tipo": "Silo Principal",
+        "identificador": "Silo 3",
+        "capacidad_max_tn": 60.0,
+        "stock_actual_tn": 40.0,
+        "humedad_pct": 12.0
       },
       {
-        "id": "SILO-TRG-02",
-        "tipo": "Silo Malla Chapa",
-        "identificador": "Silo Chapa 1 - Planta Central",
-        "capacidad_max_tn": 350.0,
-        "stock_actual_tn": 309.0,
-        "humedad_pct": 12.1,
-        "peso_hectolitrico": 81.0,
-        "calidad": "Grado 1",
-        "ubicacion_planta": "Silo pulmón planta"
+        "id": "SILO-04",
+        "tipo": "Silo Principal",
+        "identificador": "Silo 4",
+        "capacidad_max_tn": 40.0,
+        "stock_actual_tn": 25.0,
+        "humedad_pct": 12.4
+      },
+      {
+        "id": "SILO-TRILLA-03",
+        "tipo": "Silo de acopio para trilla",
+        "identificador": "Silo de trilla 3",
+        "capacidad_max_tn": 1300.0,
+        "stock_actual_tn": 850.0,
+        "humedad_pct": 12.2
       }
-    ],
-    "total_tn": 819.0
+    ]
   },
   "totales_generales": {
-    "soja_total_tn": 540.0,
-    "trigo_total_tn": 819.0,
-    "total_granos_almacenados_tn": 1359.0
+    "capacidad_principales_tn": 280.0,
+    "capacidad_trilla_tn": 2700.0,
+    "capacidad_total_tn": 2980.0,
+    "stock_principales_tn": 195.0,
+    "stock_trilla_tn": 1770.0,
+    "total_granos_almacenados_tn": 1965.0
   }
 }

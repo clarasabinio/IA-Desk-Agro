@@ -24,16 +24,18 @@ Gestionado en `stock_insumos.json`:
 
 ---
 
-## 🌾 GRANOS EN SILOS Y SILOBOLSAS (EN TONELADAS)
+## 🌾 SILOS DE GUARDADO Y ACOPIO (EN TONELADAS)
 Gestionado en `stock_granos_silos.json`:
-- **Soja Comercial (Total: 540.0 Tn):**
-  - Silobolsa 1 (Lote 1): 240.0 Tn (13.2% humedad).
-  - Silobolsa 2 (Cabecera Lote 2): 180.0 Tn (13.5% humedad).
-  - Silo Aéreo Chapa (Planta Central): 120.0 Tn (12.8% humedad).
-- **Trigo Pan Grado 1 (Total: 819.0 Tn):**
-  - Silobolsa Trigo Norte (Lote 3): 510.0 Tn (12.4% humedad, PH 80.5).
-  - Silo Chapa 1 (Planta Central): 309.0 Tn (12.1% humedad, PH 81.0).
-- *Total Granos Almacenados en Campo:* **1.359.0 Toneladas**.
+- **Silos Principales (5 unidades - Capacidad Máx: 280 Tn):**
+  - Silo 1: 45.0 Tn / 60.0 Tn (Soja - Humedad: 13.0%).
+  - Silo 2: 50.0 Tn / 60.0 Tn (Soja - Humedad: 13.2%).
+  - Silo 3: 40.0 Tn / 60.0 Tn (Trigo - Humedad: 12.0%).
+  - Silo 4: 25.0 Tn / 40.0 Tn (Trigo - Humedad: 12.4%).
+  - Silo 5: 35.0 Tn / 60.0 Tn (Maíz - Humedad: 14.1%).
+- **Silos de Acopio para Trilla (2 unidades adicionales - Capacidad Máx: 2.700 Tn):**
+  - Silo de trilla 3: 850.0 Tn / 1.300.0 Tn (Trigo - Humedad: 12.2%).
+  - Silo de trilla 4: 920.0 Tn / 1.400.0 Tn (Soja - Humedad: 13.5%).
+- *Total Granos Almacenados en Silos:* **1.965.0 Toneladas** / **2.980.0 Tn** de capacidad combinada.
 
 ---
 

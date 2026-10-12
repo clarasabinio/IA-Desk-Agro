@@ -113,17 +113,17 @@ def generate_consolidated_workbook() -> Path:
     m_retiro = insumos_data.get("semillas_maiz", {}).get("totales", {}).get("bolsas_por_retirar", 0)
     m_total = insumos_data.get("semillas_maiz", {}).get("totales", {}).get("total_general_bolsas", 0)
 
-    gr_total_tn = granos_data.get("totales_generales", {}).get("total_granos_almacenados_tn", 0)
-    soja_tn = granos_data.get("soja", {}).get("total_tn", 0)
-    trigo_tn = granos_data.get("trigo", {}).get("total_tn", 0)
+    s_princ = granos_data.get("totales_generales", {}).get("stock_principales_tn", sum(s.get("stock_actual_tn", 0) for s in granos_data.get("silos_principales", [])))
+    s_trilla = granos_data.get("totales_generales", {}).get("stock_trilla_tn", sum(s.get("stock_actual_tn", 0) for s in granos_data.get("silos_trilla", [])))
+    gr_total_tn = granos_data.get("totales_generales", {}).get("total_granos_almacenados_tn", s_princ + s_trilla)
 
     tablero_rows = [
         ["Combustibles (Gasoil)", "Stock 4 Depósitos & Acopio YPF", g_fisico, g_acopio, g_total, "Litros"],
         ["Fertilizantes Granulados", "Fósforo, Nitrógeno & Zinc", f_galpon, f_retiro, f_total, "Kilogramos (kg)"],
         ["Insumos & Fitosanitarios", "Herbicidas, Insecticidas & Coadyuvante", i_galpon, i_retiro, i_total, "Litros"],
         ["Semillas de Maíz", "3 Híbridos Seleccionados", m_planta, m_retiro, m_total, "Bolsas (80k sem)"],
-        ["Granos Almacenados (Soja)", "Silobolsas & Silos de Chapa", soja_tn, 0, soja_tn, "Toneladas (Tn)"],
-        ["Granos Almacenados (Trigo)", "Silobolsa Norte & Silo Central", trigo_tn, 0, trigo_tn, "Toneladas (Tn)"]
+        ["Silos Principales (5 unidades)", "Silos 1 a 5 (Cap. Máx: 280 Tn)", s_princ, 0, s_princ, "Toneladas (Tn)"],
+        ["Silos de Trilla (2 unidades)", "Silos 3 y 4 (Cap. Máx: 2.700 Tn)", s_trilla, 0, s_trilla, "Toneladas (Tn)"]
     ]
 
     for r in tablero_rows:
@@ -435,36 +435,38 @@ def generate_consolidated_workbook() -> Path:
     auto_adjust_columns(ws_mz)
 
     # ==============================================================
-    # PESTAÑA 6: 🌾 Granos en Silos y Silobolsas (Tn)
+    # PESTAÑA 6: 🌾 Granos en Silos de Guardado y Acopio (Tn)
     # ==============================================================
     ws_gr = wb.create_sheet(title="Granos Silos (Tn)")
     ws_gr.views.sheetView[0].showGridLines = True
-    ws_gr["A1"] = "INVENTARIO DE GRANOS EN SILOS Y SILOBOLSAS (TONELADAS)"
+    ws_gr["A1"] = "INVENTARIO DE SILOS DE GUARDADO Y ACOPIO (TONELADAS)"
     ws_gr["A1"].font = TITLE_FONT
-    ws_gr["A2"] = f"Monitoreo de Existencias de Soja y Trigo | Actualizado: {now_str}"
+    ws_gr["A2"] = f"Monitoreo de 5 Silos Principales y 2 Silos de Trilla | Actualizado: {now_str}"
     ws_gr["A2"].font = SMALL_FONT
 
     ws_gr.append([])
-    ws_gr.append(["CULTIVO", "TIPO ACOPIO", "IDENTIFICADOR / UBICACIÓN", "STOCK ACTUAL (TN)", "CAPACIDAD MÁX (TN)", "% OCUPACIÓN", "HUMEDAD %", "CALIDAD / PH", "OBSERVACIONES"])
+    ws_gr.append(["CATEGORÍA", "IDENTIFICADOR", "CULTIVO", "STOCK ACTUAL (TN)", "CAPACIDAD MÁX (TN)", "% OCUPACIÓN", "HUMEDAD %", "ESTADO", "OBSERVACIONES"])
     for c in range(1, 10):
         cell = ws_gr.cell(row=4, column=c)
         cell.fill = HEADER_FILL
         cell.font = HEADER_FONT
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    for u in granos_data.get("soja", {}).get("ubicaciones", []):
+    all_silos = [("Silo Principal", s) for s in granos_data.get("silos_principales", [])] + [("Silo de Acopio Trilla", s) for s in granos_data.get("silos_trilla", [])]
+
+    for cat_name, u in all_silos:
         act = u.get("stock_actual_tn", 0)
         cap = u.get("capacidad_max_tn", act)
         ws_gr.append([
-            "Soja Comercial",
-            u.get("tipo", ""),
-            u.get("identificador", ""),
+            cat_name,
+            u.get("nombre", u.get("identificador", "")),
+            u.get("cultivo", "Grano"),
             act,
             cap,
-            (act / cap) if cap > 0 else 1.0,
+            (act / cap) if cap > 0 else 0.0,
             f"{u.get('humedad_pct', 13.0)}%",
-            u.get("calidad", "Cámara"),
-            u.get("fecha_embolsado", "")
+            u.get("estado", "Operativo"),
+            u.get("calidad", "")
         ])
         curr = ws_gr.max_row
         for c in range(1, 10):
@@ -478,35 +480,9 @@ def generate_consolidated_workbook() -> Path:
                 cell.number_format = "0.0%"
                 cell.alignment = Alignment(horizontal="center")
 
-    for u in granos_data.get("trigo", {}).get("ubicaciones", []):
-        act = u.get("stock_actual_tn", 0)
-        cap = u.get("capacidad_max_tn", act)
-        ws_gr.append([
-            "Trigo Pan Grado 1",
-            u.get("tipo", ""),
-            u.get("identificador", ""),
-            act,
-            cap,
-            (act / cap) if cap > 0 else 1.0,
-            f"{u.get('humedad_pct', 12.0)}%",
-            f"PH {u.get('peso_hectolitrico', 80.0)}",
-            u.get("ubicacion_planta", "")
-        ])
-        curr = ws_gr.max_row
-        for c in range(1, 10):
-            cell = ws_gr.cell(row=curr, column=c)
-            cell.font = REGULAR_FONT
-            cell.border = BORDER_CELL
-            if c in [4, 5]:
-                cell.number_format = "#,##0.0"
-                cell.alignment = Alignment(horizontal="right")
-            elif c == 6:
-                cell.number_format = "0.0%"
-                cell.alignment = Alignment(horizontal="center")
-
-    # Total Granos
-    tot_granos = granos_data.get("totales_generales", {}).get("total_granos_almacenados_tn", soja_tn + trigo_tn)
-    ws_gr.append(["TOTAL GENERAL GRANOS", "Silos + Silobolsas", "Establecimiento completo", tot_granos, 1500.0, (tot_granos / 1500.0), "Bajo norma", "Grado Comercial Superior", "Monitoreo continuo"])
+    tot_granos = granos_data.get("totales_generales", {}).get("total_granos_almacenados_tn", s_princ + s_trilla)
+    cap_tot = granos_data.get("totales_generales", {}).get("capacidad_total_tn", 2980.0)
+    ws_gr.append(["TOTAL GENERAL SILOS", "7 Silos de Acopio", "Establecimiento completo", tot_granos, cap_tot, (tot_granos / cap_tot) if cap_tot > 0 else 0.0, "Bajo norma", "Operativo", "Monitoreo continuo"])
     curr = ws_gr.max_row
     for c in range(1, 10):
         cell = ws_gr.cell(row=curr, column=c)
@@ -638,8 +614,8 @@ def export_csv_modules(storage_dir: Path, gasoil_data: dict, insumos_data: dict,
     # 5. Granos Silos CSV
     with open(storage_dir / "granos_silos_live.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Cultivo", "Tipo", "Identificador", "Stock_Actual_Tn", "Capacidad_Max_Tn", "Humedad_Pct"])
-        for u in granos_data.get("soja", {}).get("ubicaciones", []):
-            writer.writerow(["Soja", u.get("tipo", ""), u.get("identificador", ""), u.get("stock_actual_tn", 0), u.get("capacidad_max_tn", 0), u.get("humedad_pct", 13.0)])
-        for u in granos_data.get("trigo", {}).get("ubicaciones", []):
-            writer.writerow(["Trigo", u.get("tipo", ""), u.get("identificador", ""), u.get("stock_actual_tn", 0), u.get("capacidad_max_tn", 0), u.get("humedad_pct", 12.0)])
+        writer.writerow(["Categoria", "Identificador", "Capacidad_Max_Tn", "Stock_Actual_Tn", "Cultivo", "Humedad_Pct", "Estado"])
+        for u in granos_data.get("silos_principales", []):
+            writer.writerow(["Silos Principales", u.get("nombre", ""), u.get("capacidad_max_tn", 0), u.get("stock_actual_tn", 0), u.get("cultivo", ""), u.get("humedad_pct", 13.0), u.get("estado", "Operativo")])
+        for u in granos_data.get("silos_trilla", []):
+            writer.writerow(["Silos de Trilla", u.get("nombre", ""), u.get("capacidad_max_tn", 0), u.get("stock_actual_tn", 0), u.get("cultivo", ""), u.get("humedad_pct", 12.0), u.get("estado", "Operativo")])

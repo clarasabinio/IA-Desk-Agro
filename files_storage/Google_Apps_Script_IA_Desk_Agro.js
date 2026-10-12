@@ -254,9 +254,14 @@ function actualizarGranos(ss, gData) {
   var sheet = ss.getSheetByName('Granos Silos (Tn)');
   if (!sheet || !gData) return;
 
-  var sojaUbic = (gData.soja && gData.soja.ubicaciones) || [];
-  var trigoUbic = (gData.trigo && gData.trigo.ubicaciones) || [];
-  var allUbic = sojaUbic.concat(trigoUbic);
+  var principales = gData.silos_principales || [];
+  var trilla = gData.silos_trilla || [];
+  var allUbic = principales.concat(trilla);
+  if (allUbic.length === 0) {
+    var sojaUbic = (gData.soja && gData.soja.ubicaciones) || [];
+    var trigoUbic = (gData.trigo && gData.trigo.ubicaciones) || [];
+    allUbic = sojaUbic.concat(trigoUbic);
+  }
 
   for (var i = 0; i < allUbic.length; i++) {
     var row = 5 + i;
