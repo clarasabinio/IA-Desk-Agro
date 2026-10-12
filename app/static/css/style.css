@@ -1171,3 +1171,223 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.25);
 }
+
+/* ==============================================================
+   GESTIÓN AGRONÓMICA DE LOTES (FOTOS, PLANOS E HÍBRIDOS)
+   ============================================================== */
+.lotes-card {
+    border-color: rgba(16, 185, 129, 0.25);
+}
+.lotes-tabs-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+.lote-tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.lote-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+.lote-tab-btn.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #a7f3d0;
+    font-weight: 600;
+}
+.lote-panel-content {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+}
+.lote-meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.lote-title {
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+.lote-campo-name {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.form-group-lote {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+.lote-hibrido-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    color: var(--text-main);
+    transition: border-color 0.2s ease;
+}
+.lote-hibrido-input:focus {
+    outline: none;
+    border-color: #10b981;
+    background: rgba(0, 0, 0, 0.5);
+}
+.diagram-preview-box {
+    margin-top: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 8px;
+}
+.current-diagram-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.lote-thumb-img {
+    width: 80px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}
+.lote-thumb-img:hover {
+    transform: scale(1.05);
+}
+.diagram-info-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.diagram-filename {
+    font-size: 0.75rem;
+    color: #a7f3d0;
+    font-weight: 500;
+}
+.diagram-hint {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+.no-diagram-placeholder {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 10px 0;
+}
+.upload-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.btn-file-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+    font-size: 0.73rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-file-select:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+.lote-file-input {
+    display: none;
+}
+.selected-file-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+}
+.form-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.btn-save-lote {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border: none;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+.btn-save-lote:hover {
+    opacity: 0.9;
+}
+.lote-save-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Chat Diagram Card */
+.chat-diagram-card {
+    margin: 10px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    max-width: 440px;
+}
+.chat-diagram-img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: filter 0.2s ease;
+}
+.chat-diagram-img:hover {
+    filter: brightness(1.08);
+}
+.chat-diagram-caption {
+    padding: 6px 10px;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.chat-diagram-caption strong {
+    color: #a7f3d0;
+}
+.caption-zoom {
+    font-size: 0.68rem;
+    color: #6ee7b7;
+}

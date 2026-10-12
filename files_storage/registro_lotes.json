@@ -6,7 +6,7 @@
       "nombre": "Lote 1 - La Esperanza",
       "superficie_ha": 120,
       "cultivo": "Soja de 1ra",
-      "variedad": "DM 46R18",
+      "variedad": "Don Mario DM 46R18 STS (Bolsas seleccionadas)",
       "estado_actual": "Siembra en progreso: 25.0 ha sumadas hoy",
       "labores": [
         {
@@ -41,7 +41,11 @@
         "rinde_total_kg": null,
         "rinde_kg_ha": null,
         "rinde_qq_ha": null
-      }
+      },
+      "hibridos_plantados": "Don Mario DM 46R18 STS (Bolsas seleccionadas)",
+      "diagrama_url": "/media/lotes/lote_1_diagrama.jpg",
+      "diagrama_nombre": "Plano Catastral y Zonificación de Soja - Lote 1",
+      "campo": "Campo La Esperanza"
     },
     {
       "id": "LOTE-02",
@@ -100,7 +104,11 @@
         "rinde_total_kg": null,
         "rinde_kg_ha": null,
         "rinde_qq_ha": null
-      }
+      },
+      "hibridos_plantados": "Dekalb DK 72-10 VT3P",
+      "diagrama_url": "/media/lotes/lote_2_diagrama.jpg",
+      "diagrama_nombre": "Esquema Agronómico y Prescripción de Maíz - Lote 2",
+      "campo": "Campo El Ombú"
     },
     {
       "id": "LOTE-03",
@@ -115,7 +123,11 @@
         "rinde_total_kg": 819000,
         "rinde_kg_ha": 3900.0,
         "rinde_qq_ha": 39.0
-      }
+      },
+      "hibridos_plantados": "Trigo MS INTA 119 (Cosechado) / Soja 2da DM 46R18",
+      "diagrama_url": "/media/lotes/lote_3_diagrama.jpg",
+      "diagrama_nombre": "Mapa de Rinde Cosecha y Siembra Soja 2da - Lote 3",
+      "campo": "Campo San José (Bajo Grande)"
     }
   ]
 }

@@ -98,3 +98,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', '11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw')
 GOOGLE_DRIVE_FOLDER_URL = f"https://drive.google.com/drive/folders/{GOOGLE_DRIVE_FOLDER_ID}?usp=sharing"
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID', None)
+
+# Archivos multimedia (fotos y diagramas de lotes)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

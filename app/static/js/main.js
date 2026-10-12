@@ -503,18 +503,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatMarkdownLike(str) {
         if (!str) return '';
         let html = escapeHtml(str);
+        // Soporte para imágenes / diagramas de lotes
+        html = html.replace(/!\[(.*?)\]\((.*?)\)/g, 
+            '<div class="chat-diagram-card">' +
+                '<img src="$2" alt="$1" class="chat-diagram-img" onclick="window.open(\'$2\', \'_blank\')">' +
+                '<div class="chat-diagram-caption">' +
+                    '<span>🗺️ <strong>$1</strong></span> <span class="caption-zoom">(Clic para ver en tamaño completo)</span>' +
+                '</div>' +
+            '</div>'
+        );
+        html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="chat-link" style="color:#6ee7b7;text-decoration:underline;">$1</a>');
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/`(.*?)`/g, '<code>$1</code>');
         const lines = html.split('\n');
         let formatted = '';
         lines.forEach(line => {
-            if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
-                formatted += `<p style="margin-left: 14px;">• ${line.trim().substring(2)}</p>`;
-            } else if (line.trim().startsWith('#')) {
-                const headerText = line.replace(/^#+\s*/, '');
+            const trimmed = line.trim();
+            if (trimmed.startsWith('<div class="chat-diagram-card">') || trimmed.startsWith('</div>') || trimmed.startsWith('<div') || trimmed.startsWith('<img') || trimmed.startsWith('<span')) {
+                formatted += trimmed;
+            } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                formatted += `<p style="margin-left: 14px;">• ${trimmed.substring(2)}</p>`;
+            } else if (trimmed.startsWith('#')) {
+                const headerText = trimmed.replace(/^#+\s*/, '');
                 formatted += `<h4 style="margin: 8px 0 4px; color: #a7f3d0;">${headerText}</h4>`;
-            } else if (line.trim()) {
-                formatted += `<p>${line}</p>`;
+            } else if (trimmed) {
+                formatted += `<p>${trimmed}</p>`;
             }
         });
         return formatted;
@@ -554,4 +567,108 @@ document.addEventListener('DOMContentLoaded', () => {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // ==============================================================
+    // GESTIÓN DE LOTES: PESTAÑAS, PREVIEW Y GUARDADO DE HÍBRIDOS / PLANOS
+    // ==============================================================
+    const loteTabBtns = document.querySelectorAll('.lote-tab-btn');
+    loteTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.targetLote;
+            loteTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.lote-panel-content').forEach(panel => {
+                if (panel.id === targetId) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.lote-file-input').forEach(input => {
+        input.addEventListener('change', () => {
+            const loteId = input.dataset.loteId;
+            const labelEl = document.getElementById(`file-name-${loteId}`);
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (labelEl) labelEl.textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    const previewBox = document.getElementById(`preview-box-${loteId}`);
+                    if (previewBox) {
+                        previewBox.innerHTML = `
+                            <div class="current-diagram-wrapper">
+                                <img src="${re.target.result}" alt="Vista previa" class="lote-thumb-img" onclick="window.open('${re.target.result}', '_blank')">
+                                <div class="diagram-info-meta">
+                                    <span class="diagram-filename">📷 ${file.name} (Por guardar)</span>
+                                    <span class="diagram-hint">Presiona 'Guardar Lote' para confirmar el almacenamiento</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    document.querySelectorAll('.lote-update-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loteId = form.dataset.loteId;
+            const statusEl = document.getElementById(`save-status-${loteId}`);
+            const submitBtn = form.querySelector('.btn-save-lote');
+
+            const formData = new FormData(form);
+            formData.append('lote_id', loteId);
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Guardando...';
+            }
+
+            try {
+                const res = await fetch('/api/lotes/update/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    if (statusEl) {
+                        statusEl.textContent = '✓ Guardado exitosamente';
+                        statusEl.classList.remove('hidden');
+                        setTimeout(() => statusEl.classList.add('hidden'), 3500);
+                    }
+                    if (data.lote && data.lote.diagrama_url) {
+                        const previewBox = document.getElementById(`preview-box-${loteId}`);
+                        if (previewBox) {
+                            previewBox.innerHTML = `
+                                <div class="current-diagram-wrapper">
+                                    <img src="${data.lote.diagrama_url}" alt="Diagrama ${data.lote.nombre}" class="lote-thumb-img" onclick="window.open('${data.lote.diagrama_url}', '_blank')">
+                                    <div class="diagram-info-meta">
+                                        <span class="diagram-filename">🗺️ ${data.lote.diagrama_nombre || 'Plano guardado'}</span>
+                                        <span class="diagram-hint">(Clic en la imagen para ampliar en pestaña nueva)</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    alert('Error: ' + (data.message || 'No se pudo guardar el lote.'));
+                }
+            } catch (err) {
+                alert('Error al comunicar con el servidor.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Guardar Lote';
+                }
+            }
+        });
+    });
+
 });

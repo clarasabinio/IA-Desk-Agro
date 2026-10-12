@@ -31,13 +31,22 @@ def index_view(request: HttpRequest):
     stock_data = get_dashboard_summary()
     drive_folder_id = get_drive_folder_id()
     drive_url = f"https://drive.google.com/drive/folders/{drive_folder_id}?usp=sharing"
-    
+
+    # Cargar lotes con sus híbridos y diagramas
+    lotes_path = settings.FILES_STORAGE_DIR / "registro_lotes.json"
+    try:
+        with open(lotes_path, "r", encoding="utf-8") as f:
+            lotes_data = json.load(f).get("lotes", [])
+    except Exception:
+        lotes_data = []
+
     context = {
         "storage_files": storage_files,
         "has_anthropic_key": has_anthropic_key,
         "field_name": "Campo La Esperanza",
         "season": "Campaña Gruesa 2026/2027",
         "stock": stock_data,
+        "lotes": lotes_data,
         "google_drive_folder_url": drive_url,
         "google_drive_folder_id": drive_folder_id
     }
@@ -213,5 +222,77 @@ def api_sheets_sync_now_view(request: HttpRequest):
             "files": [xlsx_path.name] + [p.name for p in crop_files.values()],
             "google_drive_folder_url": folder_url
         })
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_lote_update_view(request: HttpRequest):
+    """
+    Actualiza la información agronómica de un lote específico:
+    - Híbridos o variedades que se plantan en el mismo
+    - Carga y almacenamiento de una foto o diagrama (plano, esquema o estado)
+    """
+    try:
+        import os
+        from datetime import datetime
+        lote_id = request.POST.get("lote_id", "").strip()
+        hibridos = request.POST.get("hibridos_plantados", "").strip()
+        uploaded_file = request.FILES.get("foto_diagrama")
+
+        if not lote_id:
+            return JsonResponse({"status": "error", "message": "Identificador de lote requerido."}, status=400)
+
+        lotes_path = settings.FILES_STORAGE_DIR / "registro_lotes.json"
+        with open(lotes_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        target_lote = None
+        for l in data.get("lotes", []):
+            if l.get("id") == lote_id or l.get("nombre", "").lower().startswith(lote_id.lower()):
+                target_lote = l
+                break
+
+        if not target_lote:
+            return JsonResponse({"status": "error", "message": f"Lote '{lote_id}' no encontrado."}, status=404)
+
+        if hibridos is not None:
+            target_lote["hibridos_plantados"] = hibridos
+            target_lote["variedad"] = hibridos
+
+        if uploaded_file:
+            media_dir = settings.BASE_DIR / "media" / "lotes"
+            media_dir.mkdir(parents=True, exist_ok=True)
+
+            ext = os.path.splitext(uploaded_file.name)[1].lower() or ".jpg"
+            clean_id = target_lote.get("id", "lote").lower().replace("-", "_")
+            timestamp = int(datetime.now().timestamp())
+            filename = f"{clean_id}_{timestamp}{ext}"
+            file_path = media_dir / filename
+
+            with open(file_path, "wb") as dest:
+                for chunk in uploaded_file.chunks():
+                    dest.write(chunk)
+
+            target_lote["diagrama_url"] = f"/media/lotes/{filename}"
+            target_lote["diagrama_nombre"] = uploaded_file.name
+
+        with open(lotes_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        # Registrar en bitácora / memoria operativa
+        from .services.storage_service import append_memory
+        desc_memo = f"Actualización agronómica de {target_lote.get('nombre')}: Híbrido '{target_lote.get('hibridos_plantados')}'"
+        if uploaded_file:
+            desc_memo += f" y nuevo plano/diagrama cargado ('{uploaded_file.name}')"
+        append_memory(desc_memo)
+
+        return JsonResponse({
+            "status": "success",
+            "message": f"{target_lote.get('nombre')} actualizado correctamente.",
+            "lote": target_lote
+        })
+
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)

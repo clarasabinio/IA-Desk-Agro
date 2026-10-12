@@ -84,23 +84,23 @@
                 <div class="quick-chips-wrapper">
                     <span class="chips-label">Consultas y acciones operativas:</span>
                     <div class="chips-container">
-                        <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
-                            ⛽ Saldo Gasoil
+                        <button class="chip-btn" data-query="¿Qué híbrido hay en el Lote 1 y cómo es su diagrama?">
+                            🌱 Lote 1 (Soja)
                         </button>
-                        <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
-                            🌽 Maíz por Híbrido
+                        <button class="chip-btn" data-query="¿Qué híbrido hay en el Lote 2 y cómo es su diagrama?">
+                            🌽 Lote 2 (Maíz)
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama del Lote 3 y qué híbrido se plantó?">
+                            🌾 Lote 3 (Trigo/Soja)
                         </button>
                         <button class="chip-btn" data-query="¿Cuál es el estado y capacidad de los silos principales y silos de trilla?">
                             🌾 Silos y Acopio (Tn)
                         </button>
-                        <button class="chip-btn" data-query="¿Cuánto fertilizante tenemos en kg en galpón y por retirar?">
-                            🧪 Fertilizantes en kg
+                        <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
+                            ⛽ Saldo Gasoil
                         </button>
-                        <button class="chip-btn" data-query="¿Qué insumos y fitosanitarios tenemos en galpón y a retirar?">
-                            📦 Insumos a Retirar
-                        </button>
-                        <button class="chip-btn" data-query="Retiré 4000 kg de MAP de YPF Agro al galpón">
-                            🚚 Retirar 4.000 kg MAP
+                        <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
+                            🌽 Maíz Híbridos
                         </button>
                     </div>
                 </div>
@@ -375,6 +375,92 @@
                             <strong class="tot-val text-cyan" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</strong>
                         </div>
                     </div>
+                </div>
+
+                <!-- Lotes Agronomy & Diagrams Card -->
+                <div class="dash-card lotes-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌱 Gestión de Lotes (Planos & Híbridos)</h2>
+                        <span class="badge-tag text-emerald">{{ lotes|length }} Lotes Activos</span>
+                    </div>
+                    <p class="section-desc" style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 10px;">
+                        Asocia los híbridos plantados y almacena planos o fotos del lote para consulta de la IA.
+                    </p>
+
+                    <!-- Selector de pestañas de Lotes -->
+                    <div class="lotes-tabs-bar">
+                        {% for l in lotes %}
+                        <button type="button" class="lote-tab-btn {% if forloop.first %}active{% endif %}" data-target-lote="tab-lote-{{ l.id }}">
+                            {{ l.nombre|truncatechars:18 }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paneles de cada Lote -->
+                    {% for l in lotes %}
+                    <div class="lote-panel-content {% if not forloop.first %}hidden{% endif %}" id="tab-lote-{{ l.id }}" data-lote-id="{{ l.id }}">
+                        <div class="lote-meta-header">
+                            <div>
+                                <strong class="lote-title">{{ l.nombre }}</strong>
+                                <span class="badge-tag text-cyan" style="margin-left: 6px;">{{ l.superficie_ha }} ha</span>
+                                <span class="badge-tag text-emerald" style="margin-left: 4px;">{{ l.cultivo }}</span>
+                            </div>
+                            <span class="lote-campo-name">{{ l.campo|default:"Campo La Esperanza" }}</span>
+                        </div>
+
+                        <form class="lote-update-form" data-lote-id="{{ l.id }}" enctype="multipart/form-data">
+                            <!-- Campo de Híbridos / Variedades -->
+                            <div class="form-group-lote">
+                                <label class="form-lbl">
+                                    <span>🌾 Híbridos / Variedades que se plantan:</span>
+                                </label>
+                                <input type="text" 
+                                       name="hibridos_plantados" 
+                                       class="lote-hibrido-input" 
+                                       id="input-hib-{{ l.id }}"
+                                       value="{{ l.hibridos_plantados|default:l.variedad|default:'' }}" 
+                                       placeholder="Ej: Dekalb DK 72-10 VT3P / Don Mario DM 46R18">
+                            </div>
+
+                            <!-- Vista y carga de Foto / Diagrama -->
+                            <div class="form-group-lote mt-2">
+                                <label class="form-lbl">
+                                    <span>🗺️ Foto o Diagrama Agronómico (Plano / Esquema):</span>
+                                </label>
+                                <div class="diagram-preview-box" id="preview-box-{{ l.id }}">
+                                    {% if l.diagrama_url %}
+                                    <div class="current-diagram-wrapper">
+                                        <img src="{{ l.diagrama_url }}" alt="Diagrama {{ l.nombre }}" class="lote-thumb-img" id="thumb-img-{{ l.id }}" onclick="window.open('{{ l.diagrama_url }}', '_blank')">
+                                        <div class="diagram-info-meta">
+                                            <span class="diagram-filename" id="diag-filename-{{ l.id }}">🗺️ {{ l.diagrama_nombre|default:"Plano de lote guardado" }}</span>
+                                            <span class="diagram-hint">(Clic en la imagen para ampliar en tamaño completo)</span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="no-diagram-placeholder" id="placeholder-{{ l.id }}">
+                                        <span>📷 Sin foto o diagrama cargado actualmente</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="upload-actions-bar mt-2">
+                                    <label class="btn-file-select" for="file-upload-{{ l.id }}">
+                                        📁 Cargar Foto / Diagrama
+                                        <input type="file" id="file-upload-{{ l.id }}" name="foto_diagrama" accept="image/*" class="lote-file-input" data-lote-id="{{ l.id }}">
+                                    </label>
+                                    <span class="selected-file-label" id="file-name-{{ l.id }}">Ningún archivo nuevo seleccionado</span>
+                                </div>
+                            </div>
+
+                            <div class="form-footer mt-2">
+                                <button type="submit" class="btn-save-lote">
+                                    💾 Guardar Cambios del Lote
+                                </button>
+                                <span class="lote-save-status text-emerald hidden" id="save-status-{{ l.id }}">✓ Guardado exitosamente</span>
+                            </div>
+                        </form>
+                    </div>
+                    {% endfor %}
                 </div>
 
                 <!-- Google Drive & Online Spreadsheets Card -->

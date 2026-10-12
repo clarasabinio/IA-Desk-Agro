@@ -42,3 +42,4 @@
 - [2026-10-10 12:26:21] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
 - [2026-10-10 12:26:35] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
 - [2026-10-10 14:08:08] Consumo/Retiro de 200 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
+- [2026-10-12 14:03:56] Actualización agronómica de Lote 1 - La Esperanza: Híbrido 'Don Mario DM 46R18 STS (Bolsas seleccionadas)'

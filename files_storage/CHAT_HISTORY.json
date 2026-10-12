@@ -11,6 +11,82 @@
       "content": "¡Hola! Bienvenido a **IA Desk Agro**, tu copiloto operativo.\n\n¿En qué puedo ayudarte hoy?",
       "tools_invoked": [],
       "timestamp": "2026-10-12 13:31:38"
+    },
+    {
+      "role": "user",
+      "content": "¿Qué híbrido hay en el Lote 1?",
+      "timestamp": "2026-10-12 13:59:54"
+    },
+    {
+      "role": "assistant",
+      "content": "🌱 **Información Agronómica - Lote 1 - La Esperanza:**\n\n• 🌾 **Híbridos / Variedades que se plantan:** **Don Mario DM 46R18 STS**\n• 🚜 **Cultivo y Superficie:** Soja de 1ra (120 hectáreas)\n• 📍 **Ubicación:** Campo La Esperanza\n• 📋 **Estado actual:** Siembra en progreso: 25.0 ha sumadas hoy\n\n🗺️ **Diagrama / Plano Agronómico Asociado:**\n![Plano Catastral y Zonificación de Soja - Lote 1](/media/lotes/lote_1_diagrama.jpg)\n\n*Esquema registrado: `Plano Catastral y Zonificación de Soja - Lote 1`. Haz clic sobre el plano para ampliarlo o actualízalo desde el panel de Gestión de Lotes.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "registro_lotes.json"
+          },
+          "preview": "Lectura de registro_lotes.json (4216 bytes)"
+        }
+      ],
+      "timestamp": "2026-10-12 13:59:54"
+    },
+    {
+      "role": "user",
+      "content": "¿Cómo es el diagrama del Lote 2?",
+      "timestamp": "2026-10-12 13:59:54"
+    },
+    {
+      "role": "assistant",
+      "content": "🌱 **Información Agronómica - Lote 2 - El Ombú:**\n\n• 🌾 **Híbridos / Variedades que se plantan:** **Dekalb DK 72-10 VT3P**\n• 🚜 **Cultivo y Superficie:** Maíz Tardío (85 hectáreas)\n• 📍 **Ubicación:** Campo El Ombú\n• 📋 **Estado actual:** Barbecho finalizado - Esperando fecha óptima\n\n🗺️ **Diagrama / Plano Agronómico Asociado:**\n![Esquema Agronómico y Prescripción de Maíz - Lote 2](/media/lotes/lote_2_diagrama.jpg)\n\n*Esquema registrado: `Esquema Agronómico y Prescripción de Maíz - Lote 2`. Haz clic sobre el plano para ampliarlo o actualízalo desde el panel de Gestión de Lotes.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "registro_lotes.json"
+          },
+          "preview": "Lectura de registro_lotes.json (4216 bytes)"
+        }
+      ],
+      "timestamp": "2026-10-12 13:59:54"
+    },
+    {
+      "role": "user",
+      "content": "¿Qué híbrido hay en el Lote 1?",
+      "timestamp": "2026-10-12 14:05:51"
+    },
+    {
+      "role": "assistant",
+      "content": "🌱 **Información Agronómica - Lote 1 - La Esperanza:**\n\n• 🌾 **Híbridos / Variedades que se plantan:** **Don Mario DM 46R18 STS (Bolsas seleccionadas)**\n• 🚜 **Cultivo y Superficie:** Soja de 1ra (120 hectáreas)\n• 📍 **Ubicación:** Campo La Esperanza\n• 📋 **Estado actual:** Siembra en progreso: 25.0 ha sumadas hoy\n\n🗺️ **Diagrama / Plano Agronómico Asociado:**\n![Plano Catastral y Zonificación de Soja - Lote 1](/media/lotes/lote_1_diagrama.jpg)\n\n*Esquema registrado: `Plano Catastral y Zonificación de Soja - Lote 1`. Haz clic sobre el plano para ampliarlo o actualízalo desde el panel de Gestión de Lotes.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "registro_lotes.json"
+          },
+          "preview": "Lectura de registro_lotes.json (4276 bytes)"
+        }
+      ],
+      "timestamp": "2026-10-12 14:05:51"
+    },
+    {
+      "role": "user",
+      "content": "¿Cómo es el diagrama del Lote 2?",
+      "timestamp": "2026-10-12 14:06:26"
+    },
+    {
+      "role": "assistant",
+      "content": "🌱 **Información Agronómica - Lote 2 - El Ombú:**\n\n• 🌾 **Híbridos / Variedades que se plantan:** **Dekalb DK 72-10 VT3P**\n• 🚜 **Cultivo y Superficie:** Maíz Tardío (85 hectáreas)\n• 📍 **Ubicación:** Campo El Ombú\n• 📋 **Estado actual:** Barbecho finalizado - Esperando fecha óptima\n\n🗺️ **Diagrama / Plano Agronómico Asociado:**\n![Esquema Agronómico y Prescripción de Maíz - Lote 2](/media/lotes/lote_2_diagrama.jpg)\n\n*Esquema registrado: `Esquema Agronómico y Prescripción de Maíz - Lote 2`. Haz clic sobre el plano para ampliarlo o actualízalo desde el panel de Gestión de Lotes.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "registro_lotes.json"
+          },
+          "preview": "Lectura de registro_lotes.json (4276 bytes)"
+        }
+      ],
+      "timestamp": "2026-10-12 14:06:26"
     }
   ]
 }

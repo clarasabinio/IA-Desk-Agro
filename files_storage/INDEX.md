@@ -65,3 +65,17 @@ Gestionado en `registro_lotes.json`:
 - Lote 1 "La Esperanza" (120 ha - Soja 1ra en siembra activa).
 - Lote 2 "El Ombú" (85 ha - Maíz tardío en barbecho listo para siembra).
 - Lote 3 "Bajo Grande" (210 ha - Rastrojo trigo cosechado con 819 tn embolsadas).
+
+---
+
+## 🌱 GESTIÓN DE LOTES (HÍBRIDOS & DIAGRAMAS / PLANOS)
+Gestionado en `registro_lotes.json`:
+- **Lote 1 - La Esperanza (120 ha - Soja 1ra):**
+  - Híbridos plantados: `Don Mario DM 46R18 STS`
+  - Diagrama: `/media/lotes/lote_1_diagrama.jpg`
+- **Lote 2 - El Ombú (85 ha - Maíz Tardío):**
+  - Híbridos plantados: `Dekalb DK 72-10 VT3P`
+  - Diagrama: `/media/lotes/lote_2_diagrama.jpg`
+- **Lote 3 - Bajo Grande (210 ha - Trigo / Soja 2da):**
+  - Híbridos plantados: `Trigo MS INTA 119 (Cosechado) / Soja 2da DM 46R18`
+  - Diagrama: `/media/lotes/lote_3_diagrama.jpg`

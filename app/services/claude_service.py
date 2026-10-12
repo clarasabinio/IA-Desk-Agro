@@ -442,6 +442,88 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         }
 
     # ==============================================================
+    # 0.1 CONSULTAS AGRONÓMICAS DE LOTES: HÍBRIDOS PLANTADOS Y DIAGRAMA / PLANO
+    # ==============================================================
+    is_lote_diagram_or_hybrid_query = (
+        ("lote" in msg or "parcela" in msg) and
+        any(w in msg for w in [
+            "hibrido", "híbrido", "hibridos", "híbridos",
+            "diagrama", "plano", "esquema", "foto", "imagen", "mapa", "croquis",
+            "plantan", "planta", "plantado", "plantados", "sembrado", "sembraron", "variedad",
+            "que hay", "qué hay", "como es", "cómo es", "mostra", "mostrame", "ver"
+        ])
+    ) or any(w in msg for w in ["diagrama del lote", "plano del lote", "híbrido del lote", "hibrido del lote", "foto del lote", "esquema del lote"])
+
+    if is_lote_diagram_or_hybrid_query:
+        lotes_raw, meta_l = execute_native_tool("read_file", {"filename": "registro_lotes.json"})
+        executed_tools.append(meta_l)
+        try:
+            lotes_data = json.loads(lotes_raw).get("lotes", [])
+        except Exception:
+            lotes_data = []
+
+        # Identificar qué lote se consulta
+        target_lote = None
+        if "lote 1" in msg or "lote1" in msg or "esperanza" in msg:
+            target_lote = next((l for l in lotes_data if "1" in l.get("nombre", "")), None)
+        elif "lote 2" in msg or "lote2" in msg or "ombu" in msg or "ombú" in msg:
+            target_lote = next((l for l in lotes_data if "2" in l.get("nombre", "")), None)
+        elif "lote 3" in msg or "lote3" in msg or "bajo grande" in msg or "san jose" in msg or "san josé" in msg:
+            target_lote = next((l for l in lotes_data if "3" in l.get("nombre", "")), None)
+
+        if target_lote:
+            l_nom = target_lote.get("nombre", "Lote")
+            l_campo = target_lote.get("campo", "Campo La Esperanza")
+            l_sup = target_lote.get("superficie_ha", "-")
+            l_cult = target_lote.get("cultivo", "-")
+            l_hib = target_lote.get("hibridos_plantados") or target_lote.get("variedad") or "Sin híbrido registrado"
+            l_diag_url = target_lote.get("diagrama_url", "")
+            l_diag_nom = target_lote.get("diagrama_nombre") or f"Diagrama agronómico de {l_nom}"
+            l_estado = target_lote.get("estado_actual", "En seguimiento agronómico activo")
+
+            reply = (
+                f"🌱 **Información Agronómica - {l_nom}:**\n\n"
+                f"• 🌾 **Híbridos / Variedades que se plantan:** **{l_hib}**\n"
+                f"• 🚜 **Cultivo y Superficie:** {l_cult} ({l_sup} hectáreas)\n"
+                f"• 📍 **Ubicación:** {l_campo}\n"
+                f"• 📋 **Estado actual:** {l_estado}\n\n"
+            )
+
+            if l_diag_url:
+                reply += (
+                    f"🗺️ **Diagrama / Plano Agronómico Asociado:**\n"
+                    f"![{l_diag_nom}]({l_diag_url})\n\n"
+                    f"*Esquema registrado: `{l_diag_nom}`. Haz clic sobre el plano para ampliarlo o actualízalo desde el panel de Gestión de Lotes.*"
+                )
+            else:
+                reply += "📷 *Este lote aún no tiene foto o diagrama cargado. Puedes cargarle un plano o foto desde la sección de Gestión de Lotes.*"
+
+        else:
+            lines_lotes = []
+            for l in lotes_data:
+                h = l.get("hibridos_plantados") or l.get("variedad") or "No asignado"
+                img_tag = f"\n![{l.get('diagrama_nombre', 'Plano')}]({l.get('diagrama_url')})\n" if l.get("diagrama_url") else ""
+                lines_lotes.append(
+                    f"• **{l.get('nombre')}** ({l.get('superficie_ha')} ha - {l.get('cultivo')}):\n"
+                    f"  🌾 **Híbridos plantados:** **{h}**\n"
+                    f"  📋 **Estado:** {l.get('estado_actual', 'Activo')}" + img_tag
+                )
+
+            reply = (
+                f"🌱 **Resumen Agronómico de Lotes del Establecimiento:**\n\n" +
+                "\n\n".join(lines_lotes) +
+                f"\n\nPuedes consultar o cargar planos de cada lote desde el panel de Gestión de Lotes."
+            )
+
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
+    # ==============================================================
     # 0. REGISTRO INTEGRAL DE LABORES A CAMPO (DISCO, SIEMBRA, FERTILIZACIÓN, PULVERIZACIÓN, TRILLA)
     # Conectado a gastos de combustible, semillas, fertilizantes y hojas de cálculo por cultivo
     # ==============================================================
