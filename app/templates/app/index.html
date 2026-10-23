@@ -4,603 +4,438 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IA Desk Agro — Sistema Integral de Gestión de Campo</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>IA Desk Agro — Control de Stock & Labores Rurales</title>
+    <meta name="description" content="Sistema integral de control de stock, gasoil y registro de labores agrícolas con Tool Calling de Claude y archivos locales.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body class="agro-theme">
-    <div class="app-container">
-        <!-- Top Application Header -->
+<body>
+    <div class="agro-app-container">
+        <!-- Top Status Bar -->
         <header class="agro-header">
-            <div class="header-left">
-                <div class="logo-box">
-                    <span class="logo-icon">🌾</span>
-                    <div class="brand-text">
-                        <div class="brand-title">IA DESK AGRO</div>
-                        <div class="brand-subtitle">Gestión Operativa de Campo • Zona Núcleo</div>
-                    </div>
-                </div>
-                <!-- Real Integrations Status Badges -->
-                <div class="integrations-status-bar">
-                    <span class="status-pill status-online" title="Base de Datos SQLite activa y auditada">
-                        <span class="status-dot"></span>
-                        <span>DB SQLite Verificada</span>
-                    </span>
-                    <span class="status-pill status-online" title="Open-Meteo Agro API en vivo para calibración de tracción">
-                        <span class="status-dot"></span>
-                        <span>Open-Meteo Agro Live</span>
-                    </span>
-                    <span class="status-pill status-shared" title="Enlace directo a carpeta de exportación en Google Drive">
-                        <span class="status-icon">📁</span>
-                        <span>Google Drive (Carpeta)</span>
-                    </span>
+            <div class="header-brand">
+                <div class="brand-logo-badge">🌾</div>
+                <div class="brand-titles">
+                    <h1 class="brand-title">IA Desk Agro</h1>
+                    <span class="brand-subtitle">{{ field_name }} • {{ season }}</span>
                 </div>
             </div>
 
-            <!-- Global Action Buttons -->
+            <div class="header-center-info" style="display: flex; gap: 8px; align-items: center;">
+                <div class="status-indicator-pill">
+                    <span class="live-dot"></span>
+                    <span>4 Depósitos & Acopio Sincronizados</span>
+                </div>
+                <div class="status-indicator-pill" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.12); padding: 4px 10px;">
+                    <span style="font-size: 0.75rem;">⚡</span>
+                    <span style="color: #6ee7b7; font-weight: 600;">{{ ai_provider }}</span>
+                </div>
+            </div>
+
             <div class="header-actions">
                 <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-pill" title="Abrir carpeta compartida en Google Drive">
                     <span class="drive-icon">📊</span>
-                    <span>Google Drive</span>
+                    <span>Google Drive Online</span>
                 </a>
-                <a href="/api/sheets/download/" class="btn-secondary" title="Descargar libro Excel consolidado con las 7 pestañas">
+                <a href="/api/sheets/download/" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Descargar libro Excel consolidado">
                     📥 Descargar Excel
                 </a>
                 <button id="btn-open-whatsapp" class="btn-whatsapp-pill" title="Simular reporte de WhatsApp de maquinistas">
                     <span class="wa-icon">📱</span>
                     <span>WhatsApp de Campo</span>
                 </button>
-                <button id="btn-open-inspector" class="btn-secondary" title="Ver planillas JSON y Markdown de respaldo">
-                    📁 Archivos Físicos
+                <button id="btn-open-inspector" class="btn-secondary" title="Ver planillas JSON y Markdown">
+                    📁 Ver Planillas
                 </button>
             </div>
         </header>
 
-        <!-- Main Navigation Bar (Field Data Architecture) -->
-        <nav class="main-nav-bar">
-            <div class="nav-tabs-wrapper">
-                <button type="button" class="nav-tab-btn active" data-tab="inicio">
-                    <span class="nav-ico">🏠</span>
-                    <span>Inicio / Tablero</span>
-                </button>
-                <button type="button" class="nav-tab-btn" data-tab="registros">
-                    <span class="nav-ico">📝</span>
-                    <span>Registrar Movimientos</span>
-                </button>
-                <button type="button" class="nav-tab-btn" data-tab="inventario">
-                    <span class="nav-ico">📦</span>
-                    <span>Inventario & Tanques</span>
-                </button>
-                <button type="button" class="nav-tab-btn" data-tab="campo">
-                    <span class="nav-ico">🌾</span>
-                    <span>Campo & Lotes</span>
-                </button>
-                <button type="button" class="nav-tab-btn" data-tab="informes">
-                    <span class="nav-ico">📊</span>
-                    <span>Informes & Auditoría</span>
-                </button>
-                <button type="button" class="nav-tab-btn btn-tab-copilot" data-tab="copiloto">
-                    <span class="nav-ico">🚜</span>
-                    <span>Copiloto de IA</span>
-                    <span class="badge-tab-ia">Interactivo</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Dynamic Main Workspace -->
-        <main class="main-workspace">
-
-            <!-- ============================================================== -->
-            <!-- MÓDULO 1: INICIO / TABLERO EJECUTIVO                          -->
-            <!-- ============================================================== -->
-            <section id="module-inicio" class="module-tab-content">
-                <!-- Alertas de Stock Bajo -->
-                {% if balance_auditado.alertas_stock_bajo %}
-                <div class="alert-banner-box">
-                    <div class="alert-icon">⚠️</div>
-                    <div class="alert-text">
-                        <strong>Atención requerida por stock mínimo de alerta:</strong>
-                        {% for a in balance_auditado.alertas_stock_bajo %}
-                        <span class="alert-item">{{ a.insumo }}: {{ a.actual }} {{ a.unidad }} (Mínimo: {{ a.minimo }})</span>{% if not forloop.last %} • {% endif %}
-                        {% endfor %}
+        <!-- Main Workspace -->
+        <main class="agro-layout">
+            <!-- Left: Chat & Interaction Section -->
+            <section class="chat-section">
+                <!-- Controls bar -->
+                <div class="chat-controls-bar">
+                    <div class="active-context-label">
+                        <span class="icon">🚜</span>
+                        <span>Copiloto de Campo: Silos de Guardado, Insumos y Labores</span>
                     </div>
+                    <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación">
+                        🗑️ Limpiar Historial
+                    </button>
                 </div>
-                {% endif %}
 
-                
-                <!-- Telemetría Agrometeorológica Open-Meteo -->
-                <div class="weather-kpi-card">
-                    <div class="weather-info-main">
-                        <div class="weather-badge-icon">⛅</div>
-                        <div class="weather-text-wrap">
-                            <h3>Telemetría Agrometeorológica en Vivo • Zona Núcleo</h3>
-                            <p>{{ clima.condition|default:"Condiciones de tracción de suelo estables para labores agrícolas." }}</p>
-                        </div>
-                    </div>
-                    <div class="weather-metrics-pills">
-                        <div class="weather-pill">
-                            <span class="lbl">Temperatura</span>
-                            <span class="val text-cyan">{{ clima.temperature_c|default:"16.5" }} °C</span>
-                        </div>
-                        <div class="weather-pill">
-                            <span class="lbl">Humedad Suelo</span>
-                            <span class="val text-emerald">{{ clima.soil_moisture|default:"0.35" }} m³/m³</span>
-                        </div>
-                        <div class="weather-pill">
-                            <span class="lbl">Factor Tracción INTA</span>
-                            <span class="val text-amber">{{ clima.traction_factor|default:"1.00" }}x</span>
-                        </div>
-                        <div class="weather-pill">
-                            <span class="lbl">Fuente Oficial</span>
-                            <span class="val" style="color: #a7f3d0; font-size: 0.8rem;">Open-Meteo Live</span>
+                <!-- Messages Stream -->
+                <div id="messages-list" class="messages-container">
+                    <div class="message-card bot-card">
+                        <div class="avatar bot-avatar">🌾</div>
+                        <div class="message-body">
+                            <div class="message-meta">
+                                <span class="sender-name">IA Desk Agro</span>
+                                <span class="timestamp">Inicio de jornada</span>
+                            </div>
+                            <div class="message-content">
+                                <p>¡Hola! Bienvenido a <strong>IA Desk Agro</strong>, tu copiloto operativo.</p>
+                                <p>¿En qué puedo ayudarte hoy?</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Executive KPIs Grid -->
-                <div class="executive-kpi-grid">
-                    <div class="kpi-card">
-                        <div class="kpi-header">
-                            <span class="kpi-icon">⛽</span>
-                            <span class="kpi-title">Gasoil Físico en Campo</span>
-                        </div>
-                        <div class="kpi-value text-emerald" id="kpi-gasoil-fisico">{{ balance_auditado.combustible.fisico_campo_litros|floatformat:0 }} L</div>
-                        <div class="kpi-sub">Distribuido en 3 depósitos activos</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-header">
-                            <span class="kpi-icon">📍</span>
-                            <span class="kpi-title">Gasoil en Acopio (YPF)</span>
-                        </div>
-                        <div class="kpi-value text-amber" id="kpi-gasoil-acopio">{{ balance_auditado.combustible.acopio_externo_litros|floatformat:0 }} L</div>
-                        <div class="kpi-sub">Adquirido, pendiente de retiro</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-header">
-                            <span class="kpi-icon">🌾</span>
-                            <span class="kpi-title">Granos Acopiados en Silos</span>
-                        </div>
-                        <div class="kpi-value text-cyan" id="kpi-granos-silos">{{ stock.granos_silos.total_general_tn|floatformat:1 }} Tn</div>
-                        <div class="kpi-sub">Soja ({{ stock.granos_silos.soja.total_tn }} Tn) • Trigo ({{ stock.granos_silos.trigo.total_tn }} Tn)</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-header">
-                            <span class="kpi-icon">🧪</span>
-                            <span class="kpi-title">Fertilizantes en Galpón</span>
-                        </div>
-                        <div class="kpi-value text-emerald" id="kpi-fert-galpon">{{ stock.fertilizantes_totales.en_galpon_kg|floatformat:0 }} kg</div>
-                        <div class="kpi-sub">Por retirar: {{ stock.fertilizantes_totales.por_retirar_kg|floatformat:0 }} kg</div>
+                <!-- Quick Consultation Chips -->
+                <div class="quick-chips-wrapper">
+                    <span class="chips-label">Consultas y acciones operativas:</span>
+                    <div class="chips-container">
+                        <button class="chip-btn" data-query="¿Qué híbrido hay en el Lote 1 y cómo es su diagrama?">
+                            🌱 Lote 1 (Soja)
+                        </button>
+                        <button class="chip-btn" data-query="¿Qué híbrido hay en el Lote 2 y cómo es su diagrama?">
+                            🌽 Lote 2 (Maíz)
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama del Lote 3 y qué híbrido se plantó?">
+                            🌾 Lote 3 (Trigo/Soja)
+                        </button>
+                        <button class="chip-btn" data-query="¿Cuál es el estado y capacidad de los silos principales y silos de trilla?">
+                            🌾 Silos y Acopio (Tn)
+                        </button>
+                        <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">
+                            ⛽ Saldo Gasoil
+                        </button>
+                        <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
+                            🌽 Maíz Híbridos
+                        </button>
+                        <button class="chip-btn" data-query="Mostrame los diagramas de los campos">
+                            🗺️ Diagramas de Campos
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo La Esperanza?">
+                            📍 Plano La Esperanza
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo El Ombú?">
+                            📍 Plano El Ombú
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo San José?">
+                            📍 Plano San José
+                        </button>
                     </div>
                 </div>
 
-                <!-- 2-Columns Layout: Fuel Tanks + Grain Silos -->
-                <div class="inicio-grid-two">
-                    <!-- Left: Tanks Level Status -->
-                    <div class="dash-card">
-                        <div class="dash-card-header-row">
-                            <h2 class="dash-card-title">⛽ Estado de Tanques y Depósitos de Gasoil</h2>
-                            <button type="button" class="btn-sm-action" onclick="switchTab('registros')">+ Asentar Carga</button>
+                <!-- Input Form -->
+                <form id="chat-form" class="chat-input-bar">
+                    <textarea 
+                        id="user-input" 
+                        placeholder="Escribe una consulta o movimiento... (ej: 'gasté 300 L del tanque chico', 'pasar 1000 L a tanque grande') [Enter]"
+                        rows="1"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        data-gramm="false"
+                        data-enable-grammarly="false"
+                        data-ms-editor="false"
+                    ></textarea>
+                    <button type="submit" id="btn-send" class="btn-primary">
+                        <span>Consultar</span>
+                        <span class="btn-arrow">➔</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right: Live Agricultural Dashboard -->
+            <aside class="agro-dashboard-sidebar">
+                <!-- 4 Fuel Storage Options Card -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">⛽ Gasoil (4 Depósitos & Acopio)</h2>
+                        <span class="badge-live">En vivo</span>
+                    </div>
+
+                    <div class="fuel-tanks-list">
+                        <!-- Tank 1: Cisterna Planta -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🏭 Cisterna Planta (Máx 22.000 L)</span>
+                                <span class="tank-val" id="metric-cisterna">{{ stock.cisterna_planta.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar" id="bar-cisterna" style="width: 66%;"></div>
+                            </div>
                         </div>
-                        <div class="fuel-tanks-list">
-                            {% for d in depositos_db %}
-                            {% if d.tipo != 'galpon' and d.tipo != 'silo' %}
-                            <div class="fuel-tank-item">
-                                <div class="tank-item-header">
-                                    <span class="tank-name">
-                                        {% if d.codigo == 'cisterna_planta' %}🏭{% elif d.codigo == 'tanque_grande' %}🚜{% elif d.codigo == 'tanque_chico' %}🚛{% else %}📍{% endif %}
-                                        {{ d.nombre }} (Cap. {{ d.capacidad_maxima|floatformat:0 }} L)
-                                    </span>
-                                    <span class="tank-val {% if d.porcentaje_llenado < 25 %}text-amber{% else %}text-emerald{% endif %}" id="metric-{{ d.codigo }}">
-                                        {{ d.stock_actual|floatformat:0 }} L <small class="text-muted">({{ d.porcentaje_llenado }}%)</small>
-                                    </span>
+
+                        <!-- Tank 2: Tanque Grande -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🚜 Tanque Grande (Máx 5.000 L)</span>
+                                <span class="tank-val text-amber" id="metric-t-grande">{{ stock.tanque_grande.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar bar-amber" id="bar-t-grande" style="width: 70%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tank 3: Tanque Chico -->
+                        <div class="fuel-tank-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">🛢️ Tanque Chico (Máx 3.000 L)</span>
+                                <span class="tank-val text-cyan" id="metric-t-chico">{{ stock.tanque_chico.actual }} L</span>
+                            </div>
+                            <div class="tank-progress-track">
+                                <div class="tank-progress-bar bar-cyan" id="bar-t-chico" style="width: 60%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tank 4: Acopio por Retirar -->
+                        <div class="fuel-tank-item acopio-item">
+                            <div class="tank-item-header">
+                                <span class="tank-name">📋 Gasoil por Retirar (Acopio YPF)</span>
+                                <span class="tank-val text-emerald" id="metric-acopio">{{ stock.acopio_por_retirar }} L</span>
+                            </div>
+                            <span class="acopio-sub-lbl">Disponible en distribuidor para traslado</span>
+                        </div>
+                    </div>
+
+                    <div class="fuel-totals-box">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Total Físico en Campo:</span>
+                            <strong class="tot-val" id="metric-tot-campo">{{ stock.total_campo }} L</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total con Acopio:</span>
+                            <strong class="tot-val text-emerald" id="metric-tot-acopio">{{ stock.total_con_acopio }} L</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corn by Hybrid Card -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌽 Maíz por Híbrido (Bolsas)</h2>
+                        <span class="badge-tag" id="metric-maiz-total-badge">{{ stock.maiz_totales.total_general_bolsas }} bolsas</span>
+                    </div>
+                    <div class="hibridos-list" id="hibridos-list-container">
+                        {% for h in stock.maiz_hibridos %}
+                        <div class="hibrido-card" id="card-hibrido-{{ h.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ h.hibrido }}</strong>
+                                <span class="hibrido-provider">{{ h.proveedor }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏭 En Planta:</span>
+                                    <strong class="loc-val text-emerald" id="val-{{ h.id }}-planta">{{ h.en_planta_bolsas }} b.</strong>
                                 </div>
-                                <div class="tank-progress-track">
-                                    <div class="tank-progress-bar {% if d.porcentaje_llenado < 25 %}bar-amber{% else %}bar-emerald{% endif %}" style="width: {{ d.porcentaje_llenado }}%;"></div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 Por Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-{{ h.id }}-retiro">{{ h.por_retirar_bolsas }} b.</strong>
                                 </div>
                             </div>
-                            {% endif %}
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ h.lugar_retiro }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Bolsas en Planta Central:</span>
+                            <strong class="tot-val text-emerald" id="metric-maiz-planta">{{ stock.maiz_totales.bolsas_en_planta }}</strong>
+                        </div>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Bolsas por Retirar:</span>
+                            <strong class="tot-val text-amber" id="metric-maiz-retiro">{{ stock.maiz_totales.bolsas_por_retirar }}</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total General Maíz:</span>
+                            <strong class="tot-val text-cyan" id="metric-maiz-total">{{ stock.maiz_totales.total_general_bolsas }} bolsas</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Silos de Guardado y Acopio (Tn) Card -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌾 Silos de Guardado y Acopio</h2>
+                        <span class="badge-tag text-emerald" id="metric-granos-total-badge">{{ stock.granos_silos.total_general_tn }} / {{ stock.granos_silos.capacidad_total_tn }} Tn</span>
+                    </div>
+                    
+                    <!-- Silos Principales (5 unidades) -->
+                    <div class="grain-section">
+                        <div class="grain-header">
+                            <span class="grain-title">🏗️ Silos Principales (5 unidades)</span>
+                            <strong class="grain-total text-emerald" id="metric-principales-tn">{{ stock.granos_silos.stock_principales_tn }} / {{ stock.granos_silos.capacidad_principales_tn }} Tn</strong>
+                        </div>
+                        <div class="grain-silos-list" id="principales-silos-container">
+                            {% for s in stock.granos_silos.silos_principales %}
+                            <div class="silo-row">
+                                <div class="silo-info">
+                                    <span class="silo-icon">🏗️</span>
+                                    <span class="silo-name"><strong>{{ s.nombre }}</strong> <span class="text-muted">({{ s.cultivo }})</span></span>
+                                    <span class="badge-tag" style="font-size: 0.65rem; padding: 1px 6px;">Máx {{ s.capacidad_max_tn|floatformat:0 }} Tn</span>
+                                </div>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn|floatformat:1 }} Tn</span>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Right: Quick Labors & Actions -->
-                    <div class="dash-card">
-                        <div class="dash-card-header-row">
-                            <h2 class="dash-card-title">⚡ Acciones Rápidas de Campo</h2>
-                            <span class="badge-live">Operativo</span>
+                    <!-- Silos de Acopio para Trilla (2 unidades adicionales) -->
+                    <div class="grain-section mt-2">
+                        <div class="grain-header">
+                            <span class="grain-title">🚜 Silos de Acopio para Trilla (2 unidades)</span>
+                            <strong class="grain-total text-cyan" id="metric-trilla-tn">{{ stock.granos_silos.stock_trilla_tn }} / {{ stock.granos_silos.capacidad_trilla_tn }} Tn</strong>
                         </div>
-                        <div class="quick-actions-panel">
-                            <button type="button" class="quick-act-btn" onclick="openDirectForm('consumo_combustible')">
-                                <span class="act-icon">⛽</span>
-                                <div class="act-details">
-                                    <strong>Registrar Consumo de Gasoil</strong>
-                                    <span>Asentar litros por lote, maquinaria y tractorista</span>
+                        <div class="grain-silos-list" id="trilla-silos-container">
+                            {% for s in stock.granos_silos.silos_trilla %}
+                            <div class="silo-row">
+                                <div class="silo-info">
+                                    <span class="silo-icon">🌾</span>
+                                    <span class="silo-name"><strong>{{ s.nombre }}</strong> <span class="text-muted">({{ s.cultivo }})</span></span>
+                                    <span class="badge-tag" style="font-size: 0.65rem; padding: 1px 6px;">Máx {{ s.capacidad_max_tn|floatformat:0 }} Tn</span>
                                 </div>
-                                <span class="act-arrow">➔</span>
-                            </button>
-                            <button type="button" class="quick-act-btn" onclick="openDirectForm('traslado_combustible')">
-                                <span class="act-icon">🔄</span>
-                                <div class="act-details">
-                                    <strong>Traslado entre Tanques</strong>
-                                    <span>Ej: Cisterna Planta ➔ Tanque Grande/Chico</span>
-                                </div>
-                                <span class="act-arrow">➔</span>
-                            </button>
-                            <button type="button" class="quick-act-btn" onclick="openDirectForm('ingreso_combustible')">
-                                <span class="act-icon">🚚</span>
-                                <div class="act-details">
-                                    <strong>Ingreso / Compra de Gasoil</strong>
-                                    <span>Descarga de camión YPF con Nro. de Remito</span>
-                                </div>
-                                <span class="act-arrow">➔</span>
-                            </button>
-                            <button type="button" class="quick-act-btn" onclick="openDirectForm('consumo_insumo')">
-                                <span class="act-icon">🌱</span>
-                                <div class="act-details">
-                                    <strong>Aplicar Semillas o Fertilizantes</strong>
-                                    <span>Descontar bolsas de maíz/soja o kg de MAP/Urea</span>
-                                </div>
-                                <span class="act-arrow">➔</span>
-                            </button>
-                            <button type="button" class="quick-act-btn btn-ai-quick" onclick="switchTab('copiloto')">
-                                <span class="act-icon">💬</span>
-                                <div class="act-details">
-                                    <strong>Hablar con el Copiloto de IA</strong>
-                                    <span>Escribe reportes libres con confirmación interactiva</span>
-                                </div>
-                                <span class="act-arrow">➔</span>
-                            </button>
+                                <span class="silo-tn" id="val-silo-{{ s.id }}">{{ s.stock_actual_tn|floatformat:1 }} Tn</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total Acopiado en Silos:</span>
+                            <strong class="tot-val text-emerald" id="metric-granos-total-tn">{{ stock.granos_silos.total_general_tn }} Tn</strong>
                         </div>
                     </div>
                 </div>
 
-                <!-- Últimos Movimientos Auditados en Base de Datos -->
-                <div class="recent-labors-card">
-                    <div class="dash-card-header-row">
-                        <h2 class="dash-card-title">🚜 Últimos Movimientos y Labores Registradas en Campo</h2>
-                        <button type="button" class="btn-sm-action" onclick="switchTab('informes')">Ver todos en Informes ➔</button>
-                    </div>
-                    <div class="table-responsive-box mt-3">
-                        <table class="table-agro">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Insumo / Combustible</th>
-                                    <th>Cantidad</th>
-                                    <th>Lote / Labor</th>
-                                    <th>Operario</th>
-                                    <th>Saldo Resultante</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for m in movimientos_db|slice:":5" %}
-                                <tr>
-                                    <td>{{ m.fecha|date:"d/m/Y" }}</td>
-                                    <td><span class="badge-tipo">{{ m.get_tipo_movimiento_display }}</span></td>
-                                    <td><strong>{{ m.insumo.nombre }}</strong></td>
-                                    <td><strong class="text-emerald">{{ m.cantidad|floatformat:1 }} {{ m.insumo.unidad_medida }}</strong></td>
-                                    <td>
-                                        {% if m.lote %}<span class="badge-lote">{{ m.lote.nombre }}</span>{% endif %}
-                                        <small class="text-muted d-block">{{ m.labor_realizada|default:"-" }}</small>
-                                    </td>
-                                    <td>{{ m.operario|default:"-" }}</td>
-                                    <td><span class="text-cyan font-mono">{{ m.saldo_posterior|floatformat:1 }} {{ m.insumo.unidad_medida }}</span></td>
-                                    <td><span class="badge-status-ok">Auditado DB</span></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted" style="padding: 24px;">No hay movimientos registrados recientemente.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </section>
-
-            <!-- ============================================================== -->
-            <!-- MÓDULO 2: REGISTRAR MOVIMIENTOS (FORMULARIOS DIRECTOS FIELD)  -->
-            <!-- ============================================================== -->
-            <section id="module-registros" class="module-tab-content hidden">
-                <div class="module-header-box">
-                    <div>
-                        <h2 class="module-title">📝 Registro de Movimientos e Insumos</h2>
-                        <p class="module-desc">Formularios directos con validación de saldos y capacidades máximas sin depender del chat.</p>
-                    </div>
-                </div>
-
-                <!-- Forms Tab Selector -->
-                <div class="forms-subnav">
-                    <button type="button" class="subnav-btn active" data-form="form-consumo">⛽ Consumo de Combustible</button>
-                    <button type="button" class="subnav-btn" data-form="form-traslado">🔄 Traslado entre Tanques</button>
-                    <button type="button" class="subnav-btn" data-form="form-ingreso">🚚 Compra / Ingreso Gasoil</button>
-                    <button type="button" class="subnav-btn" data-form="form-insumos">📦 Aplicación de Semillas & Fertilizantes</button>
-                </div>
-
-                <!-- Notification Alert for AJAX forms -->
-                <div id="form-feedback-alert" class="form-feedback hidden"></div>
-
-                <!-- Form 1: Consumo de Combustible en Labor -->
-                <div id="form-consumo" class="direct-form-card">
-                    <h3 class="form-card-title">⛽ Registrar Salida / Consumo de Combustible en Labor Agrícola</h3>
-                    <form id="ajax-form-consumo" class="agro-field-form">
-                        <input type="hidden" name="tipo_accion" value="consumo_combustible">
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="field-lbl">Tanque de Origen *</label>
-                                <select name="deposito_codigo" class="field-input" required>
-                                    <option value="tanque_grande">🚜 Tanque Grande (Actual: {{ stock.tanque_grande.actual|floatformat:0 }} L)</option>
-                                    <option value="tanque_chico">🚛 Tanque Chico (Actual: {{ stock.tanque_chico.actual|floatformat:0 }} L)</option>
-                                    <option value="cisterna_planta">🏭 Cisterna Planta (Actual: {{ stock.cisterna_planta.actual|floatformat:0 }} L)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Litros Consumidos *</label>
-                                <input type="number" step="0.1" min="0.1" name="litros" class="field-input" placeholder="Ej: 240.0" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Lote de Destino</label>
-                                <select name="lote_id" class="field-input">
-                                    <option value="">-- Sin Lote / Gasto General --</option>
-                                    {% for l in lotes_db %}
-                                    <option value="{{ l.id }}">{{ l.nombre }} ({{ l.superficie_ha }} ha)</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Labor Agrícola *</label>
-                                <input type="text" name="labor" class="field-input" placeholder="Ej: Siembra Maíz / Pasada de Disco" autocorrect="off" spellcheck="false" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Maquinaria</label>
-                                <input type="text" name="maquinaria" class="field-input" placeholder="Ej: Tractor JD 7200R + Sembradora Crucianelli" autocorrect="off" spellcheck="false">
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Tractorista / Operario</label>
-                                <input type="text" name="operario" class="field-input" placeholder="Ej: Juan González" autocorrect="off" spellcheck="false">
-                            </div>
-                        </div>
-                        <div class="form-group mt-2">
-                            <label class="field-lbl">Observaciones adicionales</label>
-                            <input type="text" name="observaciones" class="field-input" placeholder="Condiciones de suelo, lote o remito interno" autocorrect="off" spellcheck="false">
-                        </div>
-                        <div class="form-actions-row">
-                            <button type="submit" class="btn-primary btn-save-action">💾 Confirmar y Asentar Consumo</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Form 2: Traslado entre Tanques -->
-                <div id="form-traslado" class="direct-form-card hidden">
-                    <h3 class="form-card-title">🔄 Registrar Traslado Interno de Combustible</h3>
-                    <form id="ajax-form-traslado" class="agro-field-form">
-                        <input type="hidden" name="tipo_accion" value="traslado_combustible">
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="field-lbl">Tanque de Origen (De donde sale) *</label>
-                                <select name="origen_codigo" class="field-input" required>
-                                    <option value="cisterna_planta">🏭 Cisterna Planta (Disponible: {{ stock.cisterna_planta.actual|floatformat:0 }} L)</option>
-                                    <option value="tanque_grande">🚜 Tanque Grande (Disponible: {{ stock.tanque_grande.actual|floatformat:0 }} L)</option>
-                                    <option value="tanque_chico">🚛 Tanque Chico (Disponible: {{ stock.tanque_chico.actual|floatformat:0 }} L)</option>
-                                    <option value="acopio_por_retirar">📍 Acopio YPF Directo (Disponible: {{ stock.acopio_por_retirar|floatformat:0 }} L)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Tanque de Destino (Hacia donde ingresa) *</label>
-                                <select name="destino_codigo" class="field-input" required>
-                                    <option value="tanque_grande">🚜 Tanque Grande (Cap. Máx: 5.000 L)</option>
-                                    <option value="tanque_chico">🚛 Tanque Chico (Cap. Máx: 3.000 L)</option>
-                                    <option value="cisterna_planta">🏭 Cisterna Planta (Cap. Máx: 22.000 L)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Litros a Trasladar *</label>
-                                <input type="number" step="1" min="1" name="litros" class="field-input" placeholder="Ej: 1500" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Responsable del Traslado</label>
-                                <input type="text" name="operario" class="field-input" placeholder="Ej: Encargado de Galpón" autocorrect="off" spellcheck="false">
-                            </div>
-                        </div>
-                        <div class="form-actions-row">
-                            <button type="submit" class="btn-primary btn-save-action">🔄 Ejecutar Traslado Atómico</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Form 3: Compra / Ingreso de Combustible -->
-                <div id="form-ingreso" class="direct-form-card hidden">
-                    <h3 class="form-card-title">🚚 Registrar Ingreso por Compra de Gasoil (Camión Cisterna)</h3>
-                    <form id="ajax-form-ingreso" class="agro-field-form">
-                        <input type="hidden" name="tipo_accion" value="ingreso_combustible">
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="field-lbl">Tanque de Descarga *</label>
-                                <select name="destino_codigo" class="field-input" required>
-                                    <option value="cisterna_planta">🏭 Cisterna Planta (Cap. 22.000 L - Libre: {{ balance_auditado.depositos.cisterna_planta.espacio_libre|floatformat:0 }} L)</option>
-                                    <option value="tanque_grande">🚜 Tanque Grande (Cap. 5.000 L - Libre: {{ balance_auditado.depositos.tanque_grande.espacio_libre|floatformat:0 }} L)</option>
-                                    <option value="tanque_chico">🚛 Tanque Chico (Cap. 3.000 L - Libre: {{ balance_auditado.depositos.tanque_chico.espacio_libre|floatformat:0 }} L)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Litros Ingresados *</label>
-                                <input type="number" step="1" min="1" name="litros" class="field-input" placeholder="Ej: 5000" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Proveedor *</label>
-                                <input type="text" name="proveedor" class="field-input" value="YPF Directo" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Número de Remito / Factura</label>
-                                <input type="text" name="documento_referencia" class="field-input" placeholder="Ej: R-0045-8921" autocorrect="off" spellcheck="false">
-                            </div>
-                        </div>
-                        <div class="form-actions-row">
-                            <button type="submit" class="btn-primary btn-save-action">📥 Asentar Ingreso de Compra</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Form 4: Aplicación de Semillas y Fertilizantes -->
-                <div id="form-insumos" class="direct-form-card hidden">
-                    <h3 class="form-card-title">📦 Registrar Consumo / Aplicación de Insumos</h3>
-                    <form id="ajax-form-insumos" class="agro-field-form">
-                        <input type="hidden" name="tipo_accion" value="consumo_insumo">
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="field-lbl">Insumo a Descontar *</label>
-                                <select name="insumo_id" class="field-input" required>
-                                    {% for ins in insumos_db %}
-                                    <option value="{{ ins.id }}">[{{ ins.get_categoria_display }}] {{ ins.nombre }} (Stock: {{ ins.stock_actual }} {{ ins.unidad_medida }})</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Cantidad Aplicada *</label>
-                                <input type="number" step="0.1" min="0.1" name="cantidad" class="field-input" placeholder="Ej: 35 bolsas o 1500 kg" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Lote de Aplicación</label>
-                                <select name="lote_id" class="field-input">
-                                    <option value="">-- Sin Lote Específico --</option>
-                                    {% for l in lotes_db %}
-                                    <option value="{{ l.id }}">{{ l.nombre }} ({{ l.superficie_ha }} ha)</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="field-lbl">Labor Agrícola</label>
-                                <input type="text" name="labor" class="field-input" placeholder="Ej: Siembra de Maíz / Fertilización al voleo" autocorrect="off" spellcheck="false">
-                            </div>
-                        </div>
-                        <div class="form-actions-row">
-                            <button type="submit" class="btn-primary btn-save-action">🌱 Asentar Aplicación de Insumo</button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <!-- ============================================================== -->
-            <!-- MÓDULO 3: INVENTARIO & DEPÓSITOS AUDITABLES                    -->
-            <!-- ============================================================== -->
-            <section id="module-inventario" class="module-tab-content hidden">
-                <div class="module-header-box">
-                    <div>
-                        <h2 class="module-title">📦 Inventario Consolidado & Depósitos</h2>
-                        <p class="module-desc">Existencias físicas en campo, acopios pendientes de retiro y capacidades máximas.</p>
-                    </div>
-                </div>
-
-                <!-- Tabla de Depósitos Físicos -->
+                <!-- Fertilizantes en Kilogramos Card -->
                 <div class="dash-card">
-                    <h3 class="dash-card-title mb-2">⛽ Depósitos de Combustible y Almacenamiento</h3>
-                    <div class="table-responsive-box">
-                        <table class="table-agro">
-                            <thead>
-                                <tr>
-                                    <th>Depósito / Tanque</th>
-                                    <th>Tipo</th>
-                                    <th>Capacidad Máxima</th>
-                                    <th>Stock Físico Actual</th>
-                                    <th>Espacio Disponible</th>
-                                    <th>Nivel de Llenado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for d in depositos_db %}
-                                <tr>
-                                    <td><strong>{{ d.nombre }}</strong></td>
-                                    <td><span class="badge-tipo">{{ d.get_tipo_display }}</span></td>
-                                    <td>{{ d.capacidad_maxima|floatformat:0 }} {{ d.unidad_medida }}</td>
-                                    <td><strong class="text-emerald">{{ d.stock_actual|floatformat:1 }} {{ d.unidad_medida }}</strong></td>
-                                    <td>{{ d.espacio_disponible|floatformat:1 }} {{ d.unidad_medida }}</td>
-                                    <td>
-                                        <div class="table-progress-wrap">
-                                            <div class="table-bar" style="width: {{ d.porcentaje_llenado }}%;"></div>
-                                            <span>{{ d.porcentaje_llenado }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🧪 Fertilizantes (en Kilogramos)</h2>
+                        <span class="badge-tag text-cyan" id="metric-fert-total-badge">{{ stock.fertilizantes_totales.total_general_kg|floatformat:0 }} kg</span>
+                    </div>
+                    <div class="hibridos-list" id="fert-list-container">
+                        {% for f in stock.fertilizantes %}
+                        <div class="hibrido-card" id="card-fert-{{ f.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ f.nombre }}</strong>
+                                <span class="hibrido-provider">{{ f.formula }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏠 En Galpón:</span>
+                                    <strong class="loc-val text-emerald" id="val-fert-{{ f.id }}-galpon">{{ f.en_galpon_kg|floatformat:0 }} kg</strong>
+                                </div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 Por Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-fert-{{ f.id }}-retiro">{{ f.por_retirar_kg|floatformat:0 }} kg</strong>
+                                </div>
+                            </div>
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ f.lugar_retiro }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">En Galpón Central:</span>
+                            <strong class="tot-val text-emerald" id="metric-fert-galpon">{{ stock.fertilizantes_totales.en_galpon_kg|floatformat:0 }} kg</strong>
+                        </div>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Por Retirar en Proveedor:</span>
+                            <strong class="tot-val text-amber" id="metric-fert-retiro">{{ stock.fertilizantes_totales.por_retirar_kg|floatformat:0 }} kg</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Total General Fertilizantes:</span>
+                            <strong class="tot-val text-cyan" id="metric-fert-total">{{ stock.fertilizantes_totales.total_general_kg|floatformat:0 }} kg</strong>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tabla de Insumos: Semillas, Fertilizantes y Fitosanitarios -->
-                <div class="dash-card mt-3">
-                    <h3 class="dash-card-title mb-2">🌱 Catálogo de Insumos (Físico vs. Por Retirar)</h3>
-                    <div class="table-responsive-box">
-                        <table class="table-agro">
-                            <thead>
-                                <tr>
-                                    <th>Categoría</th>
-                                    <th>Insumo / Producto</th>
-                                    <th>Físico en Galpón</th>
-                                    <th>Por Retirar (Acopio)</th>
-                                    <th>Stock Total General</th>
-                                    <th>Ubicación / Proveedor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for ins in insumos_db %}
-                                <tr>
-                                    <td><span class="badge-tipo">{{ ins.get_categoria_display }}</span></td>
-                                    <td><strong>{{ ins.nombre }}</strong></td>
-                                    <td><strong class="text-emerald">{{ ins.stock_actual|floatformat:1 }} {{ ins.unidad_medida }}</strong></td>
-                                    <td><span class="text-amber">{{ ins.stock_por_retirar|floatformat:1 }} {{ ins.unidad_medida }}</span></td>
-                                    <td><strong class="text-cyan">{{ ins.stock_total_general|floatformat:1 }} {{ ins.unidad_medida }}</strong></td>
-                                    <td>{{ ins.deposito_habitual|default:"Galpón Central" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <!-- Insumos & Fitosanitarios Card (En Galpón vs A Retirar) -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📦 Insumos & Agroquímicos</h2>
+                        <span class="badge-tag text-emerald" id="metric-fito-total-badge">{{ stock.fitosanitarios_totales.total_general_litros|floatformat:0 }} L</span>
+                    </div>
+                    <div class="hibridos-list" id="fito-list-container">
+                        {% for f in stock.fitosanitarios %}
+                        <div class="hibrido-card" id="card-fito-{{ f.id }}">
+                            <div class="hibrido-header">
+                                <strong class="hibrido-name">{{ f.nombre }}</strong>
+                                <span class="hibrido-provider">{{ f.tipo }}</span>
+                            </div>
+                            <div class="hibrido-locations">
+                                <div class="loc-item">
+                                    <span class="loc-label">🏠 En Galpón:</span>
+                                    <strong class="loc-val text-emerald" id="val-fito-{{ f.id }}-galpon">{{ f.en_galpon|floatformat:0 }} L</strong>
+                                </div>
+                                <div class="loc-item">
+                                    <span class="loc-label">📍 A Retirar:</span>
+                                    <strong class="loc-val text-amber" id="val-fito-{{ f.id }}-retiro">{{ f.a_retirar|floatformat:0 }} L</strong>
+                                </div>
+                            </div>
+                            <div class="hibrido-retiro-lugar">
+                                <span class="lugar-ico">📍</span>
+                                <span class="lugar-txt">{{ f.lugar_retiro }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="fuel-totals-box mt-2">
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Fitosanitarios en Galpón:</span>
+                            <strong class="tot-val text-emerald" id="metric-fito-galpon">{{ stock.fitosanitarios_totales.en_galpon_litros|floatformat:0 }} L</strong>
+                        </div>
+                        <div class="fuel-total-row">
+                            <span class="tot-lbl">Fitosanitarios a Retirar:</span>
+                            <strong class="tot-val text-amber" id="metric-fito-retiro">{{ stock.fitosanitarios_totales.a_retirar_litros|floatformat:0 }} L</strong>
+                        </div>
+                        <div class="fuel-total-row highlight-row">
+                            <span class="tot-lbl">Semillas Soja DM46 Galpón:</span>
+                            <strong class="tot-val text-cyan" id="metric-sem-soja">{{ stock.semillas_soja }} bolsas</strong>
+                        </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- ============================================================== -->
-            <!-- MÓDULO 4: CAMPO & LOTES (CARTOGRAFÍA & SEGUIMIENTO)            -->
-            <!-- ============================================================== -->
-            <section id="module-campo" class="module-tab-content hidden">
-                <div class="module-header-box">
-                    <div>
-                        <h2 class="module-title">🌾 Gestión Agronómica de Lotes & Cartografía</h2>
-                        <p class="module-desc">Zonificación de lotes, asignación de híbridos, superficies y planos satelitales.</p>
-                    </div>
-                </div>
-
+                <!-- Lotes Agronomy & Diagrams Card -->
                 <div class="dash-card lotes-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🌱 Gestión de Lotes (Planos & Híbridos)</h2>
+                        <span class="badge-tag text-emerald">{{ lotes|length }} Lotes Activos</span>
+                    </div>
+                    <p class="section-desc" style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 10px;">
+                        Asocia los híbridos plantados y almacena planos o fotos del lote para consulta de la IA.
+                    </p>
+
+                    <!-- Selector de pestañas de Lotes -->
                     <div class="lotes-tabs-bar">
                         {% for l in lotes %}
                         <button type="button" class="lote-tab-btn {% if forloop.first %}active{% endif %}" data-target-lote="tab-lote-{{ l.id }}">
-                            {{ l.nombre }}
+                            {{ l.nombre|truncatechars:18 }}
                         </button>
                         {% endfor %}
                     </div>
 
+                    <!-- Paneles de cada Lote -->
                     {% for l in lotes %}
-                    <div class="lote-panel-content {% if not forloop.first %}hidden{% endif %}" id="tab-lote-{{ l.id }}">
-                        <form class="lote-ajax-form" data-lote-id="{{ l.id }}" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <input type="hidden" name="lote_id" value="{{ l.id }}">
-                            <div class="lote-meta-header">
-                                <div>
-                                    <strong class="lote-title">{{ l.nombre }}</strong>
-                                    <span class="badge-tag text-emerald" style="margin-left: 6px;">{{ l.superficie_ha }} Hectáreas</span>
-                                    <span class="badge-tag text-cyan" style="margin-left: 4px;">{{ l.cultivo }}</span>
-                                </div>
-                                <span class="lote-campo-name">{{ l.campo|default:"Campo La Esperanza" }}</span>
+                    <div class="lote-panel-content {% if not forloop.first %}hidden{% endif %}" id="tab-lote-{{ l.id }}" data-lote-id="{{ l.id }}">
+                        <div class="lote-meta-header">
+                            <div>
+                                <strong class="lote-title">{{ l.nombre }}</strong>
+                                <span class="badge-tag text-cyan" style="margin-left: 6px;">{{ l.superficie_ha }} ha</span>
+                                <span class="badge-tag text-emerald" style="margin-left: 4px;">{{ l.cultivo }}</span>
                             </div>
+                            <span class="lote-campo-name">{{ l.campo|default:"Campo La Esperanza" }}</span>
+                        </div>
 
-                            <div class="form-group-lote mt-2">
+                        <form class="lote-update-form" data-lote-id="{{ l.id }}" enctype="multipart/form-data">
+                            <!-- Campo de Híbridos / Variedades -->
+                            <div class="form-group-lote">
                                 <label class="form-lbl">
-                                    <span>🌾 Híbridos / Variedades sembradas en este lote:</span>
+                                    <span>🌾 Híbridos / Variedades que se plantan:</span>
                                 </label>
                                 <input type="text" 
                                        name="hibridos_plantados" 
@@ -611,32 +446,36 @@
                                        autocomplete="off"
                                        autocorrect="off"
                                        autocapitalize="none"
-                                       spellcheck="false">
+                                       spellcheck="false"
+                                       data-gramm="false"
+                                       data-enable-grammarly="false"
+                                       data-ms-editor="false">
                             </div>
 
+                            <!-- Vista y carga de Foto / Diagrama -->
                             <div class="form-group-lote mt-2">
                                 <label class="form-lbl">
-                                    <span>🗺️ Plano Satelital o Diagrama Catastral:</span>
+                                    <span>🗺️ Foto o Diagrama Agronómico (Plano / Esquema):</span>
                                 </label>
                                 <div class="diagram-preview-box" id="preview-box-{{ l.id }}">
                                     {% if l.diagrama_url %}
                                     <div class="current-diagram-wrapper">
                                         <img src="{{ l.diagrama_url }}" alt="Diagrama {{ l.nombre }}" class="lote-thumb-img" id="thumb-img-{{ l.id }}" onclick="window.open('{{ l.diagrama_url }}', '_blank')">
                                         <div class="diagram-info-meta">
-                                            <span class="diagram-filename" id="diag-filename-{{ l.id }}">🗺️ {{ l.diagrama_nombre|default:"Plano guardado" }}</span>
-                                            <span class="diagram-hint">(Clic en la imagen para ampliar en alta resolución)</span>
+                                            <span class="diagram-filename" id="diag-filename-{{ l.id }}">🗺️ {{ l.diagrama_nombre|default:"Plano de lote guardado" }}</span>
+                                            <span class="diagram-hint">(Clic en la imagen para ampliar en tamaño completo)</span>
                                         </div>
                                     </div>
                                     {% else %}
                                     <div class="no-diagram-placeholder" id="placeholder-{{ l.id }}">
-                                        <span>📷 Sin diagrama cargado actualmente</span>
+                                        <span>📷 Sin foto o diagrama cargado actualmente</span>
                                     </div>
                                     {% endif %}
                                 </div>
 
                                 <div class="upload-actions-bar mt-2">
                                     <label class="btn-file-select" for="file-upload-{{ l.id }}">
-                                        📁 Seleccionar Nueva Foto / Plano
+                                        📁 Cargar Foto / Diagrama
                                         <input type="file" id="file-upload-{{ l.id }}" name="foto_diagrama" accept="image/*" class="lote-file-input" data-lote-id="{{ l.id }}">
                                     </label>
                                     <span class="selected-file-label" id="file-name-{{ l.id }}">Ningún archivo nuevo seleccionado</span>
@@ -644,156 +483,174 @@
                             </div>
 
                             <div class="form-footer mt-2">
-                                <button type="submit" class="btn-save-lote">💾 Guardar Cambios del Lote</button>
-                                <span class="lote-save-status text-emerald hidden" id="save-status-{{ l.id }}">✓ Actualizado en base de datos</span>
+                                <button type="submit" class="btn-save-lote">
+                                    💾 Guardar Cambios del Lote
+                                </button>
+                                <span class="lote-save-status text-emerald hidden" id="save-status-{{ l.id }}">✓ Guardado exitosamente</span>
                             </div>
                         </form>
                     </div>
                     {% endfor %}
                 </div>
-            </section>
 
-            <!-- ============================================================== -->
-            <!-- MÓDULO 5: INFORMES & AUDITORÍA DE MOVIMIENTOS                  -->
-            <!-- ============================================================== -->
-            <section id="module-informes" class="module-tab-content hidden">
-                <div class="module-header-box">
-                    <div>
-                        <h2 class="module-title">📊 Auditoría & Historial de Movimientos</h2>
-                        <p class="module-desc">Registro inmutable de entradas, salidas y traslados con trazabilidad de saldo anterior y posterior.</p>
+                <!-- Cartografía y Diagramas de Campos Card -->
+                <div class="dash-card campos-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🗺️ Cartografía & Diagramas de Campos</h2>
+                        <span class="badge-tag text-emerald">{{ campos|length|default:3 }} Campos Registrados</span>
                     </div>
-                    <div class="module-actions">
-                        <a href="/api/sheets/download/" class="btn-secondary">📥 Descargar Excel Completo</a>
-                    </div>
-                </div>
+                    <p class="section-desc" style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 10px;">
+                        Planos catastrales, curvas de nivel y zonificación satelital de los establecimientos disponibles para consulta operativa.
+                    </p>
 
-                <!-- Filter & Search Toolbar -->
-                <div class="filter-toolbar-card">
-                    <div class="search-input-wrap">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="filter-search-input" class="search-input" placeholder="Buscar por labor, operario, insumo o remito..." autocorrect="off" spellcheck="false">
-                    </div>
-                    <div class="filters-wrap">
-                        <select id="filter-tipo-mov" class="filter-select">
-                            <option value="">Todos los tipos</option>
-                            <option value="Consumo en Labor">Consumo en Labor</option>
-                            <option value="Ingreso por Compra">Ingreso por Compra</option>
-                            <option value="Traslado">Traslado Interno</option>
-                        </select>
-                        <select id="filter-lote-select" class="filter-select">
-                            <option value="">Todos los Lotes</option>
-                            {% for l in lotes_db %}
-                            <option value="{{ l.nombre }}">{{ l.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Audited Movements Table -->
-                <div class="dash-card mt-2">
-                    <div class="table-responsive-box">
-                        <table class="table-agro" id="table-movimientos">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Insumo</th>
-                                    <th>Cantidad</th>
-                                    <th>Lote</th>
-                                    <th>Depósito</th>
-                                    <th>Labor / Maquinaria</th>
-                                    <th>Operario</th>
-                                    <th>Saldo Posterior</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for m in movimientos_db %}
-                                <tr class="mov-row" data-search="{{ m.labor_realizada|lower }} {{ m.operario|lower }} {{ m.insumo.nombre|lower }} {{ m.documento_referencia|lower }}" data-tipo="{{ m.get_tipo_movimiento_display }}" data-lote="{{ m.lote.nombre|default:'' }}">
-                                    <td>{{ m.fecha|date:"d/m/Y" }}</td>
-                                    <td><span class="badge-tipo">{{ m.get_tipo_movimiento_display }}</span></td>
-                                    <td><strong>{{ m.insumo.nombre }}</strong></td>
-                                    <td><strong class="text-emerald">{{ m.cantidad|floatformat:1 }} {{ m.insumo.unidad_medida }}</strong></td>
-                                    <td>{{ m.lote.nombre|default:"-" }}</td>
-                                    <td>{{ m.deposito_origen_fk.nombre|default:m.deposito_origen|default:"-" }}</td>
-                                    <td>{{ m.labor_realizada|default:"-" }}</td>
-                                    <td>{{ m.operario|default:"Productor" }}</td>
-                                    <td><span class="text-cyan">{{ m.saldo_posterior|default:"-"|floatformat:1 }}</span></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">No hay movimientos registrados aún.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ============================================================== -->
-            <!-- MÓDULO 6: COPILOTO DE IA CON VISTA PREVIA Y CONFIRMACIÓN      -->
-            <!-- ============================================================== -->
-            <section id="module-copiloto" class="module-tab-content hidden">
-                <div class="chat-section-full">
-                    <div class="chat-controls-bar">
-                        <div class="active-context-label">
-                            <span class="icon">🚜</span>
-                            <span>Copiloto de IA: Gestión por Lenguaje Natural con Confirmación Previa</span>
-                        </div>
-                        <button id="btn-clear-chat" class="btn-text-danger" title="Reiniciar conversación">
-                            🗑️ Limpiar Historial
+                    <!-- Selector de pestañas de Campos -->
+                    <div class="lotes-tabs-bar">
+                        {% for c in campos %}
+                        <button type="button" class="campo-tab-btn {% if forloop.first %}active{% endif %}" data-target-campo="tab-campo-{{ c.id }}">
+                            {{ c.nombre }}
                         </button>
+                        {% endfor %}
                     </div>
 
-                    <!-- Messages Stream -->
-                    <div id="messages-list" class="messages-container">
-                        <div class="message-card bot-card">
-                            <div class="avatar bot-avatar">🌾</div>
-                            <div class="message-body">
-                                <div class="message-meta">
-                                    <span class="sender-name">IA Desk Agro</span>
-                                    <span class="timestamp">Inicio de jornada</span>
-                                </div>
-                                <div class="message-content">
-                                    <p>¡Hola! Bienvenido al <strong>Copiloto Operativo de IA Desk Agro</strong>.</p>
-                                    <p>Podés redactar cualquier instrucción en lenguaje natural (ej: <em>"Gasté 240 litros del tanque chico en el Lote 1"</em>). Por seguridad agronómica, el sistema generará una <strong>vista previa del impacto</strong> para que confirmes antes de asentar el movimiento en la base de datos.</p>
+                    <!-- Paneles de cada Campo -->
+                    {% for c in campos %}
+                    <div class="campo-panel-content {% if not forloop.first %}hidden{% endif %}" id="tab-campo-{{ c.id }}">
+                        <div class="lote-meta-header">
+                            <div>
+                                <strong class="lote-title">{{ c.nombre }}</strong>
+                                <span class="badge-tag text-cyan" style="margin-left: 6px;">{{ c.superficie_ha }} Has</span>
+                            </div>
+                            <span class="lote-campo-name">{{ c.sector }}</span>
+                        </div>
+
+                        <div class="diagram-preview-box mt-2">
+                            <div class="current-diagram-wrapper">
+                                <img src="{{ c.diagrama_url }}" alt="Diagrama {{ c.nombre }}" class="lote-thumb-img" onclick="window.open('{{ c.diagrama_url }}', '_blank')">
+                                <div class="diagram-info-meta">
+                                    <span class="diagram-filename">🗺️ {{ c.diagrama_nombre }}</span>
+                                    <span class="diagram-hint">(Clic en la imagen para abrir en alta resolución)</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Quick Consultation Chips -->
-                    <div class="quick-chips-wrapper">
-                        <span class="chips-label">Consultas rápidas:</span>
-                        <div class="chips-container">
-                            <button class="chip-btn" data-query="¿Cuánto gasoil tenemos en los 4 depósitos y acopio?">⛽ Saldo Gasoil</button>
-                            <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">🌽 Maíz Híbridos</button>
-                            <button class="chip-btn" data-query="¿Cuál es el estado de los fertilizantes en galpón?">🧪 Fertilizantes</button>
-                            <button class="chip-btn" data-query="¿Cómo se calcula el gasoil y las semillas según normas INTA y qué APIs se usan?">🌐 Normas INTA & APIs</button>
+                        <div class="campo-details-grid mt-2" style="font-size: 0.76rem; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; border: 1px solid rgba(255,255,255,0.06); line-height: 1.45;">
+                            <div style="margin-bottom: 5px;"><strong>📍 Ubicación:</strong> <span style="color: var(--text-muted);">{{ c.ubicacion }}</span></div>
+                            <div style="margin-bottom: 5px;"><strong>🚜 Lotes principales:</strong> <span style="color: var(--text-muted);">{{ c.lotes|join:", " }}</span></div>
+                            <div style="margin-bottom: 5px;"><strong>🏗️ Infraestructura:</strong> <span style="color: var(--text-muted);">{{ c.instalaciones_clave }}</span></div>
+                            <div><strong>🌾 Aptitud agronómica:</strong> <span style="color: var(--text-muted);">{{ c.tipo_suelo }}</span></div>
+                        </div>
+
+                        <div class="mt-2" style="display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn-primary btn-consult-campo" data-campo-query="¿Cómo es el diagrama de {{ c.nombre }}?" style="font-size: 0.75rem; padding: 6px 12px;">
+                                💬 Consultar este campo a la IA
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Chat Input Bar -->
-                    <form id="chat-form" class="chat-input-bar">
-                        <textarea 
-                            id="user-input" 
-                            placeholder="Escribe una consulta o movimiento... (ej: 'gasté 300 L del tanque grande en Lote 2') [Enter]"
-                            rows="1"
-                            autocomplete="off"
-                            autocorrect="off"
-                            autocapitalize="none"
-                            spellcheck="false"
-                            data-gramm="false"
-                            data-enable-grammarly="false"
-                            data-ms-editor="false"
-                        ></textarea>
-                        <button type="submit" id="btn-send" class="btn-primary">
-                            <span>Consultar</span>
-                            <span class="btn-arrow">➔</span>
-                        </button>
-                    </form>
+                    {% endfor %}
                 </div>
-            </section>
+
+                <!-- Google Drive & Online Spreadsheets Card -->
+                <div class="dash-card drive-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📊 Hojas de Cálculo & Drive Online</h2>
+                        <span class="tank-status-tag status-active">🟢 En Línea</span>
+                    </div>
+                    <div class="drive-sync-body">
+                        <p class="drive-desc-text">
+                            Hojas de cálculo en la nube vinculadas a la carpeta compartida de Google Drive. Se actualizan automáticamente ante cada movimiento registrado por la IA.
+                        </p>
+                        <div class="drive-meta-box">
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Carpeta Drive:</span>
+                                <span class="meta-val">IA Desk Agro</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Archivo Maestro:</span>
+                                <span class="meta-val">IA_Desk_Agro_Consolidado.xlsx</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Pestañas:</span>
+                                <span class="meta-val">7 Hojas conectadas</span>
+                            </div>
+                            <div class="drive-meta-item">
+                                <span class="meta-label">Último movimiento:</span>
+                                <span class="meta-val" id="drive-last-sync">Automático al instante</span>
+                            </div>
+                        </div>
+                        <!-- Hojas por Cultivo (Solapas por Campo & Lote) -->
+                        <div class="crop-sheets-container" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div style="font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-dim); margin-bottom: 8px;">
+                                🌾 Libros por Cultivo (Solapas por Campo & Lote)
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <a href="/api/sheets/download/maiz/" class="crop-sheet-btn" style="background: rgba(180, 83, 9, 0.15); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #fef3c7; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌽 Maíz</div>
+                                        <div style="font-size: 0.71rem; color: #fcd34d;">3 Campos • Lote 2 y Norte A</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/soja_primera/" class="crop-sheet-btn" style="background: rgba(27, 94, 32, 0.15); border: 1px solid rgba(46, 125, 50, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #d1fae5; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌱 Soja Primera</div>
+                                        <div style="font-size: 0.71rem; color: #6ee7b7;">3 Campos • Lote 1 y Norte B</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/soja_segunda/" class="crop-sheet-btn" style="background: rgba(15, 118, 110, 0.15); border: 1px solid rgba(20, 184, 166, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #ccfbf1; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌿 Soja Segunda</div>
+                                        <div style="font-size: 0.71rem; color: #5eead4;">3 Campos • Lote 3 y Norte C</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                                <a href="/api/sheets/download/trigo/" class="crop-sheet-btn" style="background: rgba(146, 64, 14, 0.15); border: 1px solid rgba(180, 83, 9, 0.3); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #fde68a; transition: all 0.2s;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.84rem;">🌾 Trigo Pan</div>
+                                        <div style="font-size: 0.71rem; color: #fde047;">3 Campos • Labores y Cosecha</div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">📥</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="drive-action-buttons">
+                            <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-action">
+                                🌐 Abrir Carpeta en Google Drive
+                            </a>
+                            <a href="/api/sheets/download/" class="btn-download-action">
+                                📥 Descargar Consolidado (.xlsx)
+                            </a>
+                            <button id="btn-sync-sheets-now" class="btn-sync-action">
+                                🔄 Forzar Sincronización Ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planillas link -->
+                <div class="dash-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">📁 Planillas Físicas (files_storage/)</h2>
+                    </div>
+                    <div class="storage-files-list">
+                        {% for f in storage_files %}
+                        <div class="storage-file-row" data-filename="{{ f.name }}">
+                            <div class="file-info">
+                                <span class="file-icon">
+                                    {% if 'gasoil' in f.name %}⛽
+                                    {% elif 'insumo' in f.name %}📦
+                                    {% elif 'lote' in f.name %}🌾
+                                    {% else %}📄{% endif %}
+                                </span>
+                                <span class="file-name">{{ f.name }}</span>
+                            </div>
+                            <span class="file-size">{{ f.size_bytes }} B</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
         </main>
     </div>
 
@@ -805,23 +662,26 @@
                     <span class="wa-icon-large">📱</span>
                     <div>
                         <h3>Simulador de Reportes de WhatsApp de Campo</h3>
-                        <span class="wa-subtitle">Recepción simulada de audios de tractoristas para prueba operativa</span>
+                        <span class="wa-subtitle">Recepción de audios y textos con especificación de tanques y acopio</span>
                     </div>
                 </div>
                 <button id="wa-modal-close-btn" class="modal-close">✕</button>
             </div>
+            
             <div class="wa-modal-body">
                 <p class="wa-desc">
                     El personal de campo puede reportar consumo indicando el tanque de donde extrajo el combustible o avisar llegadas de flete:
                 </p>
+
                 <div class="wa-presets-grid">
-                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que cargamos 250 litros del Tanque Chico al John Deere y sembramos 20 hectáreas en el Lote 1.">
+                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que cargamos 250 litros del Tanque Chico al John Deere y sembramos 20 hectáreas en el Lote 1 con 35 bolsas de semilla.">
                         <div class="wa-preset-top">
                             <span class="wa-audio-badge">🎙️ Audio 0:22 seg</span>
                             <span class="wa-sender-lbl">Juan (Siembra)</span>
                         </div>
-                        <p class="wa-preset-text">"Cargamos 250 L del Tanque Chico al John Deere, sembramos 20 ha."</p>
+                        <p class="wa-preset-text">"Cargamos 250 L del Tanque Chico al John Deere, sembramos 20 ha con 35 bolsas."</p>
                     </button>
+
                     <button class="wa-preset-btn" data-sender="Carlos (Encargado Galpón)" data-msg="Pasamos 1500 litros de la Cisterna Planta al Tanque Grande para tenerlo listo para la sembradora.">
                         <div class="wa-preset-top">
                             <span class="wa-audio-badge">🎙️ Audio 0:16 seg</span>
@@ -829,7 +689,16 @@
                         </div>
                         <p class="wa-preset-text">"Pasamos 1.500 L de Cisterna Planta al Tanque Grande para la sembradora."</p>
                     </button>
+
+                    <button class="wa-preset-btn" data-sender="Esteban (Administrador)" data-msg="Retiramos 3000 litros de gasoil del acopio de YPF Directo y los descargamos en la Cisterna Planta.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:18 seg</span>
+                            <span class="wa-sender-lbl">Esteban (Acopio)</span>
+                        </div>
+                        <p class="wa-preset-text">"Retiramos 3.000 L del acopio de YPF y los descargamos en Cisterna Planta."</p>
+                    </button>
                 </div>
+
                 <div class="wa-custom-input-box">
                     <label class="wa-input-lbl">O redacta un mensaje libre de campo:</label>
                     <textarea 
@@ -847,7 +716,7 @@
                     <div class="wa-input-footer">
                         <span class="wa-audio-indicator">🎙️ Simula Nota de Voz de WhatsApp</span>
                         <button id="btn-send-wa-custom" class="btn-primary wa-btn-send">
-                            <span>Enviar Reporte al Copiloto</span>
+                            <span>Enviar Reporte a Claude</span>
                             <span>➔</span>
                         </button>
                     </div>
@@ -871,7 +740,7 @@
                 <pre id="modal-file-content"><code>Cargando contenido...</code></pre>
             </div>
             <div class="modal-footer">
-                <span class="modal-footer-note">Planillas físicas sincronizadas en tiempo real con SQLite.</span>
+                <span class="modal-footer-note">Planillas físicas de la empresa modificadas en tiempo real por Claude.</span>
                 <button id="btn-refresh-inspector" class="btn-secondary">🔄 Recargar</button>
             </div>
         </div>

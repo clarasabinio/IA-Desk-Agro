@@ -30,7 +30,7 @@ def index_view(request: HttpRequest):
     storage_files = list_storage_files()
     has_anthropic_key = bool(settings.ANTHROPIC_API_KEY)
     has_api_key = bool(getattr(settings, 'OPENROUTER_API_KEY', '') or settings.ANTHROPIC_API_KEY)
-    ai_provider = "OpenRouter (Claude Sonnet 5.5)" if getattr(settings, 'OPENROUTER_API_KEY', '') else ("Anthropic (Claude 3.5 Sonnet)" if settings.ANTHROPIC_API_KEY else "Modo Local Autónomo")
+    ai_provider = "OpenRouter (Claude Sonnet 3.5)" if getattr(settings, 'OPENROUTER_API_KEY', '') else ("Anthropic (Claude 3.5 Sonnet)" if settings.ANTHROPIC_API_KEY else "Modo Local Autónomo")
     stock_data = get_dashboard_summary()
     drive_folder_id = get_drive_folder_id()
     drive_url = f"https://drive.google.com/drive/folders/{drive_folder_id}?usp=sharing"
@@ -43,23 +43,13 @@ def index_view(request: HttpRequest):
     except Exception:
         lotes_data = []
 
-    # Cargar campos con su cartografía y planos satelitales
+    # Cargar campos y sus diagramas
     campos_path = settings.FILES_STORAGE_DIR / "registro_campos.json"
     try:
         with open(campos_path, "r", encoding="utf-8") as f:
             campos_data = json.load(f).get("campos", [])
     except Exception:
         campos_data = []
-
-    # Contexto enriquecido desde la Única Fuente de Verdad (Base de Datos SQLite)
-    from app.models import Deposito, Insumo, MovimientoStock, Lote, Campo, CicloCultivo
-    from app.services.stock_service import StockIntegrityService
-
-    depositos_list = Deposito.objects.filter(activo=True).order_by("tipo", "nombre")
-    insumos_list = Insumo.objects.all().order_by("categoria", "nombre")
-    movimientos_list = MovimientoStock.objects.select_related("insumo", "lote", "deposito_origen_fk", "deposito_destino_fk").order_by("-fecha", "-creado_el")[:60]
-    lotes_db = Lote.objects.filter(activo=True).select_related("campo").order_by("campo__nombre", "nombre")
-    balance_auditado = StockIntegrityService.obtener_balance_verificado()
 
     context = {
         "storage_files": storage_files,
@@ -72,13 +62,7 @@ def index_view(request: HttpRequest):
         "lotes": lotes_data,
         "campos": campos_data,
         "google_drive_folder_url": drive_url,
-        "google_drive_folder_id": drive_folder_id,
-        "depositos_db": depositos_list,
-        "insumos_db": insumos_list,
-        "movimientos_db": movimientos_list,
-        "lotes_db": lotes_db,
-        "balance_auditado": balance_auditado,
-        "clima": get_live_soil_and_weather_factor()
+        "google_drive_folder_id": drive_folder_id
     }
     return render(request, "app/index.html", context)
 
