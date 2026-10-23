@@ -10,14 +10,14 @@
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 2360.0,
+      "stock_actual_litros": 1264.2,
       "umbral_alerta_litros": 1000,
       "ubicacion": "Cisterna de apoyo móvil en campo"
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
       "capacidad_max_litros": 3000,
-      "stock_actual_litros": 2750.0,
+      "stock_actual_litros": 1760.0,
       "umbral_alerta_litros": 600,
       "ubicacion": "Carretón de auxilio rápido en lote"
     },
@@ -29,8 +29,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 19710.0,
-    "stock_total_con_acopio_litros": 21910.0
+    "stock_fisico_campo_litros": 17624.2,
+    "stock_total_con_acopio_litros": 19824.2
   },
   "entradas": [
     {
@@ -144,6 +144,60 @@
       "deposito_origen": "Tanque Grande",
       "maquinaria": "Maquinaria de labor",
       "litros": 200.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Maquinaria de labor",
+      "litros": 750.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Maquinaria de labor",
+      "litros": 360.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R + Sembradora Crucianelli 27 líneas",
+      "labor": "Siembra en Lote 1 (35.0 ha)",
+      "litros": 50.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R + Sembradora Crucianelli 27 líneas",
+      "labor": "Siembra en Lote 1 (35.0 ha)",
+      "litros": 200.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 (50.0 ha)",
+      "litros": 367.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 1 (30.0 ha)",
+      "litros": 240.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
+      "labor": "Siembra en Lote 1 (20.0 ha)",
+      "litros": 118.8,
       "operario": "Productor"
     }
   ],

@@ -1,0 +1,62 @@
+{
+  "establecimiento_general": "IA Desk Agro - Establecimientos Agropecuarios",
+  "campana": "Gruesa 2026/2027",
+  "campos": [
+    {
+      "id": "CAMPO-01",
+      "nombre": "Campo La Esperanza",
+      "sector": "Sector Central / Base de Operaciones",
+      "ubicacion": "Ruta Nacional 8, Km 245 - Zona Núcleo Agrícola",
+      "superficie_ha": 650,
+      "lotes": [
+        "Lote 1 (120 ha - Soja de 1ra)",
+        "Lote Central (90 ha - Maíz temprano)",
+        "Lote Bajo Norte (80 ha - Rotación)",
+        "Lote 4 y 5 Reserva (360 ha)"
+      ],
+      "instalaciones_clave": "Casco principal, Batería de 5 silos (280 Tn), 2 silos de acopio para trilla (2.700 Tn), Cisterna de combustible 22.000 L, Balanza de camiones y galpón central de maquinaria",
+      "tipo_suelo": "Suelo Argiudol típico Serie Hughes/Pergamino clase I, drenaje óptimo, índice de productividad 92",
+      "cultivos_campana": "Soja 1ra (DM 46R18 STS) y Maíz temprano (Dekalb 72-10)",
+      "diagrama_url": "/media/campos/campo_la_esperanza.jpg",
+      "diagrama_nombre": "Plano Catastral y Zonificación Operativa - Campo La Esperanza (650 Has)",
+      "descripcion": "Establecimiento central y base logística de la empresa agropecuaria. Aloja la infraestructura principal de almacenamiento de granos en silos, cisterna de gasoil y los lotes agrícolas de mayor rinde histórico."
+    },
+    {
+      "id": "CAMPO-02",
+      "nombre": "Campo El Ombú",
+      "sector": "Sector Norte - Lomas Agrícolas",
+      "ubicacion": "Camino Rural Norte Km 14, acceso por RP 31",
+      "superficie_ha": 380,
+      "lotes": [
+        "Lote 2 (85 ha - Maíz Tardío)",
+        "Lote Loma Norte (95 ha - Barbecho)",
+        "Lote Potrero Ombú (110 ha - Rotación Maíz/Soja)",
+        "Lote Tajamar (90 ha)"
+      ],
+      "instalaciones_clave": "Puesto operativo norte, Tanque cisterna auxiliar de 5.000 L, Pivote de riego central, Molino con aguada y manga ganadera de uso rotativo",
+      "tipo_suelo": "Hapludol éntico con relieve ondulado suave, aptitud excelente para maíz tardío con manejo por ambientes y curvas de nivel",
+      "cultivos_campana": "Maíz Tardío (Dekalb DK 72-10 VT3P) con prescripción variable y fertilización nitrogenada diferida",
+      "diagrama_url": "/media/campos/campo_el_ombu.jpg",
+      "diagrama_nombre": "Cartografía SIG y Curvas de Nivel - Campo El Ombú (380 Has)",
+      "descripcion": "Campo ubicado en el sector norte de relieve ligeramente ondulado. Utiliza agricultura de precisión con zonas de manejo agronómico (Z1 loma, Z2 media loma, Z3 bajo) y seguimiento de curvas de nivel para conservación de suelos."
+    },
+    {
+      "id": "CAMPO-03",
+      "nombre": "Campo San José",
+      "sector": "Sector Sur - Cañada / Bajo Grande",
+      "ubicacion": "Paraje San José - Camino Interurbano Sur",
+      "superficie_ha": 420,
+      "lotes": [
+        "Lote 3 Bajo Grande (210 ha - Trigo / Soja 2da)",
+        "Lote San José Este (110 ha)",
+        "Lote San José Oeste (100 ha)"
+      ],
+      "instalaciones_clave": "Galpón de resguardo para cosechadoras, 2 silos aéreos de chapa de 60 Tn, Red de canales de desagüe pluvial, cortinas forestales de protección contra viento",
+      "tipo_suelo": "Suelo Argiudol con influencia de napa freática favorable en verano, excelente capacidad de recarga para doble cultivo anual",
+      "cultivos_campana": "Trigo pan ciclo intermedio (cosechado 39 qq/ha) seguido de Soja de 2da DM 46R18",
+      "diagrama_url": "/media/campos/campo_san_jose.jpg",
+      "diagrama_nombre": "Mapa de Prescripción y Drenaje - Campo San José (420 Has)",
+      "descripcion": "Campo ubicado en la cuenca sur ('Bajo Grande'). Sobresale por su alta estabilidad de rendimientos gracias al régimen hídrico y cortinas forestales. Diseñado para la rotación intensiva de trigo y soja de segunda."
+    }
+  ]
+}

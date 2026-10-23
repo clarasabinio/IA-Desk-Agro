@@ -1,3 +1,4 @@
+import requests
 import re
 import json
 from pathlib import Path
@@ -19,7 +20,7 @@ from .storage_service import (
 CLAUDE_TOOLS = [
     {
         "name": "read_file",
-        "description": "Lee el contenido íntegro de un archivo en files_storage/ ('stock_gasoil.json', 'stock_insumos.json', 'stock_granos_silos.json', 'registro_lotes.json', 'INDEX.md', 'MEMORY.md').",
+        "description": "Lee el contenido íntegro de un archivo en files_storage/ ('stock_gasoil.json', 'stock_insumos.json', 'stock_granos_silos.json', 'registro_lotes.json', 'registro_campos.json', 'INDEX.md', 'MEMORY.md').",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -77,6 +78,19 @@ CLAUDE_TOOLS = [
             "required": ["content"]
         }
     }
+]
+
+
+OPENROUTER_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": t["name"],
+            "description": t["description"],
+            "parameters": t["input_schema"]
+        }
+    }
+    for t in CLAUDE_TOOLS
 ]
 
 def load_system_prompt() -> str:
@@ -307,13 +321,109 @@ def is_fuel_transfer_or_acopio(msg: str) -> bool:
         return True
     return False
 
+
+def _call_openrouter_agent(user_message: str, is_whatsapp: bool, sender_name: str, prompt_input: str, system_prompt: str, executed_tools_log: list) -> Dict[str, Any]:
+    api_key = getattr(settings, "OPENROUTER_API_KEY", "")
+    model = getattr(settings, "OPENROUTER_MODEL", "anthropic/claude-sonnet-5.5")
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "http://localhost:8000",
+        "X-Title": "IA Desk Agro",
+        "Content-Type": "application/json"
+    }
+
+    history = get_sliding_history(limit=6)
+    messages_payload: List[Dict[str, Any]] = [
+        {"role": "system", "content": system_prompt}
+    ]
+
+    for h in history:
+        messages_payload.append({
+            "role": h["role"],
+            "content": h["content"]
+        })
+
+    messages_payload.append({
+        "role": "user",
+        "content": prompt_input
+    })
+
+    max_iterations = 6
+    iteration = 0
+    final_text = ""
+
+    while iteration < max_iterations:
+        iteration += 1
+
+        payload = {
+            "model": model,
+            "max_tokens": 600,
+            "messages": messages_payload,
+            "tools": OPENROUTER_TOOLS
+        }
+
+        resp = requests.post(url, headers=headers, json=payload, timeout=45)
+        if resp.status_code != 200:
+            err_data = resp.json() if resp.text else {}
+            err_msg = err_data.get("error", {}).get("message", resp.text)
+            raise RuntimeError(f"OpenRouter Error ({resp.status_code}): {err_msg}")
+
+        res_data = resp.json()
+        choice = res_data.get("choices", [{}])[0]
+        choice_msg = choice.get("message", {})
+
+        if choice.get("finish_reason") == "tool_calls" or choice_msg.get("tool_calls"):
+            messages_payload.append(choice_msg)
+
+            for tc in choice_msg.get("tool_calls", []):
+                t_fn = tc.get("function", {})
+                t_name = t_fn.get("name", "")
+                t_args_raw = t_fn.get("arguments", "{}")
+                try:
+                    t_args = json.loads(t_args_raw) if isinstance(t_args_raw, str) else t_args_raw
+                except Exception:
+                    t_args = {}
+
+                t_output, t_meta = execute_native_tool(t_name, t_args)
+                executed_tools_log.append(t_meta)
+
+                messages_payload.append({
+                    "role": "tool",
+                    "tool_call_id": tc.get("id"),
+                    "name": t_name,
+                    "content": t_output
+                })
+
+        else:
+            final_text = choice_msg.get("content", "")
+            break
+
+    if not final_text:
+        final_text = "Se completaron las labores solicitadas en los registros del campo."
+
+    final_text = re.sub(
+        r"stock_gasoil\.json|stock_insumos\.json|stock_granos_silos\.json|registro_lotes\.json|registro_campos\.json|INDEX\.md|MEMORY\.md|files_storage/?",
+        "los registros del campo",
+        final_text
+    )
+    append_to_history(user_message, final_text, executed_tools_log)
+
+    return {
+        "response": final_text,
+        "tool_calls": executed_tools_log,
+        "is_demo": False,
+        "provider": f"OpenRouter ({model})",
+        "stock_data": get_dashboard_summary()
+    }
+
 def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name: str = "Productor") -> Dict[str, Any]:
     api_key = settings.ANTHROPIC_API_KEY
     system_prompt = load_system_prompt()
     executed_tools_log = []
 
     # Saludo inicial: solo saludar al usuario sin datos de combustible ni inventario
-    clean_msg = user_message.lower().strip().rstrip("!?.")
+    clean_msg = user_message.lower().strip().strip("¡!¿?. ")
     is_pure_greeting = (
         clean_msg in ["hola", "buen dia", "buen día", "buenos dias", "buenos días", "buenas", "buenas tardes", "buenas noches", "saludos", "hola que tal", "hola qué tal", "que tal", "qué tal", "hola como estas", "hola cómo estás", "hola esteban"] or
         (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
@@ -332,6 +442,16 @@ def process_agro_chat(user_message: str, is_whatsapp: bool = False, sender_name:
         prompt_input = f"[REPORTE DE WHATSAPP DE: {sender_name}]:\n\"{user_message}\"\n\nInterpreta las labores, haz los descuentos matemáticos precisos en los depósitos de combustible, semillas por híbrido o granos en silos usando las herramientas nativas, y confirma sin nombrar archivos técnicos."
     else:
         prompt_input = user_message
+
+    openrouter_key = getattr(settings, "OPENROUTER_API_KEY", "")
+    if openrouter_key:
+        try:
+            return _call_openrouter_agent(user_message, is_whatsapp, sender_name, prompt_input, system_prompt, executed_tools_log)
+        except Exception as e:
+            print(f"[OpenRouter API Warning]: {e}")
+            sim_res = _simulate_agro_engine(user_message, is_whatsapp, sender_name)
+            sim_res["warning"] = f"Aviso OpenRouter API: {str(e)}"
+            return sim_res
 
     if not api_key:
         return _simulate_agro_engine(user_message, is_whatsapp, sender_name)
@@ -425,8 +545,13 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     today_str = datetime.now().strftime("%Y-%m-%d")
     executed_tools = []
 
+    # Detección contextual prioritaria de consultas sobre combustibles
+    is_fuel_context = any(w in msg for w in [
+        "gasoil", "gas oil", "combustible", "combustibles", "diesel", "gas-oil", "nafta", "cisterna", "depósito", "depositos", "depósitos", "deposito"
+    ]) or (("tanque" in msg or "tanques" in msg) and not any(w in msg for w in ["silo", "silobolsa"]))
+
     # Saludo inicial: solo saludar al usuario
-    clean_msg = msg.strip().rstrip("!?.")
+    clean_msg = msg.strip().strip("¡!¿?. ")
     is_pure_greeting = (
         clean_msg in ["hola", "buen dia", "buen día", "buenos dias", "buenos días", "buenas", "buenas tardes", "buenas noches", "saludos", "hola que tal", "hola qué tal", "que tal", "qué tal", "hola como estas", "hola cómo estás", "hola esteban"] or
         (any(clean_msg.startswith(g) for g in ["hola", "buen dia", "buen día", "buenos dias", "buenas"]) and len(clean_msg.split()) <= 3 and not any(w in clean_msg for w in ["lote", "tanque", "gasoil", "combustible", "silo", "urea", "map", "gasto", "siembra", "trilla", "retir", "cuanto", "cuánto"]))
@@ -442,6 +567,120 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         }
 
     # ==============================================================
+    # ==============================================================
+    # 0.05 CONSULTAS DE DIAGRAMAS Y PLANOS DE CAMPOS (CARTOGRAFÍA GENERAL)
+    # ==============================================================
+    has_explicit_lote_num = any(f"lote {i}" in msg or f"lote{i}" in msg or f"parcela {i}" in msg for i in [1, 2, 3, 4, 5])
+    is_campo_word = any(w in msg for w in ["campo", "campos", "establecimiento", "establecimientos", "estancia", "predio", "finca"])
+    is_diag_word = any(w in msg for w in [
+        "diagrama", "diagramas", "plano", "planos", "mapa", "mapas", "cartografia", "cartografía",
+        "esquema", "esquemas", "foto", "fotos", "imagen", "imagenes", "imágenes", "croquis",
+        "gis", "zonificacion", "zonificación", "ejemplo", "ejemplos", "consultar", "mostrar", "mostrame",
+        "ver", "como es", "cómo es", "cuales son", "cuáles son", "donde queda", "dónde queda"
+    ])
+    is_specific_campo = any(c in msg for c in ["la esperanza", "el ombu", "el ombú", "san jose", "san josé"])
+
+    is_campo_diagram_query = not has_explicit_lote_num and (
+        (is_campo_word and is_diag_word) or
+        (is_specific_campo and is_diag_word) or
+        any(p in msg for p in [
+            "diagramas de campos", "diagrama de campos", "diagramas de campo", "diagrama de campo",
+            "diagramas de los campos", "diagrama de los campos", "planos de campos", "planos de campo",
+            "plano de campos", "plano de campo", "mapas de campos", "mapa de campos", "mapas de campo",
+            "mapa del campo", "plano del campo", "diagrama del campo", "fotos de campos", "imagenes de campos",
+            "imágenes de campos", "cartografia de campos", "cartografía de campos"
+        ])
+    )
+
+    if is_campo_diagram_query:
+        campos_raw, meta_c = execute_native_tool("read_file", {"filename": "registro_campos.json"})
+        executed_tools.append(meta_c)
+        try:
+            campos_data = json.loads(campos_raw).get("campos", [])
+        except Exception:
+            campos_data = []
+
+        # Identificar si se consulta un campo específico
+        target_campo = None
+        if "la esperanza" in msg or ("esperanza" in msg and not ("ombu" in msg or "ombú" in msg or "san jose" in msg or "san josé" in msg)):
+            target_campo = next((c for c in campos_data if "esperanza" in c.get("nombre", "").lower()), None)
+        elif "ombu" in msg or "ombú" in msg:
+            target_campo = next((c for c in campos_data if "ombu" in c.get("nombre", "").lower() or "ombú" in c.get("nombre", "").lower()), None)
+        elif "san jose" in msg or "san josé" in msg or "bajo grande" in msg:
+            target_campo = next((c for c in campos_data if "san jose" in c.get("nombre", "").lower() or "san josé" in c.get("nombre", "").lower()), None)
+
+        if target_campo:
+            c_nom = target_campo.get("nombre", "Campo")
+            c_sec = target_campo.get("sector", "Sector Productivo")
+            c_ubi = target_campo.get("ubicacion", "-")
+            c_sup = target_campo.get("superficie_ha", "-")
+            c_lotes = ", ".join(target_campo.get("lotes", []))
+            c_infra = target_campo.get("instalaciones_clave", "-")
+            c_suelo = target_campo.get("tipo_suelo", "-")
+            c_cult = target_campo.get("cultivos_campana", "-")
+            c_desc = target_campo.get("descripcion", "")
+            c_diag_url = target_campo.get("diagrama_url", "")
+            c_diag_nom = target_campo.get("diagrama_nombre") or f"Diagrama de {c_nom}"
+
+            reply = (
+                f"🗺️ **Cartografía y Diagrama de {c_nom} ({c_sup} Has):**\n\n"
+                f"• 📍 **Ubicación & Sector:** {c_sec} ({c_ubi})\n"
+                f"• 🚜 **Lotes Agrícolas:** {c_lotes}\n"
+                f"• 🌾 **Cultivos de Campaña:** {c_cult}\n"
+                f"• 🏗️ **Infraestructura Clave:** {c_infra}\n"
+                f"• 🔬 **Suelo y Aptitud:** {c_suelo}\n"
+                f"• 📋 **Detalle Operativo:** {c_desc}\n\n"
+            )
+
+            if c_diag_url:
+                reply += (
+                    f"🗺️ **Diagrama / Plano Satelital del Campo:**\n"
+                    f"![{c_diag_nom}]({c_diag_url})\n\n"
+                    f"*Diagrama registrado: `{c_diag_nom}`. Haz clic sobre la imagen para abrirla y explorar detalles de caminos, parcelas e instalaciones.*"
+                )
+            else:
+                reply += "📷 *Este campo aún no tiene plano o diagrama registrado.*"
+
+        else:
+            # Respuesta con todos los diagramas de campos de ejemplo disponibles para consultar
+            intro = (
+                f"🗺️ **Diagramas y Planos Cartográficos de los Campos de IA Desk Agro:**\n\n"
+                f"Aquí tienes los diagramas satelitales y mapas catastrales de los 3 campos en producción listos para consultar en el sistema:\n\n"
+            )
+            sections = []
+            for c in campos_data:
+                c_nom = c.get("nombre", "Campo")
+                c_sup = c.get("superficie_ha", "-")
+                c_sec = c.get("sector", "")
+                c_ubi = c.get("ubicacion", "")
+                c_infra = c.get("instalaciones_clave", "")
+                c_lotes = ", ".join(c.get("lotes", [])[:2])
+                c_diag_url = c.get("diagrama_url", "")
+                c_diag_nom = c.get("diagrama_nombre", f"Plano {c_nom}")
+
+                sec_text = (
+                    f"### 📍 {c_nom} ({c_sup} Has) - {c_sec}\n"
+                    f"• **Ubicación:** {c_ubi}\n"
+                    f"• **Infraestructura:** {c_infra}\n"
+                    f"• **Lotes representativos:** {c_lotes}\n"
+                )
+                if c_diag_url:
+                    sec_text += f"\n![{c_diag_nom}]({c_diag_url})\n"
+                sections.append(sec_text)
+
+            footer = (
+                f"\n💡 *Puedes hacer clic sobre cualquiera de los diagramas para visualizarlo en pantalla completa o consultarme por los híbridos y labores de cada lote.*"
+            )
+            reply = intro + "\n---\n".join(sections) + footer
+
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
     # 0.1 CONSULTAS AGRONÓMICAS DE LOTES: HÍBRIDOS PLANTADOS Y DIAGRAMA / PLANO
     # ==============================================================
     is_lote_diagram_or_hybrid_query = (
@@ -515,6 +754,33 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"\n\nPuedes consultar o cargar planos de cada lote desde el panel de Gestión de Lotes."
             )
 
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
+        # ==============================================================
+    # 0.0 CONSULTAS DE CALIBRACIÓN DE INSUMOS, NORMAS INTA Y APIS GRATUITAS
+    # ==============================================================
+    is_agronomic_calc_or_api_query = any(w in msg for w in [
+        "api gratuita", "apis gratuitas", "api libre", "apis libres", "open-meteo", "open meteo",
+        "datos.gob.ar", "costomaq", "norma inta", "normas inta", "coeficiente", "coeficientes",
+        "calculo de gasoil", "cálculo de gasoil", "calculo de semillas", "cálculo de semillas",
+        "cantidad de semillas utilizadas", "consumo por labor", "consumo de gasoil por labor",
+        "como se calcula el gasoil", "cómo se calcula el gasoil", "como se calculan las semillas",
+        "como calculas el gasoil", "cómo calculas el gasoil"
+    ]) or (
+        any(w in msg for w in ["calculo", "cálculo", "consumo", "gasto", "erroneo", "erróneo", "erroneao"]) and
+        any(w in msg for w in ["gasoil", "combustible", "diesel", "semilla", "semillas", "insumo", "insumos"]) and
+        any(w in msg for w in ["api", "apis", "libre", "libres", "gratis", "gratuita", "gratuitas", "descontar", "vincular", "norma", "por labor"])
+    )
+
+    if is_agronomic_calc_or_api_query:
+        from .agronomic_engine import get_agronomic_standards_report
+        reply = get_agronomic_standards_report()
         append_to_history(user_message, reply, executed_tools)
         return {
             "response": reply,
@@ -621,8 +887,25 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             labor_nombre = "Labor Agrícola General"
             maquinaria = "Maquinaria de labor"
 
-        # 4. Descuento de Combustible (Gasoil)
-        liters_spent = extract_liters(user_message, default=200.0)
+        # 4. Descuento de Combustible (Gasoil) calculado con norma técnica INTA CostoMaq y Open-Meteo
+        from .agronomic_engine import (
+            calculate_fuel_consumption,
+            calculate_seed_consumption,
+            calculate_fertilizer_consumption,
+            get_live_soil_and_weather_factor
+        )
+
+        has_explicit_liters = bool(re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:litros?|lts?|lt\b)", msg))
+        user_liters = extract_liters(user_message, default=0.0) if has_explicit_liters else None
+
+        fuel_calc = calculate_fuel_consumption(
+            labor_type=labor_nombre,
+            hectares=has_done,
+            crop_key=crop_key,
+            user_specified_liters=user_liters
+        )
+        liters_spent = fuel_calc["litros_finales"]
+        maquinaria = fuel_calc["maquinaria"]
         tank_key = identify_tank(user_message)
         if tank_key == "acopio_por_retirar":
             tank_key = "tanque_grande"
@@ -664,11 +947,14 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         fito_str = "-"
         rinde_str = "-"
 
-        # Descuento de Semilla si es siembra
+        # Descuento de Semilla si es siembra (Calculado con estándar agronómico INTA / INASE)
         if "siembr" in labor_nombre.lower():
+            bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa\b)", msg)
+            user_bags = int(float(bags_match.group(1).replace(".", "").replace(",", "."))) if bags_match else None
+            seed_calc = calculate_seed_consumption(crop_key, has_done, user_specified_bags=user_bags)
+            bags_qty = seed_calc["bolsas_finales"]
+
             if crop_key == "maiz":
-                bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
-                bags_qty = int(float(bags_match.group(1).replace(".", "").replace(",", "."))) if bags_match else int(has_done * 1.2)
                 hibridos = insumos_json.get("semillas_maiz", {}).get("hibridos", [])
                 target_h = next((h for h in hibridos if "DK" in h["id"]), hibridos[0]) if hibridos else None
                 if target_h:
@@ -678,22 +964,26 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                     insumos_json["semillas_maiz"]["totales"]["bolsas_en_planta"] = tot_p
                     insumos_json["semillas_maiz"]["totales"]["total_general_bolsas"] = tot_p + insumos_json["semillas_maiz"]["totales"]["bolsas_por_retirar"]
                     semilla_str = f"{target_h['hibrido']} ({bags_qty} bolsas)"
-                    detalles_insumos.append(f"🌱 Semilla descontada: {bags_qty} bolsas de {target_h['hibrido']} (Quedan {target_h['en_planta_bolsas']} en galpón)")
+                    detalles_insumos.append(f"🌱 Semilla: {bags_qty} bolsas de {target_h['hibrido']} ({seed_calc['detalle']}). Quedan {target_h['en_planta_bolsas']} bolsas en galpón.")
             elif "soja" in crop_key:
-                bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
-                bags_qty = int(float(bags_match.group(1).replace(".", "").replace(",", "."))) if bags_match else int(has_done * 1.25)
                 var_soja = insumos_json.get("semillas_soja", {}).get("variedades", [])
                 if var_soja:
                     var_soja[0]["en_planta_bolsas"] = max(0, var_soja[0].get("en_planta_bolsas", 440) - bags_qty)
                     var_soja[0]["total_bolsas"] = var_soja[0]["en_planta_bolsas"]
                     insumos_json["semillas_soja"]["totales"] = {"bolsas_en_planta": var_soja[0]["en_planta_bolsas"], "bolsas_por_retirar": 0, "total_general_bolsas": var_soja[0]["en_planta_bolsas"]}
                     semilla_str = f"DM 46R18 ({bags_qty} bolsas)"
-                    detalles_insumos.append(f"🌱 Semilla descontada: {bags_qty} bolsas de DM 46R18 (Quedan {var_soja[0]['en_planta_bolsas']} en galpón)")
+                    detalles_insumos.append(f"🌱 Semilla: {bags_qty} bolsas de DM 46R18 ({seed_calc['detalle']}). Quedan {var_soja[0]['en_planta_bolsas']} bolsas en galpón.")
+            elif "trigo" in crop_key:
+                semilla_str = f"Trigo Pan ({bags_qty} bolsas)"
+                detalles_insumos.append(f"🌱 Semilla: {bags_qty} bolsas de Trigo Pan ({seed_calc['detalle']}).")
 
-        # Descuento de Fertilizante si se indica
+        # Descuento de Fertilizante si se indica (Estándar de nutrición INTA)
         if any(w in msg for w in ["fertiliz", "map", "urea", "microessentials", "fosfato"]):
             kg_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:kg|kilos?|kilogramos?)", msg)
-            kg_spent = float(kg_match.group(1).replace(".", "").replace(",", ".")) if kg_match else (has_done * 80.0)
+            user_kg = float(kg_match.group(1).replace(".", "").replace(",", ".")) if kg_match else None
+            fert_type = "urea" if "urea" in msg else ("microessentials" if "micro" in msg else "map")
+            fert_calc = calculate_fertilizer_consumption(fert_type, has_done, user_specified_kg=user_kg)
+            kg_spent = fert_calc["kg_finales"]
             ferts = insumos_json.get("fertilizantes", [])
             target_f = ferts[0]
             if "urea" in msg:
@@ -777,7 +1067,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     # ==============================================================
     # 1. CASO SEMILLAS DE MAÍZ POR HÍBRIDO (BOLSAS EN PLANTA O POR RETIRAR)
     # ==============================================================
-    is_corn_seed_query_or_action = (
+    is_corn_seed_query_or_action = not is_fuel_context and (
         any(w in msg for w in ["maiz", "maíz", "dk7210", "dk 72", "dekalb", "pioneer", "p2089", "nidera", "ax7784", "ax 7784", "hibrido", "híbrido", "hibridos", "híbridos"]) or
         ("semilla" in msg and any(w in msg for w in ["bolsa", "bolsas", "hibrido", "híbrido", "maiz", "maíz"]))
     ) and not any(w in msg for w in ["soja", "trigo", "dm46"])
@@ -896,8 +1186,9 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     # ==============================================================
     # 2. CASO GRANOS EN SILOS DE GUARDADO Y ACOPIO (5 PRINCIPALES + 2 DE TRILLA)
     # ==============================================================
-    is_grain_silo_query_or_action = (
-        any(w in msg for w in ["silo", "silos", "trilla", "acopio", "grano", "granos", "silobolsa", "silobolsas"]) or
+    is_grain_silo_query_or_action = not is_fuel_context and (
+        any(w in msg for w in ["silo", "silos", "trilla", "grano", "granos", "silobolsa", "silobolsas"]) or
+        ("acopio" in msg and not any(w in msg for w in ["fertilizante", "urea", "map", "insumo"])) or
         (any(w in msg for w in ["soja", "trigo", "maiz", "maíz"]) and any(w in msg for w in ["tonelada", "toneladas", "tn", "acopiad", "guardad", "cosechad", "capacidad"]))
     ) and not any(w in msg for w in ["sembr", "siembra", "sembrando"])
 
@@ -1254,12 +1545,22 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
     # Detectar labor de siembra combinada (insumos soja + combustible)
     has_real_bags = bool(re.search(r"(?<!silo) bolsas? ", msg))
     is_sowing_soy = any(w in msg for w in ["sembr", "siembra", "sembrando"]) and any(w in msg for w in ["soja", "dm46"]) and (has_real_bags or any(w in msg for w in ["ha", "hect", "lote"])) and not is_grain_silo_query_or_action
-    is_purchase = any(w in msg for w in ["llegó", "llego", "compra", "compramos", "descargaron", "descarga", "entró", "entro", "remito"]) and not any(w in msg for w in ["gaste", "gasté", "gastamos", "retire", "retiré", "saque", "saqué", "consum", "salida"])
+    is_purchase = any(w in msg for w in ["llegó", "llego", "compra", "compramos", "descargaron", "descarga", "entró", "entro", "remito"]) and not any(w in msg for w in ["gaste", "gasté", "gastamos", "retire", "retiré", "saque", "saqué", "consum", "salida", "descont"])
     is_transfer = is_fuel_transfer_or_acopio(user_message)
-    is_fuel_query = any(w in msg for w in ["?", "que", "qué", "cuanto", "cuánto", "saldo", "stock", "estado", "listar", "ver", "tenemos", "informe", "cuántos", "cuantos"])
-    has_spending_verb = (not is_fuel_query) and any(w in msg for w in ["retir", "saqu", "sacar", "saco", "gast", "consum", "us", "chup", "carg", "descont", "baj", "rest", "llev"])
-    has_fuel_word = any(w in msg for w in ["litros", "lts", "lt", "gasoil", "diesel", "combustible"])
+
     has_numbers = any(char.isdigit() for char in user_message)
+    has_fuel_word = any(w in msg for w in ["litros", "lts", "lt", "gasoil", "diesel", "combustible", "combustibles", "nafta"])
+    has_spending_stem = any(w in msg for w in [
+        "gast", "consum", "retir", "saqu", "sacar", "saco", "descont", "baj", "rest", "chup", "salida"
+    ])
+    is_question_query = any(w in msg for w in ["?", "¿", "cuanto", "cuánto", "cuántos", "cuantos", "saldo", "estado", "listar", "informe", "ver saldo"]) or msg.strip().startswith("que ") or msg.strip().startswith("qué ")
+    has_spending_action = (has_spending_stem and has_numbers) or (has_spending_stem and (has_fuel_word or "tanque" in msg or "cisterna" in msg) and not is_question_query)
+    is_fuel_query = is_question_query or (any(w in msg for w in ["saldo", "stock", "estado", "listar", "ver", "tenemos", "informe"]) and not has_spending_action)
+    has_spending_verb = has_spending_action or ((not is_fuel_query) and (
+        has_spending_stem or
+        (has_fuel_word and has_numbers) or
+        ("tanque" in msg and has_numbers)
+    ))
 
     if is_sowing_soy:
         insumos_raw, meta_i = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
@@ -1269,12 +1570,25 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         insumos = json.loads(insumos_raw)
         lotes = json.loads(lotes_raw)
 
-        seeds_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
-        has_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:hect[áa]reas?|has? )", msg)
+        from .agronomic_engine import calculate_fuel_consumption, calculate_seed_consumption
 
-        liters_out = extract_liters(user_message, default=280.0)
-        bolsas_out = int(float(seeds_match.group(1))) if seeds_match else 40
-        has_done = float(has_match.group(1)) if has_match else 25.0
+        has_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:hect[áa]reas?|has? )", msg)
+        has_done = float(has_match.group(1).replace(".", "").replace(",", ".")) if has_match else 25.0
+
+        has_explicit_liters = bool(re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:litros?|lts?|lt\b)", msg))
+        user_liters = extract_liters(user_message, default=0.0) if has_explicit_liters else None
+        fuel_calc = calculate_fuel_consumption(
+            labor_type="Siembra",
+            hectares=has_done,
+            crop_key="soja_primera",
+            user_specified_liters=user_liters
+        )
+        liters_out = fuel_calc["litros_finales"]
+
+        seeds_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
+        user_bags = int(float(seeds_match.group(1).replace(".", "").replace(",", "."))) if seeds_match else None
+        seed_calc = calculate_seed_consumption("soja_primera", has_done, user_specified_bags=user_bags)
+        bolsas_out = seed_calc["bolsas_finales"]
 
         tank_key = identify_tank(user_message)
         if tank_key == "acopio_por_retirar":
@@ -1452,7 +1766,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             f"**Total físico en campo:** {int(gasoil_json['totales']['stock_fisico_campo_litros']):,} Litros | **Total con acopio:** {int(gasoil_json['totales']['stock_total_con_acopio_litros']):,} Litros."
         )
 
-    elif has_spending_verb or (has_fuel_word and has_numbers and not is_fuel_query) or ("tanque" in msg and has_numbers and not is_fuel_query):
+    elif has_spending_action or has_spending_verb or (has_fuel_word and has_numbers and not is_fuel_query) or ("tanque" in msg and has_numbers and not is_fuel_query):
         liters_out = extract_liters(user_message, default=300.0)
         tank_key = identify_tank(user_message)
 
@@ -1547,7 +1861,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"Los registros del campo han sido actualizados con los litros gastados."
             )
 
-    elif any(w in msg for w in ["gasoil", "gas oil", "combustible", "tanque", "cisterna", "acopio"]):
+    elif is_fuel_context or any(w in msg for w in ["gasoil", "gas oil", "combustible", "combustibles", "diesel", "gas-oil", "tanque", "cisterna", "acopio"]):
         cp = deps["cisterna_planta"]
         tg = deps["tanque_grande"]
         tc = deps["tanque_chico"]

@@ -79,3 +79,17 @@ Gestionado en `registro_lotes.json`:
 - **Lote 3 - Bajo Grande (210 ha - Trigo / Soja 2da):**
   - Híbridos plantados: `Trigo MS INTA 119 (Cosechado) / Soja 2da DM 46R18`
   - Diagrama: `/media/lotes/lote_3_diagrama.jpg`
+
+---
+
+## 🗺️ CARTOGRAFÍA Y DIAGRAMAS GENERALES DE CAMPOS
+Gestionado en `registro_campos.json` y archivos de planos en `/media/campos/`:
+1. **Campo La Esperanza (650 Has) - Sector Central:**
+   - Casco central, batería de 5 silos (280 Tn), 2 silos de acopio para trilla (2.700 Tn), cisterna 22.000 L.
+   - Plano satelital: `/media/campos/campo_la_esperanza.jpg`
+2. **Campo El Ombú (380 Has) - Sector Norte:**
+   - Lomas agrícolas, curvas de nivel SIG, pivote de riego central, puesto norte y tanque móvil 5.000 L.
+   - Plano satelital: `/media/campos/campo_el_ombu.jpg`
+3. **Campo San José (420 Has) - Sector Sur / Bajo Grande:**
+   - Cuenca sur, canales de drenaje pluvial, cortinas forestales, galpón de cosechadoras y 2 silos aéreos 60 Tn.
+   - Plano satelital: `/media/campos/campo_san_jose.jpg`

@@ -43,3 +43,12 @@
 - [2026-10-10 12:26:35] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -300 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (60 bolsas), fert: Fosfato Monoamónico (MAP) (4,000 kg)
 - [2026-10-10 14:08:08] Consumo/Retiro de 200 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
 - [2026-10-12 14:03:56] Actualización agronómica de Lote 1 - La Esperanza: Híbrido 'Don Mario DM 46R18 STS (Bolsas seleccionadas)'
+- [2026-10-12 19:38:00] Generación y vinculación de cartografía y diagramas satelitales de campos (Campo La Esperanza, Campo El Ombú y Campo San José) disponibles para consulta operativa en chat y panel.
+
+- [2026-10-22 22:34:49] Consumo/Retiro de 750 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
+- [2026-10-22 22:36:50] Consumo/Retiro de 360 L desde Tanque Grande (Maquinaria de labor) reportado por Productor.
+- [2026-10-22 22:39:00] Labor Siembra en Campo La Esperanza (Lote 1 - Maíz): 35.0 ha, -50 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (50 bolsas)
+- [2026-10-22 22:43:27] Labor Siembra en Campo El Ombú (Lote 1 - Maíz): 35.0 ha, -200 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (42 bolsas)
+- [2026-10-22 23:05:04] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -367 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (48 bolsas)
+- [2026-10-22 23:05:14] Labor Pasada de Rastra de Discos en Campo La Esperanza (Lote 1 - Soja de Primera): 30.0 ha, -240 L Tanque Chico
+- [2026-10-22 23:05:22] Labor Siembra en Campo La Esperanza (Lote 1 - Soja de Primera): 20.0 ha, -118 L Tanque Grande, semilla: DM 46R18 (30 bolsas)
