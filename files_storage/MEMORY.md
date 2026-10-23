@@ -52,3 +52,5 @@
 - [2026-10-22 23:05:04] Labor Siembra en Campo La Esperanza (Lote 2 - Maíz): 50.0 ha, -367 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (48 bolsas)
 - [2026-10-22 23:05:14] Labor Pasada de Rastra de Discos en Campo La Esperanza (Lote 1 - Soja de Primera): 30.0 ha, -240 L Tanque Chico
 - [2026-10-22 23:05:22] Labor Siembra en Campo La Esperanza (Lote 1 - Soja de Primera): 20.0 ha, -118 L Tanque Grande, semilla: DM 46R18 (30 bolsas)
+- [2026-10-22 23:26:25] Consumo/Retiro de 40 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
+- [2026-10-22 23:43:34] Labor Pasada de Rastra de Discos en Campo La Esperanza (Lote 1 - Soja de Primera): 15.0 ha, -137 L Tanque Chico

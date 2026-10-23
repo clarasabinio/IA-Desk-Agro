@@ -101,6 +101,23 @@
           "observaciones": "Labor reportada por Productor",
           "crop_key": "soja_primera",
           "campo_nombre": "La Esperanza"
+        },
+        {
+          "fecha": "2026-10-22",
+          "lote": "Lote 1",
+          "superficie_ha": 15.0,
+          "labor": "Pasada de Rastra de Discos",
+          "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+          "operario": "Productor",
+          "combustible_litros": 137.7,
+          "deposito_combustible": "Tanque Chico",
+          "semilla": "-",
+          "fertilizante": "-",
+          "insumos": "-",
+          "rinde": "-",
+          "observaciones": "Labor reportada por Productor",
+          "crop_key": "soja_primera",
+          "campo_nombre": "La Esperanza"
         }
       ],
       "cosecha": {

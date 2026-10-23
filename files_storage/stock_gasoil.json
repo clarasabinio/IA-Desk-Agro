@@ -3,34 +3,26 @@
     "cisterna_planta": {
       "nombre": "Cisterna Planta",
       "capacidad_max_litros": 22000,
-      "stock_actual_litros": 14600.0,
-      "umbral_alerta_litros": 5000,
-      "ubicacion": "Planta central - Tinglado principal"
+      "stock_actual_litros": 14400.0
     },
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 1264.2,
-      "umbral_alerta_litros": 1000,
-      "ubicacion": "Cisterna de apoyo móvil en campo"
+      "stock_actual_litros": 1314.2
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
       "capacidad_max_litros": 3000,
-      "stock_actual_litros": 1760.0,
-      "umbral_alerta_litros": 600,
-      "ubicacion": "Carretón de auxilio rápido en lote"
+      "stock_actual_litros": 1582.3
     },
     "acopio_por_retirar": {
       "nombre": "Gasoil por Retirar",
-      "litros_disponibles": 2200.0,
-      "proveedor": "YPF Directo - AgroServicios Centro",
-      "tipo": "Acopio pagado pendiente de retiro / flete"
+      "litros_disponibles": 2200.0
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 17624.2,
-    "stock_total_con_acopio_litros": 19824.2
+    "stock_fisico_campo_litros": 17296.5,
+    "stock_total_con_acopio_litros": 19496.5
   },
   "entradas": [
     {
@@ -198,6 +190,13 @@
       "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
       "labor": "Siembra en Lote 1 (20.0 ha)",
       "litros": 118.8,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-22",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Maquinaria de labor",
+      "litros": 40.0,
       "operario": "Productor"
     }
   ],

@@ -910,31 +910,29 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         if tank_key == "acopio_por_retirar":
             tank_key = "tanque_grande"
 
+        # Asiento transaccional auditable mediante StockIntegrityService
+        from .stock_service import StockIntegrityService
+        from app.models import Lote
+        target_lote_obj = Lote.objects.filter(nombre__icontains=lote_id.replace("Lote", "").strip()).first() or Lote.objects.first()
+
+        try:
+            StockIntegrityService.registrar_salida_combustible(
+                litros=liters_spent,
+                deposito_codigo=tank_key,
+                lote=target_lote_obj,
+                labor=f"{labor_nombre} en {lote_id} ({has_done} ha)",
+                maquinaria=maquinaria,
+                operario=sender_name,
+                observaciones=f"Labor reportada en {campo_display}"
+            )
+        except Exception as ex_stock:
+            logger.warning(f"Aviso StockIntegrityService en Section 0: {ex_stock}")
+
+        # Leer estado ya sincronizado
         gasoil_raw, meta_g = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
         executed_tools.append(meta_g)
         gasoil_json = json.loads(gasoil_raw)
         deps = gasoil_json["depositos"]
-
-        deps[tank_key]["stock_actual_litros"] = max(0.0, deps[tank_key]["stock_actual_litros"] - liters_spent)
-        gasoil_json["totales"]["stock_fisico_campo_litros"] = (
-            deps["cisterna_planta"]["stock_actual_litros"] +
-            deps["tanque_grande"]["stock_actual_litros"] +
-            deps["tanque_chico"]["stock_actual_litros"]
-        )
-        gasoil_json["totales"]["stock_total_con_acopio_litros"] = (
-            gasoil_json["totales"]["stock_fisico_campo_litros"] +
-            deps["acopio_por_retirar"]["litros_disponibles"]
-        )
-        gasoil_json.setdefault("salidas", []).append({
-            "fecha": today_str,
-            "deposito_origen": deps[tank_key]["nombre"],
-            "maquinaria": maquinaria,
-            "labor": f"{labor_nombre} en {lote_id} ({has_done} ha)",
-            "litros": liters_spent,
-            "operario": sender_name
-        })
-        _, w_g = execute_native_tool("write_file", {"filename": "stock_gasoil.json", "content": json.dumps(gasoil_json, indent=2, ensure_ascii=False)})
-        executed_tools.append(w_g)
 
         # 5. Descuento de Insumos / Fertilizantes / Semillas
         insumos_raw, meta_i = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
