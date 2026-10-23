@@ -1,3 +1,4 @@
+from app.services.agronomic_engine import get_live_soil_and_weather_factor
 import json
 import os
 from pathlib import Path
@@ -76,7 +77,8 @@ def index_view(request: HttpRequest):
         "insumos_db": insumos_list,
         "movimientos_db": movimientos_list,
         "lotes_db": lotes_db,
-        "balance_auditado": balance_auditado
+        "balance_auditado": balance_auditado,
+        "clima": get_live_soil_and_weather_factor()
     }
     return render(request, "app/index.html", context)
 

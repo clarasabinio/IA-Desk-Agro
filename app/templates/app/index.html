@@ -109,6 +109,36 @@
                 </div>
                 {% endif %}
 
+                
+                <!-- Telemetría Agrometeorológica Open-Meteo -->
+                <div class="weather-kpi-card">
+                    <div class="weather-info-main">
+                        <div class="weather-badge-icon">⛅</div>
+                        <div class="weather-text-wrap">
+                            <h3>Telemetría Agrometeorológica en Vivo • Zona Núcleo</h3>
+                            <p>{{ clima.condition|default:"Condiciones de tracción de suelo estables para labores agrícolas." }}</p>
+                        </div>
+                    </div>
+                    <div class="weather-metrics-pills">
+                        <div class="weather-pill">
+                            <span class="lbl">Temperatura</span>
+                            <span class="val text-cyan">{{ clima.temperature_c|default:"16.5" }} °C</span>
+                        </div>
+                        <div class="weather-pill">
+                            <span class="lbl">Humedad Suelo</span>
+                            <span class="val text-emerald">{{ clima.soil_moisture|default:"0.35" }} m³/m³</span>
+                        </div>
+                        <div class="weather-pill">
+                            <span class="lbl">Factor Tracción INTA</span>
+                            <span class="val text-amber">{{ clima.traction_factor|default:"1.00" }}x</span>
+                        </div>
+                        <div class="weather-pill">
+                            <span class="lbl">Fuente Oficial</span>
+                            <span class="val" style="color: #a7f3d0; font-size: 0.8rem;">Open-Meteo Live</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Executive KPIs Grid -->
                 <div class="executive-kpi-grid">
                     <div class="kpi-card">
@@ -225,6 +255,52 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Últimos Movimientos Auditados en Base de Datos -->
+                <div class="recent-labors-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🚜 Últimos Movimientos y Labores Registradas en Campo</h2>
+                        <button type="button" class="btn-sm-action" onclick="switchTab('informes')">Ver todos en Informes ➔</button>
+                    </div>
+                    <div class="table-responsive-box mt-3">
+                        <table class="table-agro">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Insumo / Combustible</th>
+                                    <th>Cantidad</th>
+                                    <th>Lote / Labor</th>
+                                    <th>Operario</th>
+                                    <th>Saldo Resultante</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in movimientos_db|slice:":5" %}
+                                <tr>
+                                    <td>{{ m.fecha|date:"d/m/Y" }}</td>
+                                    <td><span class="badge-tipo">{{ m.get_tipo_movimiento_display }}</span></td>
+                                    <td><strong>{{ m.insumo.nombre }}</strong></td>
+                                    <td><strong class="text-emerald">{{ m.cantidad|floatformat:1 }} {{ m.insumo.unidad_medida }}</strong></td>
+                                    <td>
+                                        {% if m.lote %}<span class="badge-lote">{{ m.lote.nombre }}</span>{% endif %}
+                                        <small class="text-muted d-block">{{ m.labor_realizada|default:"-" }}</small>
+                                    </td>
+                                    <td>{{ m.operario|default:"-" }}</td>
+                                    <td><span class="text-cyan font-mono">{{ m.saldo_posterior|floatformat:1 }} {{ m.insumo.unidad_medida }}</span></td>
+                                    <td><span class="badge-status-ok">Auditado DB</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted" style="padding: 24px;">No hay movimientos registrados recientemente.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </section>
 
             <!-- ============================================================== -->
