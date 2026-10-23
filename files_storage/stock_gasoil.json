@@ -8,7 +8,7 @@
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 1314.2
+      "stock_actual_litros": 857.8
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
@@ -21,8 +21,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 17296.5,
-    "stock_total_con_acopio_litros": 19496.5
+    "stock_fisico_campo_litros": 16840.1,
+    "stock_total_con_acopio_litros": 19040.1
   },
   "entradas": [
     {

@@ -910,7 +910,55 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         if tank_key == "acopio_por_retirar":
             tank_key = "tanque_grande"
 
-        # Asiento transaccional auditable mediante StockIntegrityService
+        import uuid
+        is_already_confirmed = any(w in msg for w in ["confirmar", "confirmado", "asentar", "asentá", "confirmo", "si confirma"])
+
+        gasoil_raw, meta_g = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
+        executed_tools.append(meta_g)
+        gasoil_json = json.loads(gasoil_raw)
+        deps = gasoil_json["depositos"]
+
+        saldo_actual_dep = float(deps[tank_key].get("stock_actual_litros", 0))
+        saldo_est = max(0.0, saldo_actual_dep - liters_spent)
+
+        # Si no fue confirmado explícitamente, generar VISTA PREVIA interactiva
+        if not is_already_confirmed and not is_whatsapp:
+            token_prop = f"prop_{uuid.uuid4().hex[:12]}"
+            proposal_dict = {
+                "action_type": "consumo_combustible",
+                "litros": liters_spent,
+                "deposito_codigo": tank_key,
+                "deposito_nombre": deps[tank_key]["nombre"],
+                "saldo_actual": saldo_actual_dep,
+                "saldo_proyectado": saldo_est,
+                "lote_nombre": lote_id,
+                "labor": f"{labor_nombre} ({has_done} ha)",
+                "maquinaria": maquinaria,
+                "operario": sender_name,
+                "idempotency_token": token_prop
+            }
+
+            reply = (
+                f"📋 **Vista Previa de Movimiento Operativo:**\n\n"
+                f"He interpretado los datos de tu mensaje. Por favor revisa y confirma antes de asentar en la base de datos:\n\n"
+                f"- **Labor agrícola:** **{labor_nombre}** en **{lote_id}** ({has_done} hectáreas).\n"
+                f"- **Depósito de origen:** **{deps[tank_key]['nombre']}** (Saldo actual: **{int(saldo_actual_dep):,} L**).\n"
+                f"- **Gasoil a descontar:** **{int(liters_spent):,} L** (calculado con norma técnica INTA CostoMaq y tracción Open-Meteo).\n"
+                f"- **Saldo estimado resultante:** **{int(saldo_est):,} Litros** ({round(saldo_est/deps[tank_key]['capacidad_max_litros']*100)}% lleno).\n"
+                f"- **Maquinaria y Tractorista:** {maquinaria} | *{sender_name}*.\n\n"
+                f"👉 *Presiona el botón verde de abajo para confirmar y asentar en el sistema.*"
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {
+                "response": reply,
+                "tool_calls": executed_tools,
+                "is_demo": True,
+                "requires_confirmation": True,
+                "proposal": proposal_dict,
+                "stock_data": get_dashboard_summary()
+            }
+
+        # Si ya está confirmado o viene de WhatsApp, asentar de forma atómica
         from .stock_service import StockIntegrityService
         from app.models import Lote
         target_lote_obj = Lote.objects.filter(nombre__icontains=lote_id.replace("Lote", "").strip()).first() or Lote.objects.first()
@@ -929,8 +977,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             logger.warning(f"Aviso StockIntegrityService en Section 0: {ex_stock}")
 
         # Leer estado ya sincronizado
-        gasoil_raw, meta_g = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
-        executed_tools.append(meta_g)
+        gasoil_raw, _ = execute_native_tool("read_file", {"filename": "stock_gasoil.json"})
         gasoil_json = json.loads(gasoil_raw)
         deps = gasoil_json["depositos"]
 

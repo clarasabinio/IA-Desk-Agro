@@ -123,7 +123,9 @@ def append_to_history(user_text: str, assistant_text: str, tool_calls: list = No
     if history_file.exists():
         try:
             with open(history_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    data = loaded
         except Exception:
             pass
 

@@ -20,6 +20,8 @@ if '*' not in ALLOWED_HOSTS:
 
 # Credenciales de Inteligencia Artificial
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'anthropic/claude-sonnet-5.5')
 
 # Ruta a la carpeta física dedicada para datos de la empresa agropecuaria
 FILES_STORAGE_DIR = BASE_DIR / 'files_storage'

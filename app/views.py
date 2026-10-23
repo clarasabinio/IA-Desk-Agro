@@ -28,6 +28,8 @@ def index_view(request: HttpRequest):
     """Renderiza el panel de control principal de IA Desk Agro"""
     storage_files = list_storage_files()
     has_anthropic_key = bool(settings.ANTHROPIC_API_KEY)
+    has_api_key = bool(getattr(settings, 'OPENROUTER_API_KEY', '') or settings.ANTHROPIC_API_KEY)
+    ai_provider = "OpenRouter (Claude Sonnet 5.5)" if getattr(settings, 'OPENROUTER_API_KEY', '') else ("Anthropic (Claude 3.5 Sonnet)" if settings.ANTHROPIC_API_KEY else "Modo Local Autónomo")
     stock_data = get_dashboard_summary()
     drive_folder_id = get_drive_folder_id()
     drive_url = f"https://drive.google.com/drive/folders/{drive_folder_id}?usp=sharing"
@@ -40,15 +42,41 @@ def index_view(request: HttpRequest):
     except Exception:
         lotes_data = []
 
+    # Cargar campos con su cartografía y planos satelitales
+    campos_path = settings.FILES_STORAGE_DIR / "registro_campos.json"
+    try:
+        with open(campos_path, "r", encoding="utf-8") as f:
+            campos_data = json.load(f).get("campos", [])
+    except Exception:
+        campos_data = []
+
+    # Contexto enriquecido desde la Única Fuente de Verdad (Base de Datos SQLite)
+    from app.models import Deposito, Insumo, MovimientoStock, Lote, Campo, CicloCultivo
+    from app.services.stock_service import StockIntegrityService
+
+    depositos_list = Deposito.objects.filter(activo=True).order_by("tipo", "nombre")
+    insumos_list = Insumo.objects.all().order_by("categoria", "nombre")
+    movimientos_list = MovimientoStock.objects.select_related("insumo", "lote", "deposito_origen_fk", "deposito_destino_fk").order_by("-fecha", "-creado_el")[:60]
+    lotes_db = Lote.objects.filter(activo=True).select_related("campo").order_by("campo__nombre", "nombre")
+    balance_auditado = StockIntegrityService.obtener_balance_verificado()
+
     context = {
         "storage_files": storage_files,
         "has_anthropic_key": has_anthropic_key,
+        "has_api_key": has_api_key,
+        "ai_provider": ai_provider,
         "field_name": "Campo La Esperanza",
         "season": "Campaña Gruesa 2026/2027",
         "stock": stock_data,
         "lotes": lotes_data,
+        "campos": campos_data,
         "google_drive_folder_url": drive_url,
-        "google_drive_folder_id": drive_folder_id
+        "google_drive_folder_id": drive_folder_id,
+        "depositos_db": depositos_list,
+        "insumos_db": insumos_list,
+        "movimientos_db": movimientos_list,
+        "lotes_db": lotes_db,
+        "balance_auditado": balance_auditado
     }
     return render(request, "app/index.html", context)
 
@@ -293,6 +321,214 @@ def api_lote_update_view(request: HttpRequest):
             "message": f"{target_lote.get('nombre')} actualizado correctamente.",
             "lote": target_lote
         })
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+# ==============================================================
+# ENDPOINTS FIELD DATA: REGISTROS DIRECTOS Y CONFIRMACIÓN DE IA
+# ==============================================================
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_movimiento_directo_view(request: HttpRequest):
+    """
+    Endpoint para formularios directos (Field Data) de combustible,
+    traslados, compras y aplicación de insumos.
+    """
+    try:
+        from app.services.stock_service import StockIntegrityService
+        from app.models import Lote, Insumo, CicloCultivo
+        from django.core.exceptions import ValidationError
+
+        data = json.loads(request.body.decode("utf-8")) if request.body else request.POST
+        tipo_accion = data.get("tipo_accion", "consumo_combustible").strip()
+        operario = data.get("operario", "Productor").strip() or "Productor"
+        observaciones = data.get("observaciones", "").strip()
+
+        if tipo_accion == "consumo_combustible":
+            litros = float(data.get("litros", 0))
+            deposito_codigo = data.get("deposito_codigo", "tanque_grande")
+            lote_id = data.get("lote_id")
+            labor = data.get("labor", "Labor de campo").strip() or "Labor de campo"
+            maquinaria = data.get("maquinaria", "").strip() or "Tractor de labor"
+
+            lote_obj = Lote.objects.filter(id=lote_id).first() if lote_id else None
+            res = StockIntegrityService.registrar_salida_combustible(
+                litros=litros,
+                deposito_codigo=deposito_codigo,
+                lote=lote_obj,
+                labor=labor,
+                maquinaria=maquinaria,
+                operario=operario,
+                observaciones=observaciones
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif tipo_accion == "traslado_combustible":
+            litros = float(data.get("litros", 0))
+            origen = data.get("origen_codigo")
+            destino = data.get("destino_codigo")
+
+            res = StockIntegrityService.registrar_traslado_combustible(
+                litros=litros,
+                origen_codigo=origen,
+                destino_codigo=destino,
+                operario=operario,
+                observaciones=observaciones
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif tipo_accion == "ingreso_combustible":
+            litros = float(data.get("litros", 0))
+            destino = data.get("destino_codigo", "cisterna_planta")
+            proveedor = data.get("proveedor", "YPF Directo")
+            remito = data.get("documento_referencia", "").strip()
+
+            res = StockIntegrityService.registrar_ingreso_compra_combustible(
+                litros=litros,
+                destino_codigo=destino,
+                proveedor=proveedor,
+                nro_remito=remito,
+                operario=operario,
+                observaciones=observaciones
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif tipo_accion == "consumo_insumo":
+            insumo_id = int(data.get("insumo_id"))
+            cantidad = float(data.get("cantidad", 0))
+            lote_id = data.get("lote_id")
+            labor = data.get("labor", "Aplicación agronómica").strip()
+            maquinaria = data.get("maquinaria", "").strip()
+
+            lote_obj = Lote.objects.filter(id=lote_id).first() if lote_id else None
+            res = StockIntegrityService.registrar_consumo_insumo(
+                insumo_id=insumo_id,
+                cantidad=cantidad,
+                lote=lote_obj,
+                labor=labor,
+                maquinaria=maquinaria,
+                operario=operario
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        else:
+            return JsonResponse({"status": "error", "message": f"Tipo de acción '{tipo_accion}' no reconocida."}, status=400)
+
+    except ValidationError as ve:
+        return JsonResponse({"status": "error", "message": str(ve.messages if hasattr(ve, 'messages') else ve)}, status=400)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_confirmar_propuesta_ia_view(request: HttpRequest):
+    """
+    Endpoint de confirmación explícita para propuestas de la IA.
+    Solo impacta la base de datos cuando el usuario hace clic en [Confirmar].
+    """
+    try:
+        from app.services.stock_service import StockIntegrityService
+        from app.models import Lote, Insumo
+
+        data = json.loads(request.body.decode("utf-8"))
+        prop = data.get("proposal", {})
+        idempotency_token = data.get("idempotency_token") or prop.get("idempotency_token")
+
+        if not prop:
+            return JsonResponse({"status": "error", "message": "Datos de propuesta requeridos."}, status=400)
+
+        action = prop.get("action_type", "consumo_combustible")
+        operario = prop.get("operario", "Productor")
+
+        if action == "consumo_combustible":
+            litros = float(prop.get("litros", 0))
+            deposito = prop.get("deposito_codigo", "tanque_grande")
+            lote_nombre = prop.get("lote_nombre", "")
+            lote_obj = Lote.objects.filter(nombre__icontains=lote_nombre.replace("Lote", "").strip()).first() if lote_nombre else None
+
+            res = StockIntegrityService.registrar_salida_combustible(
+                litros=litros,
+                deposito_codigo=deposito,
+                lote=lote_obj,
+                labor=prop.get("labor", "Labor de campo"),
+                maquinaria=prop.get("maquinaria", "Tractor"),
+                operario=operario,
+                observaciones="Confirmado por usuario desde chat",
+                idempotency_token=idempotency_token
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif action == "traslado_combustible":
+            litros = float(prop.get("litros", 0))
+            origen = prop.get("origen_codigo")
+            destino = prop.get("destino_codigo")
+
+            res = StockIntegrityService.registrar_traslado_combustible(
+                litros=litros,
+                origen_codigo=origen,
+                destino_codigo=destino,
+                operario=operario,
+                observaciones="Traslado confirmado desde chat",
+                idempotency_token=idempotency_token
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif action == "ingreso_combustible":
+            litros = float(prop.get("litros", 0))
+            destino = prop.get("destino_codigo", "cisterna_planta")
+            proveedor = prop.get("proveedor", "YPF Directo")
+
+            res = StockIntegrityService.registrar_ingreso_compra_combustible(
+                litros=litros,
+                destino_codigo=destino,
+                proveedor=proveedor,
+                operario=operario,
+                observaciones="Ingreso de compra confirmado desde chat",
+                idempotency_token=idempotency_token
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        else:
+            return JsonResponse({"status": "error", "message": f"Acción '{action}' no soportada para confirmación."}, status=400)
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)

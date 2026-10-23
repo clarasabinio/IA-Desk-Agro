@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     };
 
-    const appendBotMessage = (text, toolCalls = []) => {
+    const appendBotMessage = (text, toolCalls = [], proposal = null) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const card = document.createElement('div');
         card.className = 'message-card bot-card';
@@ -288,6 +288,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formattedText = formatMarkdownLike(text);
 
+        let proposalHtml = '';
+        if (proposal) {
+            proposalHtml = `
+                <div class="proposal-box-interactive" id="prop-box-${proposal.idempotency_token}">
+                    <div class="proposal-badge-header">
+                        <span>⚠️ Vista Previa de Movimiento — Requiere Confirmación</span>
+                    </div>
+                    <table class="proposal-table-mini">
+                        <tr><td><strong>Operación:</strong></td><td>${escapeHtml(proposal.labor || 'Consumo reportado')}</td></tr>
+                        <tr><td><strong>Depósito:</strong></td><td>${escapeHtml(proposal.deposito_nombre || 'Tanque')}</td></tr>
+                        <tr><td><strong>Cantidad:</strong></td><td><strong style="color: #6ee7b7;">${proposal.litros || proposal.cantidad} L</strong></td></tr>
+                        <tr><td><strong>Saldo Actual:</strong></td><td>${proposal.saldo_actual ? Number(proposal.saldo_actual).toLocaleString('es-AR') + ' L' : '-'}</td></tr>
+                        <tr><td><strong>Saldo Resultante:</strong></td><td><strong style="color: #38bdf8;">${proposal.saldo_proyectado ? Number(proposal.saldo_proyectado).toLocaleString('es-AR') + ' L' : '-'}</strong></td></tr>
+                        ${proposal.lote_nombre ? `<tr><td><strong>Lote:</strong></td><td>${escapeHtml(proposal.lote_nombre)}</td></tr>` : ''}
+                    </table>
+                    <div class="proposal-buttons-row">
+                        <button type="button" class="btn-confirm-prop" data-token="${proposal.idempotency_token}">
+                            ✅ Confirmar y Asentar en Base de Datos
+                        </button>
+                        <button type="button" class="btn-cancel-prop" data-token="${proposal.idempotency_token}">
+                            ❌ Descartar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="avatar bot-avatar">🌾</div>
             <div class="message-body">
@@ -298,9 +325,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${toolHtml}
                 <div class="message-content">
                     ${formattedText}
+                    ${proposalHtml}
                 </div>
             </div>
         `;
+
+        if (proposal) {
+            const btnConf = card.querySelector('.btn-confirm-prop');
+            const btnCanc = card.querySelector('.btn-cancel-prop');
+            if (btnConf) {
+                btnConf.addEventListener('click', async () => {
+                    btnConf.disabled = true;
+                    btnConf.textContent = 'Asentando en BD...';
+                    try {
+                        const cRes = await fetch('/api/chat/confirmar/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ proposal: proposal, idempotency_token: btnConf.dataset.token })
+                        });
+                        const cData = await cRes.json();
+                        if (cData.status === 'success') {
+                            const box = document.getElementById(`prop-box-${btnConf.dataset.token}`);
+                            if (box) {
+                                box.innerHTML = `<div style="color: #10b981; font-weight: 700; padding: 6px 0;">✓ Movimiento asentado exitosamente en Base de Datos (Asiento #${cData.data.movimiento_id || 'OK'})</div>`;
+                            }
+                            if (cData.stock_data) updateLiveMetrics(cData.stock_data);
+                        } else {
+                            alert('Error al confirmar: ' + cData.message);
+                            btnConf.disabled = false;
+                            btnConf.textContent = 'Reintentar Confirmación';
+                        }
+                    } catch (e) {
+                        alert('Error de conexión.');
+                        btnConf.disabled = false;
+                    }
+                });
+            }
+            if (btnCanc) {
+                btnCanc.addEventListener('click', () => {
+                    const box = document.getElementById(`prop-box-${btnCanc.dataset.token}`);
+                    if (box) {
+                        box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.82rem; font-style: italic;">Propuesta descartada sin modificar existencias.</div>`;
+                    }
+                });
+            }
+        }
+
         messagesList.appendChild(card);
         scrollToBottom();
     };
@@ -349,8 +419,8 @@ document.addEventListener('DOMContentLoaded', () => {
             removeLoading();
 
             if (data.status === 'success') {
-                appendBotMessage(data.data.response, data.data.tool_calls);
-                updateLiveMetrics(data.data.stock_data);
+                appendBotMessage(data.data.response, data.data.tool_calls, data.data.proposal);
+                if (data.data.stock_data) updateLiveMetrics(data.data.stock_data);
             } else {
                 appendBotMessage('⚠️ Error: ' + (data.message || 'No se pudo procesar la consulta'));
             }
@@ -379,8 +449,8 @@ document.addEventListener('DOMContentLoaded', () => {
             removeLoading();
 
             if (data.status === 'success') {
-                appendBotMessage(data.data.response, data.data.tool_calls);
-                updateLiveMetrics(data.data.stock_data);
+                appendBotMessage(data.data.response, data.data.tool_calls, data.data.proposal);
+                if (data.data.stock_data) updateLiveMetrics(data.data.stock_data);
             } else {
                 appendBotMessage('⚠️ Error procesando reporte de WhatsApp: ' + (data.message || 'Error'));
             }
@@ -714,4 +784,151 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+
+    // ==============================================================
+    // FIELD DATA MULTI-MODULE NAVIGATION & DIRECT FORMS
+    // ==============================================================
+
+    window.switchTab = function(tabName) {
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        document.querySelectorAll('.module-tab-content').forEach(sec => {
+            sec.classList.toggle('hidden', sec.id !== `module-${tabName}`);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab) switchTab(btn.dataset.tab);
+        });
+    });
+
+    window.openDirectForm = function(formType) {
+        switchTab('registros');
+        let targetId = 'form-consumo';
+        if (formType.includes('traslado')) targetId = 'form-traslado';
+        else if (formType.includes('ingreso') || formType.includes('compra')) targetId = 'form-ingreso';
+        else if (formType.includes('insumo')) targetId = 'form-insumos';
+
+        document.querySelectorAll('.subnav-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.form === targetId);
+        });
+        document.querySelectorAll('.direct-form-card').forEach(card => {
+            card.classList.toggle('hidden', card.id !== targetId);
+        });
+    };
+
+    // Subtabs in Registros
+    document.querySelectorAll('.subnav-btn').forEach(b => {
+        b.addEventListener('click', () => {
+            const formId = b.dataset.form;
+            document.querySelectorAll('.subnav-btn').forEach(btn => btn.classList.remove('active'));
+            b.classList.add('active');
+            document.querySelectorAll('.direct-form-card').forEach(card => {
+                card.classList.toggle('hidden', card.id !== formId);
+            });
+        });
+    });
+
+    // Handle AJAX Direct Forms submission
+    const handleDirectFormSubmit = async (formElement) => {
+        const feedback = document.getElementById('form-feedback-alert');
+        feedback.className = 'form-feedback hidden';
+        feedback.textContent = '';
+
+        const formData = new FormData(formElement);
+        const payload = {};
+        formData.forEach((val, key) => payload[key] = val);
+
+        const submitBtn = formElement.querySelector('button[type="submit"]');
+        const origText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Procesando asiento...';
+
+        try {
+            const res = await fetch('/api/movimientos/crear/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                feedback.className = 'form-feedback success';
+                feedback.textContent = `✓ ${data.message}`;
+                formElement.reset();
+                if (data.stock_data) updateLiveMetrics(data.stock_data);
+
+                // Add to table if present
+                if (data.data) {
+                    const tbody = document.querySelector('#table-movimientos tbody');
+                    if (tbody) {
+                        const tr = document.createElement('tr');
+                        tr.className = 'mov-row';
+                        tr.innerHTML = `
+                            <td>Hoy</td>
+                            <td><span class="badge-tipo">Movimiento Reciente</span></td>
+                            <td><strong>${payload.insumo_id ? 'Insumo' : 'Gasoil Grado 2'}</strong></td>
+                            <td><strong class="text-emerald">${payload.litros || payload.cantidad} L</strong></td>
+                            <td>${payload.lote_id || '-'}</td>
+                            <td>${payload.deposito_codigo || payload.destino_codigo || '-'}</td>
+                            <td>${payload.labor || 'Asiento directo'}</td>
+                            <td>${payload.operario || 'Productor'}</td>
+                            <td><span class="text-cyan">${data.data.saldo_posterior || '-'}</span></td>
+                        `;
+                        tbody.insertBefore(tr, tbody.firstChild);
+                    }
+                }
+            } else {
+                feedback.className = 'form-feedback error';
+                feedback.textContent = `⚠️ Error: ${data.message || 'No se pudo registrar'}`;
+            }
+        } catch (err) {
+            feedback.className = 'form-feedback error';
+            feedback.textContent = '⚠️ Error de conexión con el servidor.';
+            console.error(err);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = origText;
+        }
+    };
+
+    ['ajax-form-consumo', 'ajax-form-traslado', 'ajax-form-ingreso', 'ajax-form-insumos'].forEach(id => {
+        const form = document.getElementById(id);
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleDirectFormSubmit(form);
+            });
+        }
+    });
+
+    // Real-time Search and Filter on Movements Table
+    const searchInput = document.getElementById('filter-search-input');
+    const filterTipo = document.getElementById('filter-tipo-mov');
+    const filterLote = document.getElementById('filter-lote-select');
+
+    const applyTableFilters = () => {
+        const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+        const tipoVal = (filterTipo ? filterTipo.value : '').toLowerCase();
+        const loteVal = (filterLote ? filterLote.value : '').toLowerCase();
+
+        document.querySelectorAll('.mov-row').forEach(row => {
+            const textSearch = (row.dataset.search || row.textContent).toLowerCase();
+            const rowTipo = (row.dataset.tipo || '').toLowerCase();
+            const rowLote = (row.dataset.lote || '').toLowerCase();
+
+            const matchesQuery = !query || textSearch.includes(query);
+            const matchesTipo = !tipoVal || rowTipo.includes(tipoVal);
+            const matchesLote = !loteVal || rowLote.includes(loteVal);
+
+            row.style.display = (matchesQuery && matchesTipo && matchesLote) ? '' : 'none';
+        });
+    };
+
+    if (searchInput) searchInput.addEventListener('input', applyTableFilters);
+    if (filterTipo) filterTipo.addEventListener('change', applyTableFilters);
+    if (filterLote) filterLote.addEventListener('change', applyTableFilters);
 });
