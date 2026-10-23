@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
+    // Disable browser and OS autocorrect, autocapitalize, and spellcheck on user input
+    if (userInput) {
+        userInput.setAttribute('autocomplete', 'off');
+        userInput.setAttribute('autocorrect', 'off');
+        userInput.setAttribute('autocapitalize', 'none');
+        userInput.setAttribute('spellcheck', 'false');
+        userInput.setAttribute('data-gramm', 'false');
+        userInput.setAttribute('data-enable-grammarly', 'false');
+        userInput.setAttribute('data-ms-editor', 'false');
+    }
+
     const btnSend = document.getElementById('btn-send');
     const messagesList = document.getElementById('messages-list');
     const btnClearChat = document.getElementById('btn-clear-chat');
@@ -567,6 +578,38 @@ document.addEventListener('DOMContentLoaded', () => {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // ==============================================================
+    // CARTOGRAFÍA Y DIAGRAMAS DE CAMPOS: PESTAÑAS Y CONSULTA RÁPIDA
+    // ==============================================================
+    const campoTabBtns = document.querySelectorAll('.campo-tab-btn');
+    campoTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.targetCampo;
+            campoTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.campo-panel-content').forEach(panel => {
+                if (panel.id === targetId) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.btn-consult-campo').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const query = btn.dataset.campoQuery;
+            if (query && userInput) {
+                userInput.value = query;
+                chatForm.dispatchEvent(new Event('submit'));
+                const chatCard = document.querySelector('.chat-card');
+                if (chatCard) chatCard.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
 
     // ==============================================================
     // GESTIÓN DE LOTES: PESTAÑAS, PREVIEW Y GUARDADO DE HÍBRIDOS / PLANOS

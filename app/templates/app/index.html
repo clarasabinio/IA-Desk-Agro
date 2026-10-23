@@ -23,10 +23,14 @@
                 </div>
             </div>
 
-            <div class="header-center-info">
+            <div class="header-center-info" style="display: flex; gap: 8px; align-items: center;">
                 <div class="status-indicator-pill">
                     <span class="live-dot"></span>
                     <span>4 Depósitos & Acopio Sincronizados</span>
+                </div>
+                <div class="status-indicator-pill" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.12); padding: 4px 10px;">
+                    <span style="font-size: 0.75rem;">⚡</span>
+                    <span style="color: #6ee7b7; font-weight: 600;">{{ ai_provider }}</span>
                 </div>
             </div>
 
@@ -102,6 +106,18 @@
                         <button class="chip-btn" data-query="¿Qué stock de maíz tenemos por híbrido en planta y por retirar?">
                             🌽 Maíz Híbridos
                         </button>
+                        <button class="chip-btn" data-query="Mostrame los diagramas de los campos">
+                            🗺️ Diagramas de Campos
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo La Esperanza?">
+                            📍 Plano La Esperanza
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo El Ombú?">
+                            📍 Plano El Ombú
+                        </button>
+                        <button class="chip-btn" data-query="¿Cómo es el diagrama de Campo San José?">
+                            📍 Plano San José
+                        </button>
                     </div>
                 </div>
 
@@ -111,6 +127,13 @@
                         id="user-input" 
                         placeholder="Escribe una consulta o movimiento... (ej: 'gasté 300 L del tanque chico', 'pasar 1000 L a tanque grande') [Enter]"
                         rows="1"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        data-gramm="false"
+                        data-enable-grammarly="false"
+                        data-ms-editor="false"
                     ></textarea>
                     <button type="submit" id="btn-send" class="btn-primary">
                         <span>Consultar</span>
@@ -419,7 +442,14 @@
                                        class="lote-hibrido-input" 
                                        id="input-hib-{{ l.id }}"
                                        value="{{ l.hibridos_plantados|default:l.variedad|default:'' }}" 
-                                       placeholder="Ej: Dekalb DK 72-10 VT3P / Don Mario DM 46R18">
+                                       placeholder="Ej: Dekalb DK 72-10 VT3P / Don Mario DM 46R18"
+                                       autocomplete="off"
+                                       autocorrect="off"
+                                       autocapitalize="none"
+                                       spellcheck="false"
+                                       data-gramm="false"
+                                       data-enable-grammarly="false"
+                                       data-ms-editor="false">
                             </div>
 
                             <!-- Vista y carga de Foto / Diagrama -->
@@ -459,6 +489,62 @@
                                 <span class="lote-save-status text-emerald hidden" id="save-status-{{ l.id }}">✓ Guardado exitosamente</span>
                             </div>
                         </form>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Cartografía y Diagramas de Campos Card -->
+                <div class="dash-card campos-card">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title">🗺️ Cartografía & Diagramas de Campos</h2>
+                        <span class="badge-tag text-emerald">{{ campos|length|default:3 }} Campos Registrados</span>
+                    </div>
+                    <p class="section-desc" style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 10px;">
+                        Planos catastrales, curvas de nivel y zonificación satelital de los establecimientos disponibles para consulta operativa.
+                    </p>
+
+                    <!-- Selector de pestañas de Campos -->
+                    <div class="lotes-tabs-bar">
+                        {% for c in campos %}
+                        <button type="button" class="campo-tab-btn {% if forloop.first %}active{% endif %}" data-target-campo="tab-campo-{{ c.id }}">
+                            {{ c.nombre }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paneles de cada Campo -->
+                    {% for c in campos %}
+                    <div class="campo-panel-content {% if not forloop.first %}hidden{% endif %}" id="tab-campo-{{ c.id }}">
+                        <div class="lote-meta-header">
+                            <div>
+                                <strong class="lote-title">{{ c.nombre }}</strong>
+                                <span class="badge-tag text-cyan" style="margin-left: 6px;">{{ c.superficie_ha }} Has</span>
+                            </div>
+                            <span class="lote-campo-name">{{ c.sector }}</span>
+                        </div>
+
+                        <div class="diagram-preview-box mt-2">
+                            <div class="current-diagram-wrapper">
+                                <img src="{{ c.diagrama_url }}" alt="Diagrama {{ c.nombre }}" class="lote-thumb-img" onclick="window.open('{{ c.diagrama_url }}', '_blank')">
+                                <div class="diagram-info-meta">
+                                    <span class="diagram-filename">🗺️ {{ c.diagrama_nombre }}</span>
+                                    <span class="diagram-hint">(Clic en la imagen para abrir en alta resolución)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campo-details-grid mt-2" style="font-size: 0.76rem; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px; border: 1px solid rgba(255,255,255,0.06); line-height: 1.45;">
+                            <div style="margin-bottom: 5px;"><strong>📍 Ubicación:</strong> <span style="color: var(--text-muted);">{{ c.ubicacion }}</span></div>
+                            <div style="margin-bottom: 5px;"><strong>🚜 Lotes principales:</strong> <span style="color: var(--text-muted);">{{ c.lotes|join:", " }}</span></div>
+                            <div style="margin-bottom: 5px;"><strong>🏗️ Infraestructura:</strong> <span style="color: var(--text-muted);">{{ c.instalaciones_clave }}</span></div>
+                            <div><strong>🌾 Aptitud agronómica:</strong> <span style="color: var(--text-muted);">{{ c.tipo_suelo }}</span></div>
+                        </div>
+
+                        <div class="mt-2" style="display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn-primary btn-consult-campo" data-campo-query="¿Cómo es el diagrama de {{ c.nombre }}?" style="font-size: 0.75rem; padding: 6px 12px;">
+                                💬 Consultar este campo a la IA
+                            </button>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -615,7 +701,18 @@
 
                 <div class="wa-custom-input-box">
                     <label class="wa-input-lbl">O redacta un mensaje libre de campo:</label>
-                    <textarea id="wa-custom-msg" rows="3" placeholder="Ej: 'Cargué 200 litros del tanque grande en la cosechadora...'"></textarea>
+                    <textarea 
+                        id="wa-custom-msg" 
+                        rows="3" 
+                        placeholder="Ej: 'Cargué 200 litros del tanque grande en la cosechadora...'"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        data-gramm="false"
+                        data-enable-grammarly="false"
+                        data-ms-editor="false"
+                    ></textarea>
                     <div class="wa-input-footer">
                         <span class="wa-audio-indicator">🎙️ Simula Nota de Voz de WhatsApp</span>
                         <button id="btn-send-wa-custom" class="btn-primary wa-btn-send">
