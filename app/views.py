@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 from app.services.agronomic_engine import get_live_soil_and_weather_factor
 import json
 import os
@@ -518,3 +520,65 @@ def api_confirmar_propuesta_ia_view(request: HttpRequest):
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+# ==============================================================
+# WEBHOOK OFICIAL DE WHATSAPP (META CLOUD API GRATUITA)
+# ==============================================================
+
+@csrf_exempt
+def api_whatsapp_webhook_view(request: HttpRequest):
+    """
+    Endpoint para WhatsApp Cloud API (Meta for Developers).
+    - GET: Responde al desafío (hub.challenge) de verificación de Meta.
+    - POST: Procesa mensajes de maquinistas y operarios de campo (FieldData: gasoil, lotes, stock).
+    """
+    from .services.whatsapp_service import WhatsAppCloudService
+
+    # 1. Verificación GET de Meta al configurar el Webhook
+    if request.method == "GET":
+        mode = request.GET.get("hub.mode")
+        token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+
+        if WhatsAppCloudService.verify_webhook_token(mode, token):
+            logger.info("✓ Desafío de Webhook de WhatsApp verificado exitosamente.")
+            return HttpResponse(challenge, content_type="text/plain", status=200)
+        else:
+            logger.warning(f"Fallo en verificación de token de WhatsApp: token recibido '{token}'")
+            return HttpResponse("Forbidden", status=403)
+
+    # 2. Recepción POST de mensajes de campo
+    elif request.method == "POST":
+        try:
+            body_bytes = request.body
+            if not body_bytes:
+                return HttpResponse("EVENT_RECEIVED", status=200)
+
+            data = json.loads(body_bytes.decode("utf-8"))
+            parsed = WhatsAppCloudService.parse_inbound_payload(data)
+
+            if parsed and parsed.get("text_body"):
+                raw_text = parsed["text_body"]
+                sender = parsed.get("sender_name", "Operario de Campo")
+                from_num = parsed.get("from_number")
+
+                logger.info(f"Mensaje WhatsApp recibido de {sender} ({from_num}): '{raw_text}'")
+
+                # Procesar mensaje a través del motor agronómico y contable
+                chat_result = process_agro_chat(raw_text, is_whatsapp=True, sender_name=sender)
+                bot_reply = chat_result.get("response", "Reporte recibido y procesado en IA Desk Agro.")
+
+                # Enviar respuesta automática de confirmación por WhatsApp si hay credenciales
+                if from_num:
+                    WhatsAppCloudService.send_whatsapp_reply(from_num, bot_reply)
+
+            # Meta exige retornar siempre HTTP 200 de forma inmediata (dentro de los 3s)
+            return HttpResponse("EVENT_RECEIVED", status=200)
+
+        except Exception as e:
+            logger.error(f"Error procesando evento POST de WhatsApp Meta: {e}", exc_info=True)
+            # Retornamos 200 para evitar que Meta reintente indefinidamente ante payloads con formato inesperado
+            return HttpResponse("EVENT_RECEIVED", status=200)
+
+    return HttpResponse("Method not allowed", status=405)

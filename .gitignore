@@ -9,3 +9,7 @@ db.sqlite3
 # Local backups
 backups/
 
+
+# Staticfiles collected by WhiteNoise
+staticfiles/
+
