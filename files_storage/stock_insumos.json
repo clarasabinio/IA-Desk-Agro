@@ -53,17 +53,17 @@
         "variedad": "Don Mario DM 46R18 STS",
         "proveedor": "Semillero Don Mario",
         "presentacion": "Bolsas de 40 kg",
-        "en_planta_bolsas": 410,
+        "en_planta_bolsas": 358,
         "por_retirar_bolsas": 0,
         "lugar_retiro": "Galpón 1 - Planta Central",
-        "total_bolsas": 410,
+        "total_bolsas": 358,
         "poder_germinativo_pct": 94
       }
     ],
     "totales": {
-      "bolsas_en_planta": 410,
+      "bolsas_en_planta": 358,
       "bolsas_por_retirar": 0,
-      "total_general_bolsas": 410
+      "total_general_bolsas": 358
     }
   },
   "fertilizantes": [

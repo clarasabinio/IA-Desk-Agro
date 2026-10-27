@@ -3,17 +3,17 @@
     "cisterna_planta": {
       "nombre": "Cisterna Planta",
       "capacidad_max_litros": 22000,
-      "stock_actual_litros": 14400.0
+      "stock_actual_litros": 13900.0
     },
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 857.8
+      "stock_actual_litros": 199.6
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
       "capacidad_max_litros": 3000,
-      "stock_actual_litros": 1582.3
+      "stock_actual_litros": 1902.3
     },
     "acopio_por_retirar": {
       "nombre": "Gasoil por Retirar",
@@ -21,8 +21,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 16840.1,
-    "stock_total_con_acopio_litros": 19040.1
+    "stock_fisico_campo_litros": 16001.9,
+    "stock_total_con_acopio_litros": 18201.9
   },
   "entradas": [
     {
@@ -261,6 +261,12 @@
       "motivo": "Retiro de 300 L de acopio YPF ingresados a Cisterna Planta",
       "litros": 300.0,
       "operario": "Productor"
+    },
+    {
+      "fecha": "2026-10-27",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Chico",
+      "litros": 500.0,
+      "operario": "Carlos"
     }
   ]
 }

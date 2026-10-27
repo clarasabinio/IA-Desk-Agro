@@ -118,6 +118,23 @@
           "observaciones": "Labor reportada por Productor",
           "crop_key": "soja_primera",
           "campo_nombre": "La Esperanza"
+        },
+        {
+          "fecha": "2026-10-26",
+          "lote": "Lote 1",
+          "superficie_ha": 35.0,
+          "labor": "Siembra",
+          "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
+          "operario": "Juan González (Tractorista)",
+          "combustible_litros": 180.0,
+          "deposito_combustible": "Tanque Chico",
+          "semilla": "DM 46R18 (52 bolsas)",
+          "fertilizante": "-",
+          "insumos": "-",
+          "rinde": "-",
+          "observaciones": "Labor reportada por Juan González (Tractorista)",
+          "crop_key": "soja_primera",
+          "campo_nombre": "La Esperanza"
         }
       ],
       "cosecha": {
