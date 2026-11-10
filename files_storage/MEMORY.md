@@ -56,3 +56,4 @@
 - [2026-10-22 23:43:34] Labor Pasada de Rastra de Discos en Campo La Esperanza (Lote 1 - Soja de Primera): 15.0 ha, -137 L Tanque Chico
 - [2026-10-26 12:52:03] Labor Siembra en Campo La Esperanza (Lote 1 - Soja de Primera): 35.0 ha, -180 L Tanque Chico, semilla: DM 46R18 (52 bolsas)
 - [2026-10-27 11:30:05] Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Chico
+- [2026-11-09 22:13:51] Consumo/Retiro de 150 L desde Tanque Grande (Tractor John Deere) reportado por Juan Perez.

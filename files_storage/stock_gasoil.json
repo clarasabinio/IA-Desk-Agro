@@ -8,7 +8,7 @@
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 199.6
+      "stock_actual_litros": 49.599999999999994
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
@@ -21,8 +21,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 16001.9,
-    "stock_total_con_acopio_litros": 18201.9
+    "stock_fisico_campo_litros": 15851.9,
+    "stock_total_con_acopio_litros": 18051.9
   },
   "entradas": [
     {
@@ -198,6 +198,13 @@
       "maquinaria": "Maquinaria de labor",
       "litros": 40.0,
       "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-09",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "litros": 150.0,
+      "operario": "Juan Perez"
     }
   ],
   "transferencias_internas": [
