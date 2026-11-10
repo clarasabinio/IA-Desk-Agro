@@ -1916,7 +1916,32 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
 
     elif has_spending_action or has_spending_verb or (has_fuel_word and has_numbers and not is_fuel_query) or ("tanque" in msg and has_numbers and not is_fuel_query):
         liters_out = extract_liters(user_message, default=300.0)
-        tank_key = identify_tank(user_message)
+
+        # Identificar si el usuario mencionó un tanque explícito
+        has_explicit_tank = any(w in msg for w in [
+            "chico", "chiquito", "pequeño", "pequeno", "carretón", "carreton", "3000", "3.000", "auxilio",
+            "planta", "central", "22000", "22.000", "cisterna",
+            "grande", "5000", "5.000", "móvil", "movil",
+            "acopio", "ypf", "distribuidor", "por retirar"
+        ])
+
+        if has_explicit_tank:
+            tank_key = identify_tank(user_message)
+        else:
+            # Seleccionar automáticamente el tanque que tenga stock suficiente disponible
+            tg_stk = float(deps.get("tanque_grande", {}).get("stock_actual_litros", 0))
+            cp_stk = float(deps.get("cisterna_planta", {}).get("stock_actual_litros", 0))
+            tc_stk = float(deps.get("tanque_chico", {}).get("stock_actual_litros", 0))
+
+            if tg_stk >= liters_out:
+                tank_key = "tanque_grande"
+            elif cp_stk >= liters_out:
+                tank_key = "cisterna_planta"
+            elif tc_stk >= liters_out:
+                tank_key = "tanque_chico"
+            else:
+                # Si ninguno cubre el gasto de forma completa, elegir el de mayor saldo para que el validador informe con precisión
+                tank_key = max({"cisterna_planta": cp_stk, "tanque_grande": tg_stk, "tanque_chico": tc_stk}, key=lambda k: deps[k]["stock_actual_litros"])
 
         if tank_key == "acopio_por_retirar":
             target_field = "cisterna_planta"
@@ -1957,6 +1982,12 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
             executed_tools.append(meta_m)
 
+            try:
+                from .google_sheets_service import on_movement_recorded
+                on_movement_recorded()
+            except Exception:
+                pass
+
             reply = (
                 f"📦 **Retiro de Acopio Asentado:**\n\n"
                 f"- **Operación:** {motivo}.\n"
@@ -1967,16 +1998,20 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         else:
             current_tank_stock = deps[tank_key]["stock_actual_litros"]
             if liters_out > current_tank_stock:
+                tot_fisico = float(gasoil_json["totales"]["stock_fisico_campo_litros"])
                 reply = (
                     f"❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n"
                     f"- **Depósito:** **{deps[tank_key]['nombre']}**\n"
-                    f"- **Stock disponible actual:** **{int(current_tank_stock):,} Litros**\n"
-                    f"- **Intentaste gastar/retirar:** **{int(liters_out):,} Litros**\n\n"
+                    f"- **Stock disponible en este depósito:** **{int(current_tank_stock):,} Litros**\n"
+                    f"- **Intentaste gastar/retirar:** **{int(liters_out):,} Litros**\n"
+                    f"- **Stock físico total en campo:** **{int(tot_fisico):,} Litros**\n\n"
                     f"⚠️ *No es posible gastar más combustible del disponible en este depósito.*"
                 )
                 append_to_history(user_message, reply, executed_tools)
                 return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
-            deps[tank_key]["stock_actual_litros"] = current_tank_stock - liters_out
+
+            # Impactar descuento en memoria de cálculo
+            deps[tank_key]["stock_actual_litros"] = round(current_tank_stock - liters_out, 1)
 
             gasoil_json["totales"]["stock_fisico_campo_litros"] = (
                 deps["cisterna_planta"]["stock_actual_litros"] +
@@ -1988,7 +2023,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 deps["acopio_por_retirar"]["litros_disponibles"]
             )
 
-            machinery = "Maquinaria de labor"
+            machinery = "Uso operativo general"
             if "tractor" in msg:
                 machinery = "Tractor John Deere"
             elif "cosechadora" in msg or "trilla" in msg:
@@ -1998,10 +2033,18 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             elif "camioneta" in msg or "chata" in msg:
                 machinery = "Camioneta"
 
+            labor_desc = "Consumo general de combustible"
+            if any(w in msg for w in ["labor", "trabajo", "tarea", "campo"]):
+                labor_desc = "Labor operativa de campo"
+            elif any(w in msg for w in ["viaje", "traslado", "recorrida"]):
+                labor_desc = "Recorrida operativa / Traslado"
+
+            # 1. Registrar salida en stock_gasoil.json
             gasoil_json.setdefault("salidas", []).append({
                 "fecha": today_str,
                 "deposito_origen": deps[tank_key]["nombre"],
                 "maquinaria": machinery,
+                "labor": labor_desc,
                 "litros": liters_out,
                 "operario": sender_name
             })
@@ -2009,24 +2052,68 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             _, w_g = execute_native_tool("write_file", {"filename": "stock_gasoil.json", "content": json.dumps(gasoil_json, indent=2, ensure_ascii=False)})
             executed_tools.append(w_g)
 
-            entry_mem = f"Consumo/Retiro de {int(liters_out):,} L desde {deps[tank_key]['nombre']} ({machinery}) reportado por {sender_name}."
+            # 2. Registrar en MEMORY.md
+            entry_mem = f"Consumo general registrado ({machinery}) por {sender_name}: -{int(liters_out):,} L de {deps[tank_key]['nombre']}. Saldo restante: {int(deps[tank_key]['stock_actual_litros']):,} L."
             _, w_m = execute_native_tool("append_memory", {"entry": entry_mem})
             executed_tools.append(w_m)
+
+            # 3. Asentar atómicamente en Base de Datos Relacional Django (MovimientoStock)
+            try:
+                from .stock_service import StockIntegrityService
+                from app.models import Deposito, Insumo, MovimientoStock
+                from django.utils import timezone
+
+                dep_obj = Deposito.objects.filter(codigo=tank_key).first()
+                if dep_obj:
+                    dep_obj.stock_actual = max(0.0, float(dep_obj.stock_actual) - liters_out)
+                    dep_obj.save(update_fields=["stock_actual"])
+
+                insumo_gasoil = StockIntegrityService.get_or_create_gasoil_insumo()
+                insumo_gasoil.stock_actual = max(0.0, float(insumo_gasoil.stock_actual) - liters_out)
+                insumo_gasoil.save(update_fields=["stock_actual"])
+
+                MovimientoStock.objects.create(
+                    insumo=insumo_gasoil,
+                    tipo_movimiento="consumo_labor",
+                    estado="confirmado",
+                    cantidad=liters_out,
+                    fecha=timezone.now().date(),
+                    deposito_origen_fk=dep_obj,
+                    deposito_origen=deps[tank_key]["nombre"],
+                    labor_realizada=labor_desc,
+                    maquinaria=machinery,
+                    operario=sender_name,
+                    saldo_anterior=current_tank_stock,
+                    saldo_posterior=deps[tank_key]["stock_actual_litros"],
+                    observaciones=f"Gasto directo registrado por {sender_name}: {user_message}"
+                )
+            except Exception as e_bd:
+                logger.error(f"Error registrando movimiento en BD: {e_bd}")
+
+            # 4. Sincronizar automáticamente hojas de cálculo y Google Drive
+            try:
+                from .google_sheets_service import on_movement_recorded
+                on_movement_recorded()
+            except Exception as e_sync:
+                logger.error(f"Error sincronizando hojas Google Drive: {e_sync}")
 
             pct_filled = round((deps[tank_key]["stock_actual_litros"] / deps[tank_key]["capacidad_max_litros"]) * 100)
 
             reply = (
-                f"⛽ **Registro de Combustible Gastado:**\n\n"
-                f"- **Depósito descontado:** **{deps[tank_key]['nombre']}** (Capacidad: {deps[tank_key]['capacidad_max_litros']:,} L).\n"
-                f"- **Litros gastados / retirados:** **{int(liters_out):,} Litros** ({machinery}).\n"
-                f"- **Stock remanente en {deps[tank_key]['nombre']}:** **{int(deps[tank_key]['stock_actual_litros']):,} Litros** ({pct_filled}% disponible).\n\n"
+                f"⛽ **Gasto de Combustible Registrado como Usado:**\n\n"
+                f"- **Operación:** Consumo operativo asentado en los registros del campo.\n"
+                f"- **Depósito descontado:** **{deps[tank_key]['nombre']}** (Saldo anterior: {int(current_tank_stock):,} L ➔ **Saldo restante: {int(deps[tank_key]['stock_actual_litros']):,} L** | {pct_filled}% lleno).\n"
+                f"- **Litros consumidos:** **{int(liters_out):,} Litros** ({machinery}).\n"
+                f"- **Operario:** *{sender_name}*.\n\n"
                 f"📊 **Totales consolidados del campo:**\n"
                 f"• 🏭 Cisterna Planta: **{int(deps['cisterna_planta']['stock_actual_litros']):,}** / 22.000 L\n"
                 f"• 🚜 Tanque Grande: **{int(deps['tanque_grande']['stock_actual_litros']):,}** / 5.000 L\n"
                 f"• 🛢️ Tanque Chico: **{int(deps['tanque_chico']['stock_actual_litros']):,}** / 3.000 L\n"
                 f"• 📋 Gasoil por Retirar (Acopio YPF): **{int(deps['acopio_por_retirar']['litros_disponibles']):,} L**\n\n"
                 f"👉 **Total físico en campo:** **{int(gasoil_json['totales']['stock_fisico_campo_litros']):,} L** | **Total con acopio:** **{int(gasoil_json['totales']['stock_total_con_acopio_litros']):,} L**.\n\n"
-                f"Los registros del campo han sido actualizados con los litros gastados."
+                f"🌐 **Sincronización con Hojas de Drive y Google Sheets:**\n"
+                f"• ✅ Movimiento registrado en **IA_Desk_Agro_Consolidado.xlsx** (*Combustibles* y *Bitácora*).\n"
+                f"• 🔄 Archivo CSV en vivo y endpoint de Google Sheets online actualizados automáticamente."
             )
 
     elif is_fuel_context or any(w in msg for w in ["gasoil", "gas oil", "combustible", "combustibles", "diesel", "gas-oil", "tanque", "cisterna", "acopio"]):

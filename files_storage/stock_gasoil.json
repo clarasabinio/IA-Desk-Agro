@@ -3,12 +3,12 @@
     "cisterna_planta": {
       "nombre": "Cisterna Planta",
       "capacidad_max_litros": 22000,
-      "stock_actual_litros": 13900.0
+      "stock_actual_litros": 13620.0
     },
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 49.599999999999994
+      "stock_actual_litros": 9.6
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
@@ -21,8 +21,8 @@
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 13949.6,
-    "stock_total_con_acopio_litros": 16149.6
+    "stock_fisico_campo_litros": 13629.6,
+    "stock_total_con_acopio_litros": 15829.6
   },
   "entradas": [
     {
@@ -218,6 +218,30 @@
       "deposito_origen": "Tanque Chico",
       "maquinaria": "Maquinaria de labor",
       "litros": 50.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-09",
+      "deposito_origen": "Cisterna Planta",
+      "maquinaria": "Uso operativo general",
+      "labor": "Consumo general de combustible",
+      "litros": 200.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-09",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Camioneta",
+      "labor": "Consumo general de combustible",
+      "litros": 40.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-09",
+      "deposito_origen": "Cisterna Planta",
+      "maquinaria": "Uso operativo general",
+      "labor": "Consumo general de combustible",
+      "litros": 80.0,
       "operario": "Productor"
     }
   ],

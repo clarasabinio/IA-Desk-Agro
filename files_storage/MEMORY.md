@@ -59,3 +59,6 @@
 - [2026-11-09 22:13:51] Consumo/Retiro de 150 L desde Tanque Grande (Tractor John Deere) reportado por Juan Perez.
 - [2026-11-09 22:18:36] Consumo/Retiro de 2,000 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
 - [2026-11-09 22:19:03] Consumo/Retiro de 50 L desde Tanque Chico (Maquinaria de labor) reportado por Productor.
+- [2026-11-09 23:01:14] Consumo general registrado (Uso operativo general) por Productor: -200 L de Cisterna Planta. Saldo restante: 13,700 L.
+- [2026-11-09 23:01:28] Consumo general registrado (Camioneta) por Productor: -40 L de Tanque Grande. Saldo restante: 9 L.
+- [2026-11-09 23:01:28] Consumo general registrado (Uso operativo general) por Productor: -80 L de Cisterna Planta. Saldo restante: 13,620 L.

@@ -117,6 +117,16 @@ class StockIntegrityService:
             observaciones=observaciones
         )
 
+        # Anotar en MEMORY.md para pestaña Bitácora de Labores en Excel
+        try:
+            mem_path = settings.FILES_STORAGE_DIR / "MEMORY.md"
+            if mem_path.exists():
+                dt_str = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open(mem_path, "a", encoding="utf-8") as f_mem:
+                    f_mem.write(f"\n- [{dt_str}] Salida combustible: {cant:,.1f} L de {deposito.nombre} ({labor} - {maquinaria}) por {operario}. Saldo restante: {saldo_post:,.1f} L.")
+        except Exception:
+            pass
+
         # 6. Sincronizar archivos de proyección (JSON & Excel)
         cls.sincronizar_gasoil_json()
 
@@ -398,6 +408,27 @@ class StockIntegrityService:
             "stock_fisico_campo_litros": fisico,
             "stock_total_con_acopio_litros": total
         }
+
+        # Sincronizar salidas recientes de la BD hacia stock_gasoil.json
+        try:
+            movs_db = MovimientoStock.objects.filter(
+                tipo_movimiento="consumo_labor",
+                insumo__categoria="combustible"
+            ).order_by("-fecha", "-creado_el")[:35]
+            if movs_db.exists():
+                data["salidas"] = [
+                    {
+                        "fecha": m.fecha.strftime("%Y-%m-%d"),
+                        "deposito_origen": m.deposito_origen_fk.nombre if m.deposito_origen_fk else (m.deposito_origen or "Tanque de Combustible"),
+                        "maquinaria": m.maquinaria or "Uso operativo general",
+                        "labor": m.labor_realizada or "Consumo general de combustible",
+                        "litros": float(m.cantidad),
+                        "operario": m.operario or "Productor"
+                    }
+                    for m in movs_db
+                ]
+        except Exception as e_movs:
+            logger.debug(f"Aviso sync movs a salidas: {e_movs}")
 
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)

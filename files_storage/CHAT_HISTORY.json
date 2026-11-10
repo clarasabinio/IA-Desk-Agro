@@ -4,101 +4,6 @@
     {
       "role": "user",
       "content": "Gastamos 99999 litros de gasoil del tanque chico",
-      "timestamp": "2026-11-09 22:34:39"
-    },
-    {
-      "role": "assistant",
-      "content": "❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n- **Depósito:** **Tanque Chico**\n- **Stock disponible actual:** **0 Litros**\n- **Intentaste gastar/retirar:** **99,999 Litros**\n\n⚠️ *No es posible gastar más combustible del disponible en este depósito.*",
-      "tools_invoked": [
-        {
-          "tool": "read_file",
-          "args": {
-            "filename": "stock_gasoil.json"
-          },
-          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
-        }
-      ],
-      "timestamp": "2026-11-09 22:34:39"
-    },
-    {
-      "role": "user",
-      "content": "Gastamos 99999 litros de gasoil del tanque chico",
-      "timestamp": "2026-11-09 22:36:31"
-    },
-    {
-      "role": "assistant",
-      "content": "❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n- **Depósito:** **Tanque Chico**\n- **Stock disponible actual:** **0 Litros**\n- **Intentaste gastar/retirar:** **99,999 Litros**\n\n⚠️ *No es posible gastar más combustible del disponible en este depósito.*",
-      "tools_invoked": [
-        {
-          "tool": "read_file",
-          "args": {
-            "filename": "stock_gasoil.json"
-          },
-          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
-        }
-      ],
-      "timestamp": "2026-11-09 22:36:31"
-    },
-    {
-      "role": "user",
-      "content": "Transferir 80000 litros desde tanque grande a tanque chico",
-      "timestamp": "2026-11-09 22:36:31"
-    },
-    {
-      "role": "assistant",
-      "content": "❌ **No es posible realizar la transferencia porque no hay stock suficiente en Tanque Grande.**\n\n- **Stock disponible en origen:** **49 Litros**\n- **Intentaste transferir:** **80,000 Litros**\n\n⚠️ *No es posible transferir más combustible del disponible en el depósito de origen.*",
-      "tools_invoked": [
-        {
-          "tool": "read_file",
-          "args": {
-            "filename": "stock_gasoil.json"
-          },
-          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
-        }
-      ],
-      "timestamp": "2026-11-09 22:36:31"
-    },
-    {
-      "role": "user",
-      "content": "Sembré maíz con 5000 bolsas de DK7210 en Lote 2",
-      "timestamp": "2026-11-09 22:36:33"
-    },
-    {
-      "role": "assistant",
-      "content": "❌ **No es posible registrar la labor porque no hay stock suficiente de combustible.**\n\n- **Depósito:** **Tanque Grande**\n- **Stock disponible actual:** **49 Litros**\n- **Gasoil requerido para la labor:** **238 Litros** (Siembra en Lote 2)\n\n⚠️ *Por favor recarga combustible en el depósito o transfiere desde otro tanque antes de asentar esta labor.*",
-      "tools_invoked": [
-        {
-          "tool": "read_file",
-          "args": {
-            "filename": "stock_gasoil.json"
-          },
-          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
-        }
-      ],
-      "timestamp": "2026-11-09 22:36:33"
-    },
-    {
-      "role": "user",
-      "content": "Despachar 800 toneladas de grano del silo 1 a camión puerto",
-      "timestamp": "2026-11-09 22:36:33"
-    },
-    {
-      "role": "assistant",
-      "content": "❌ **No es posible realizar el despacho porque no hay stock suficiente en el silo.**\n\n- **Silo de Origen:** **Silo 1** (Soja)\n- **Stock disponible:** **45.0 Toneladas**\n- **Intentaste despachar:** **800.0 Toneladas**\n\n⚠️ *No es posible despachar una carga superior a los granos almacenados en el silo.*",
-      "tools_invoked": [
-        {
-          "tool": "read_file",
-          "args": {
-            "filename": "stock_granos_silos.json"
-          },
-          "preview": "Lectura de stock_granos_silos.json (3798 bytes)"
-        }
-      ],
-      "timestamp": "2026-11-09 22:36:33"
-    },
-    {
-      "role": "user",
-      "content": "Gastamos 99999 litros de gasoil del tanque chico",
       "timestamp": "2026-11-09 22:39:53"
     },
     {
@@ -190,6 +95,146 @@
         }
       ],
       "timestamp": "2026-11-09 22:40:38"
+    },
+    {
+      "role": "user",
+      "content": "cargue 50 litro del tanque chico",
+      "timestamp": "2026-11-09 22:43:23"
+    },
+    {
+      "role": "assistant",
+      "content": "❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n- **Depósito:** **Tanque Chico**\n- **Stock disponible actual:** **0 Litros**\n- **Intentaste gastar/retirar:** **50 Litros**\n\n⚠️ *No es posible gastar más combustible del disponible en este depósito.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "stock_gasoil.json"
+          },
+          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
+        }
+      ],
+      "timestamp": "2026-11-09 22:43:23"
+    },
+    {
+      "role": "user",
+      "content": "Gasté 200 litros de combustible",
+      "timestamp": "2026-11-09 22:46:19"
+    },
+    {
+      "role": "assistant",
+      "content": "❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n- **Depósito:** **Tanque Grande**\n- **Stock disponible actual:** **49 Litros**\n- **Intentaste gastar/retirar:** **200 Litros**\n\n⚠️ *No es posible gastar más combustible del disponible en este depósito.*",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "stock_gasoil.json"
+          },
+          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
+        }
+      ],
+      "timestamp": "2026-11-09 22:46:19"
+    },
+    {
+      "role": "user",
+      "content": "Gasté 200 litros de combustible",
+      "timestamp": "2026-11-09 23:01:15"
+    },
+    {
+      "role": "assistant",
+      "content": "⛽ **Gasto de Combustible Registrado como Usado:**\n\n- **Operación:** Consumo operativo asentado en los registros del campo.\n- **Depósito descontado:** **Cisterna Planta** (Saldo anterior: 13,900 L ➔ **Saldo restante: 13,700 L** | 62% lleno).\n- **Litros consumidos:** **200 Litros** (Uso operativo general).\n- **Operario:** *Productor*.\n\n📊 **Totales consolidados del campo:**\n• 🏭 Cisterna Planta: **13,700** / 22.000 L\n• 🚜 Tanque Grande: **49** / 5.000 L\n• 🛢️ Tanque Chico: **0** / 3.000 L\n• 📋 Gasoil por Retirar (Acopio YPF): **2,200 L**\n\n👉 **Total físico en campo:** **13,749 L** | **Total con acopio:** **15,949 L**.\n\n🌐 **Sincronización con Hojas de Drive y Google Sheets:**\n• ✅ Movimiento registrado en **IA_Desk_Agro_Consolidado.xlsx** (*Combustibles* y *Bitácora*).\n• 🔄 Archivo CSV en vivo y endpoint de Google Sheets online actualizados automáticamente.",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "stock_gasoil.json"
+          },
+          "preview": "Lectura de stock_gasoil.json (8161 bytes)"
+        },
+        {
+          "tool": "write_file",
+          "args": {
+            "filename": "stock_gasoil.json",
+            "content": "{\n  \"depositos\": {\n    \"cisterna_planta\": {\n      \"nombre\": \"Cisterna Planta\",\n      \"capacidad_max_litros\": 22000,\n      \"stock_actual_litros\": 13700.0\n    },\n    \"tanque_grande\": {\n      \"nombre\": \"Tanque Grande\",\n      \"capacidad_max_litros\": 5000,\n      \"stock_actual_litros\": 49.599999999999994\n    },\n    \"tanque_chico\": {\n      \"nombre\": \"Tanque Chico\",\n      \"capacidad_max_litros\": 3000,\n      \"stock_actual_litros\": 0.0\n    },\n    \"acopio_por_retirar\": {\n      \"nombre\": \"Gasoil por Retirar\",\n      \"litros_disponibles\": 2200.0\n    }\n  },\n  \"totales\": {\n    \"stock_fisico_campo_litros\": 13749.6,\n    \"stock_total_con_acopio_litros\": 15949.6\n  },\n  \"entradas\": [\n    {\n      \"fecha\": \"2026-09-25\",\n      \"deposito_destino\": \"Cisterna Planta\",\n      \"proveedor\": \"YPF Directo\",\n      \"litros\": 10000,\n      \"remito_nro\": \"R-0045-8921\"\n    }\n  ],\n  \"salidas\": [\n    {\n      \"fecha\": \"2026-10-07\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 500,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 280,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 150.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Camioneta\",\n      \"litros\": 100.0,\n      \"operario\": \"Esteban Maquinista\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R + Rastra de Discos\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 2 (45.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 750.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 360.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 367.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor JD 7200R + Rastra de 44 discos desencontrados\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 1 (30.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (20.0 ha)\",\n      \"litros\": 118.8,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 40.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 150.0,\n      \"operario\": \"Juan Perez\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Uso operativo general\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    }\n  ],\n  \"transferencias_internas\": [\n    {\n      \"fecha\": \"2026-10-06\",\n      \"origen\": \"Cisterna Planta\",\n      \"destino\": \"Tanque Grande\",\n      \"litros\": 2000,\n      \"motivo\": \"Reabastecimiento para siembra Lote 1\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande\",\n      \"litros\": 1500.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-27\",\n      \"motivo\": \"Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Chico\",\n      \"litros\": 500.0,\n      \"operario\": \"Carlos\"\n    }\n  ]\n}"
+          },
+          "preview": "Actualización de stock_gasoil.json (8394 bytes)"
+        },
+        {
+          "tool": "append_memory",
+          "args": {
+            "entry": "Consumo general registrado (Uso operativo general) por Productor: -200 L de Cisterna Planta. Saldo restante: 13,700 L."
+          },
+          "preview": "Registro en memoria: Consumo general registrado (Uso operativo general) por Produ..."
+        }
+      ],
+      "timestamp": "2026-11-09 23:01:15"
+    },
+    {
+      "role": "user",
+      "content": "Cargué 40 litros de gasoil en la camioneta",
+      "timestamp": "2026-11-09 23:01:28"
+    },
+    {
+      "role": "assistant",
+      "content": "⛽ **Gasto de Combustible Registrado como Usado:**\n\n- **Operación:** Consumo operativo asentado en los registros del campo.\n- **Depósito descontado:** **Tanque Grande** (Saldo anterior: 49 L ➔ **Saldo restante: 9 L** | 0% lleno).\n- **Litros consumidos:** **40 Litros** (Camioneta).\n- **Operario:** *Productor*.\n\n📊 **Totales consolidados del campo:**\n• 🏭 Cisterna Planta: **13,700** / 22.000 L\n• 🚜 Tanque Grande: **9** / 5.000 L\n• 🛢️ Tanque Chico: **0** / 3.000 L\n• 📋 Gasoil por Retirar (Acopio YPF): **2,200 L**\n\n👉 **Total físico en campo:** **13,709 L** | **Total con acopio:** **15,909 L**.\n\n🌐 **Sincronización con Hojas de Drive y Google Sheets:**\n• ✅ Movimiento registrado en **IA_Desk_Agro_Consolidado.xlsx** (*Combustibles* y *Bitácora*).\n• 🔄 Archivo CSV en vivo y endpoint de Google Sheets online actualizados automáticamente.",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "stock_gasoil.json"
+          },
+          "preview": "Lectura de stock_gasoil.json (8394 bytes)"
+        },
+        {
+          "tool": "write_file",
+          "args": {
+            "filename": "stock_gasoil.json",
+            "content": "{\n  \"depositos\": {\n    \"cisterna_planta\": {\n      \"nombre\": \"Cisterna Planta\",\n      \"capacidad_max_litros\": 22000,\n      \"stock_actual_litros\": 13700.0\n    },\n    \"tanque_grande\": {\n      \"nombre\": \"Tanque Grande\",\n      \"capacidad_max_litros\": 5000,\n      \"stock_actual_litros\": 9.6\n    },\n    \"tanque_chico\": {\n      \"nombre\": \"Tanque Chico\",\n      \"capacidad_max_litros\": 3000,\n      \"stock_actual_litros\": 0.0\n    },\n    \"acopio_por_retirar\": {\n      \"nombre\": \"Gasoil por Retirar\",\n      \"litros_disponibles\": 2200.0\n    }\n  },\n  \"totales\": {\n    \"stock_fisico_campo_litros\": 13709.6,\n    \"stock_total_con_acopio_litros\": 15909.6\n  },\n  \"entradas\": [\n    {\n      \"fecha\": \"2026-09-25\",\n      \"deposito_destino\": \"Cisterna Planta\",\n      \"proveedor\": \"YPF Directo\",\n      \"litros\": 10000,\n      \"remito_nro\": \"R-0045-8921\"\n    }\n  ],\n  \"salidas\": [\n    {\n      \"fecha\": \"2026-10-07\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 500,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 280,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 150.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Camioneta\",\n      \"litros\": 100.0,\n      \"operario\": \"Esteban Maquinista\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R + Rastra de Discos\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 2 (45.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 750.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 360.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 367.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor JD 7200R + Rastra de 44 discos desencontrados\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 1 (30.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (20.0 ha)\",\n      \"litros\": 118.8,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 40.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 150.0,\n      \"operario\": \"Juan Perez\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Uso operativo general\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Camioneta\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 40.0,\n      \"operario\": \"Productor\"\n    }\n  ],\n  \"transferencias_internas\": [\n    {\n      \"fecha\": \"2026-10-06\",\n      \"origen\": \"Cisterna Planta\",\n      \"destino\": \"Tanque Grande\",\n      \"litros\": 2000,\n      \"motivo\": \"Reabastecimiento para siembra Lote 1\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande\",\n      \"litros\": 1500.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-27\",\n      \"motivo\": \"Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Chico\",\n      \"litros\": 500.0,\n      \"operario\": \"Carlos\"\n    }\n  ]\n}"
+          },
+          "preview": "Actualización de stock_gasoil.json (8597 bytes)"
+        },
+        {
+          "tool": "append_memory",
+          "args": {
+            "entry": "Consumo general registrado (Camioneta) por Productor: -40 L de Tanque Grande. Saldo restante: 9 L."
+          },
+          "preview": "Registro en memoria: Consumo general registrado (Camioneta) por Productor: -40 L ..."
+        }
+      ],
+      "timestamp": "2026-11-09 23:01:28"
+    },
+    {
+      "role": "user",
+      "content": "Se usaron 80 litros de combustible",
+      "timestamp": "2026-11-09 23:01:29"
+    },
+    {
+      "role": "assistant",
+      "content": "⛽ **Gasto de Combustible Registrado como Usado:**\n\n- **Operación:** Consumo operativo asentado en los registros del campo.\n- **Depósito descontado:** **Cisterna Planta** (Saldo anterior: 13,700 L ➔ **Saldo restante: 13,620 L** | 62% lleno).\n- **Litros consumidos:** **80 Litros** (Uso operativo general).\n- **Operario:** *Productor*.\n\n📊 **Totales consolidados del campo:**\n• 🏭 Cisterna Planta: **13,620** / 22.000 L\n• 🚜 Tanque Grande: **9** / 5.000 L\n• 🛢️ Tanque Chico: **0** / 3.000 L\n• 📋 Gasoil por Retirar (Acopio YPF): **2,200 L**\n\n👉 **Total físico en campo:** **13,629 L** | **Total con acopio:** **15,829 L**.\n\n🌐 **Sincronización con Hojas de Drive y Google Sheets:**\n• ✅ Movimiento registrado en **IA_Desk_Agro_Consolidado.xlsx** (*Combustibles* y *Bitácora*).\n• 🔄 Archivo CSV en vivo y endpoint de Google Sheets online actualizados automáticamente.",
+      "tools_invoked": [
+        {
+          "tool": "read_file",
+          "args": {
+            "filename": "stock_gasoil.json"
+          },
+          "preview": "Lectura de stock_gasoil.json (8597 bytes)"
+        },
+        {
+          "tool": "write_file",
+          "args": {
+            "filename": "stock_gasoil.json",
+            "content": "{\n  \"depositos\": {\n    \"cisterna_planta\": {\n      \"nombre\": \"Cisterna Planta\",\n      \"capacidad_max_litros\": 22000,\n      \"stock_actual_litros\": 13620.0\n    },\n    \"tanque_grande\": {\n      \"nombre\": \"Tanque Grande\",\n      \"capacidad_max_litros\": 5000,\n      \"stock_actual_litros\": 9.6\n    },\n    \"tanque_chico\": {\n      \"nombre\": \"Tanque Chico\",\n      \"capacidad_max_litros\": 3000,\n      \"stock_actual_litros\": 0.0\n    },\n    \"acopio_por_retirar\": {\n      \"nombre\": \"Gasoil por Retirar\",\n      \"litros_disponibles\": 2200.0\n    }\n  },\n  \"totales\": {\n    \"stock_fisico_campo_litros\": 13629.6,\n    \"stock_total_con_acopio_litros\": 15829.6\n  },\n  \"entradas\": [\n    {\n      \"fecha\": \"2026-09-25\",\n      \"deposito_destino\": \"Cisterna Planta\",\n      \"proveedor\": \"YPF Directo\",\n      \"litros\": 10000,\n      \"remito_nro\": \"R-0045-8921\"\n    }\n  ],\n  \"salidas\": [\n    {\n      \"fecha\": \"2026-10-07\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 500,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor John Deere 7200R\",\n      \"lote\": \"Lote 1 - La Esperanza\",\n      \"litros\": 280,\n      \"operario\": \"Juan González\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 400.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 150.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Camioneta\",\n      \"litros\": 100.0,\n      \"operario\": \"Esteban Maquinista\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere 7200R + Rastra de Discos\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 2 (45.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-10\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 750.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 360.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R + Sembradora Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (35.0 ha)\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm\",\n      \"labor\": \"Siembra en Lote 2 (50.0 ha)\",\n      \"litros\": 367.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Tractor JD 7200R + Rastra de 44 discos desencontrados\",\n      \"labor\": \"Pasada de Rastra de Discos en Lote 1 (30.0 ha)\",\n      \"litros\": 240.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor JD 7200R (200 HP) + Crucianelli 27 líneas\",\n      \"labor\": \"Siembra en Lote 1 (20.0 ha)\",\n      \"litros\": 118.8,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-22\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 40.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Tractor John Deere\",\n      \"litros\": 150.0,\n      \"operario\": \"Juan Perez\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Chico\",\n      \"maquinaria\": \"Maquinaria de labor\",\n      \"litros\": 50.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Uso operativo general\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 200.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Tanque Grande\",\n      \"maquinaria\": \"Camioneta\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 40.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-11-09\",\n      \"deposito_origen\": \"Cisterna Planta\",\n      \"maquinaria\": \"Uso operativo general\",\n      \"labor\": \"Consumo general de combustible\",\n      \"litros\": 80.0,\n      \"operario\": \"Productor\"\n    }\n  ],\n  \"transferencias_internas\": [\n    {\n      \"fecha\": \"2026-10-06\",\n      \"origen\": \"Cisterna Planta\",\n      \"destino\": \"Tanque Grande\",\n      \"litros\": 2000,\n      \"motivo\": \"Reabastecimiento para siembra Lote 1\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Transferencia interna de 1,500 L desde Cisterna Planta hacia Tanque Grande\",\n      \"litros\": 1500.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 2,000 L de acopio YPF hacia Tanque Chico\",\n      \"litros\": 2000.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-08\",\n      \"motivo\": \"Retiro de 300 L de acopio YPF ingresados a Cisterna Planta\",\n      \"litros\": 300.0,\n      \"operario\": \"Productor\"\n    },\n    {\n      \"fecha\": \"2026-10-27\",\n      \"motivo\": \"Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Chico\",\n      \"litros\": 500.0,\n      \"operario\": \"Carlos\"\n    }\n  ]\n}"
+          },
+          "preview": "Actualización de stock_gasoil.json (8829 bytes)"
+        },
+        {
+          "tool": "append_memory",
+          "args": {
+            "entry": "Consumo general registrado (Uso operativo general) por Productor: -80 L de Cisterna Planta. Saldo restante: 13,620 L."
+          },
+          "preview": "Registro en memoria: Consumo general registrado (Uso operativo general) por Produ..."
+        }
+      ],
+      "timestamp": "2026-11-09 23:01:29"
     }
   ]
 }
