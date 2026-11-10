@@ -82,7 +82,7 @@ class StockIntegrityService:
         saldo_ant = deposito.stock_actual
         if saldo_ant < cant:
             raise ValidationError(
-                f"Stock insuficiente en {deposito.nombre}. Disponible: {saldo_ant:,.1f} L. Intento de consumo: {cant:,.1f} L."
+                f"No es posible realizar la operación porque no hay stock suficiente en {deposito.nombre}. Stock disponible: {saldo_ant:,.1f} L. Intentaste gastar/retirar: {cant:,.1f} L."
             )
 
         # 3. Aplicar descuento en Depósito
@@ -163,7 +163,7 @@ class StockIntegrityService:
         # Validaciones de integridad
         if dep_origen.stock_actual < cant:
             raise ValidationError(
-                f"Stock insuficiente en {dep_origen.nombre}. Disponible: {dep_origen.stock_actual:,.1f} L. Solicitado: {cant:,.1f} L."
+                f"No es posible realizar el traslado porque no hay stock suficiente en {dep_origen.nombre}. Stock disponible: {dep_origen.stock_actual:,.1f} L. Solicitado a transferir: {cant:,.1f} L."
             )
 
         espacio_libre = dep_destino.capacidad_maxima - dep_destino.stock_actual

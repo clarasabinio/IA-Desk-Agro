@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 import logging
 logger = logging.getLogger(__name__)
 from app.services.agronomic_engine import get_live_soil_and_weather_factor
@@ -426,7 +427,8 @@ def api_movimiento_directo_view(request: HttpRequest):
             return JsonResponse({"status": "error", "message": f"Tipo de acción '{tipo_accion}' no reconocida."}, status=400)
 
     except ValidationError as ve:
-        return JsonResponse({"status": "error", "message": str(ve.messages if hasattr(ve, 'messages') else ve)}, status=400)
+        err_msg = ve.messages[0] if hasattr(ve, 'messages') and ve.messages else str(ve)
+        return JsonResponse({"status": "error", "message": str(err_msg)}, status=400)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
@@ -518,6 +520,9 @@ def api_confirmar_propuesta_ia_view(request: HttpRequest):
         else:
             return JsonResponse({"status": "error", "message": f"Acción '{action}' no soportada para confirmación."}, status=400)
 
+    except ValidationError as ve:
+        err_msg = ve.messages[0] if hasattr(ve, 'messages') and ve.messages else str(ve)
+        return JsonResponse({"status": "error", "message": str(err_msg)}, status=400)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 

@@ -919,7 +919,23 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         deps = gasoil_json["depositos"]
 
         saldo_actual_dep = float(deps[tank_key].get("stock_actual_litros", 0))
-        saldo_est = max(0.0, saldo_actual_dep - liters_spent)
+        if liters_spent > saldo_actual_dep:
+            reply = (
+                f"❌ **No es posible registrar la labor porque no hay stock suficiente de combustible.**\n\n"
+                f"- **Depósito:** **{deps[tank_key]['nombre']}**\n"
+                f"- **Stock disponible actual:** **{int(saldo_actual_dep):,} Litros**\n"
+                f"- **Gasoil requerido para la labor:** **{int(liters_spent):,} Litros** ({labor_nombre} en {lote_id})\n\n"
+                f"⚠️ *Por favor recarga combustible en el depósito o transfiere desde otro tanque antes de asentar esta labor.*"
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {
+                "response": reply,
+                "tool_calls": executed_tools,
+                "is_demo": True,
+                "stock_data": get_dashboard_summary()
+            }
+
+        saldo_est = saldo_actual_dep - liters_spent
 
         # Si no fue confirmado explícitamente, generar VISTA PREVIA interactiva
         if not is_already_confirmed and not is_whatsapp:
@@ -1003,7 +1019,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 hibridos = insumos_json.get("semillas_maiz", {}).get("hibridos", [])
                 target_h = next((h for h in hibridos if "DK" in h["id"]), hibridos[0]) if hibridos else None
                 if target_h:
-                    target_h["en_planta_bolsas"] = max(0, target_h["en_planta_bolsas"] - bags_qty)
+                    if bags_qty > target_h.get("en_planta_bolsas", 0):
+                        reply = (
+                            f"❌ **No es posible registrar la siembra porque no hay stock suficiente de semillas de maíz.**\n\n"
+                            f"- **Híbrido:** **{target_h['hibrido']}**\n"
+                            f"- **Stock disponible en Planta:** **{target_h.get('en_planta_bolsas', 0)} bolsas**\n"
+                            f"- **Bolsas requeridas:** **{bags_qty} bolsas** (para {has_done} ha en {lote_id})\n\n"
+                            f"⚠️ *Tienes {target_h.get('por_retirar_bolsas', 0)} bolsas por retirar en {target_h.get('lugar_retiro', 'distribuidor')}. Trasládalas a Planta antes de sembrar.*"
+                        )
+                        append_to_history(user_message, reply, executed_tools)
+                        return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+                    target_h["en_planta_bolsas"] = target_h["en_planta_bolsas"] - bags_qty
                     target_h["total_bolsas"] = target_h["en_planta_bolsas"] + target_h["por_retirar_bolsas"]
                     tot_p = sum(h["en_planta_bolsas"] for h in hibridos)
                     insumos_json["semillas_maiz"]["totales"]["bolsas_en_planta"] = tot_p
@@ -1013,7 +1039,18 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             elif "soja" in crop_key:
                 var_soja = insumos_json.get("semillas_soja", {}).get("variedades", [])
                 if var_soja:
-                    var_soja[0]["en_planta_bolsas"] = max(0, var_soja[0].get("en_planta_bolsas", 440) - bags_qty)
+                    disp_soja = var_soja[0].get("en_planta_bolsas", 0)
+                    if bags_qty > disp_soja:
+                        reply = (
+                            f"❌ **No es posible registrar la siembra porque no hay stock suficiente de semillas de soja.**\n\n"
+                            f"- **Variedad:** **DM 46R18**\n"
+                            f"- **Stock disponible en galpón:** **{disp_soja} bolsas**\n"
+                            f"- **Bolsas requeridas:** **{bags_qty} bolsas**\n\n"
+                            f"⚠️ *No es posible gastar más semillas de las disponibles en inventario.*"
+                        )
+                        append_to_history(user_message, reply, executed_tools)
+                        return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+                    var_soja[0]["en_planta_bolsas"] = disp_soja - bags_qty
                     var_soja[0]["total_bolsas"] = var_soja[0]["en_planta_bolsas"]
                     insumos_json["semillas_soja"]["totales"] = {"bolsas_en_planta": var_soja[0]["en_planta_bolsas"], "bolsas_por_retirar": 0, "total_general_bolsas": var_soja[0]["en_planta_bolsas"]}
                     semilla_str = f"DM 46R18 ({bags_qty} bolsas)"
@@ -1036,7 +1073,18 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             elif "micro" in msg:
                 target_f = next((f for f in ferts if "Micro" in f["nombre"]), ferts[2])
 
-            target_f["en_galpon_kg"] = max(0.0, target_f["en_galpon_kg"] - kg_spent)
+            disp_fert = target_f.get("en_galpon_kg", 0.0)
+            if kg_spent > disp_fert:
+                reply = (
+                    f"❌ **No es posible registrar la aplicación porque no hay stock suficiente de fertilizante.**\n\n"
+                    f"- **Producto:** **{target_f['nombre']}**\n"
+                    f"- **Stock disponible en galpón:** **{int(disp_fert):,} kg**\n"
+                    f"- **Cantidad requerida:** **{int(kg_spent):,} kg**\n\n"
+                    f"⚠️ *Tienes {int(target_f.get('por_retirar_kg', 0)):,} kg pendientes de retiro en {target_f.get('lugar_retiro', 'distribuidor')}.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            target_f["en_galpon_kg"] = disp_fert - kg_spent
             target_f["total_kg"] = target_f["en_galpon_kg"] + target_f["por_retirar_kg"]
             insumos_json["fertilizantes_totales"]["en_galpon_kg"] = sum(f["en_galpon_kg"] for f in ferts)
             insumos_json["fertilizantes_totales"]["total_general_kg"] = sum(f["total_kg"] for f in ferts)
@@ -1175,7 +1223,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
 
         elif is_sowing_corn and target_hibrido:
-            used = min(target_hibrido["en_planta_bolsas"], bags_qty)
+            if bags_qty > target_hibrido["en_planta_bolsas"]:
+                reply = (
+                    f"❌ **No es posible registrar la siembra porque no hay stock suficiente de semillas.**\n\n"
+                    f"- **Híbrido de Maíz:** **{target_hibrido['hibrido']}**\n"
+                    f"- **Stock disponible en Planta:** **{target_hibrido['en_planta_bolsas']} bolsas**\n"
+                    f"- **Intentaste gastar:** **{bags_qty} bolsas**\n\n"
+                    f"⚠️ *No es posible gastar más bolsas de las existentes en Planta Central.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            used = bags_qty
             target_hibrido["en_planta_bolsas"] -= used
             target_hibrido["total_bolsas"] -= used
 
@@ -1278,7 +1336,18 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 else:
                     target_silo = next((s for s in all_silos if s.get("cultivo") == "Soja" and s.get("stock_actual_tn", 0) > 0), all_silos[0])
 
-            dispatched = min(target_silo["stock_actual_tn"], tn_qty)
+            if tn_qty > target_silo.get("stock_actual_tn", 0):
+                disp_silo = target_silo.get("stock_actual_tn", 0)
+                reply = (
+                    f"❌ **No es posible realizar el despacho porque no hay stock suficiente en el silo.**\n\n"
+                    f"- **Silo de Origen:** **{target_silo['nombre']}** ({target_silo.get('cultivo', 'Grano')})\n"
+                    f"- **Stock disponible:** **{disp_silo:,} Toneladas**\n"
+                    f"- **Intentaste despachar:** **{tn_qty:,} Toneladas**\n\n"
+                    f"⚠️ *No es posible despachar una carga superior a los granos almacenados en el silo.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            dispatched = tn_qty
             target_silo["stock_actual_tn"] = round(target_silo["stock_actual_tn"] - dispatched, 1)
 
             # Recalcular totales
@@ -1639,7 +1708,31 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         if tank_key == "acopio_por_retirar":
             tank_key = "tanque_grande"
 
-        deps[tank_key]["stock_actual_litros"] = max(0.0, deps[tank_key]["stock_actual_litros"] - liters_out)
+        current_fuel = deps[tank_key]["stock_actual_litros"]
+        if liters_out > current_fuel:
+            reply = (
+                f"❌ **No es posible realizar la labor porque no hay stock suficiente de combustible.**\n\n"
+                f"- **Depósito:** **{deps[tank_key]['nombre']}**\n"
+                f"- **Stock disponible:** **{int(current_fuel):,} Litros**\n"
+                f"- **Requerido para la labor:** **{int(liters_out):,} Litros**\n\n"
+                f"⚠️ *Por favor recarga el depósito o utiliza otro tanque con saldo suficiente.*"
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+        current_seeds = sj_variedades[0].get("en_planta_bolsas", 0) if sj_variedades else 0
+        if bolsas_out > current_seeds:
+            reply = (
+                f"❌ **No es posible realizar la siembra porque no hay stock suficiente de semillas de soja.**\n\n"
+                f"- **Variedad:** **DM 46R18**\n"
+                f"- **Disponible en galpón:** **{current_seeds} bolsas**\n"
+                f"- **Requerido para la siembra:** **{bolsas_out} bolsas**\n\n"
+                f"⚠️ *No es posible gastar más semillas de las disponibles en galpón.*"
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+        deps[tank_key]["stock_actual_litros"] = current_fuel - liters_out
 
         gasoil_json["totales"]["stock_fisico_campo_litros"] = (
             deps["cisterna_planta"]["stock_actual_litros"] +
@@ -1770,7 +1863,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 origen_key = "cisterna_planta"
                 destino_key = "tanque_grande"
 
-            liters_moved = min(deps[origen_key]["stock_actual_litros"], liters_to_move)
+            actual_origen = deps[origen_key]["stock_actual_litros"]
+            if liters_to_move > actual_origen:
+                reply = (
+                    f"❌ **No es posible realizar la transferencia porque no hay stock suficiente en {deps[origen_key]['nombre']}.**\n\n"
+                    f"- **Stock disponible en origen:** **{int(actual_origen):,} Litros**\n"
+                    f"- **Intentaste transferir:** **{int(liters_to_move):,} Litros**\n\n"
+                    f"⚠️ *No es posible transferir más combustible del disponible en el depósito de origen.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            liters_moved = liters_to_move
             deps[origen_key]["stock_actual_litros"] -= liters_moved
             deps[destino_key]["stock_actual_litros"] = min(
                 deps[destino_key]["capacidad_max_litros"],
@@ -1817,7 +1920,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
 
         if tank_key == "acopio_por_retirar":
             target_field = "cisterna_planta"
-            liters_moved = min(deps["acopio_por_retirar"]["litros_disponibles"], liters_out)
+            actual_acopio = deps["acopio_por_retirar"]["litros_disponibles"]
+            if liters_out > actual_acopio:
+                reply = (
+                    f"❌ **No es posible realizar el retiro porque no hay stock suficiente en Acopio YPF.**\n\n"
+                    f"- **Stock disponible en Acopio:** **{int(actual_acopio):,} Litros**\n"
+                    f"- **Intentaste retirar:** **{int(liters_out):,} Litros**\n\n"
+                    f"⚠️ *No es posible retirar una cantidad superior a los litros pendientes en acopio.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            liters_moved = liters_out
             deps["acopio_por_retirar"]["litros_disponibles"] -= liters_moved
             deps[target_field]["stock_actual_litros"] = min(
                 deps[target_field]["capacidad_max_litros"],
@@ -1853,7 +1966,17 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             )
         else:
             current_tank_stock = deps[tank_key]["stock_actual_litros"]
-            deps[tank_key]["stock_actual_litros"] = max(0.0, current_tank_stock - liters_out)
+            if liters_out > current_tank_stock:
+                reply = (
+                    f"❌ **No es posible realizar la operación porque no hay stock suficiente.**\n\n"
+                    f"- **Depósito:** **{deps[tank_key]['nombre']}**\n"
+                    f"- **Stock disponible actual:** **{int(current_tank_stock):,} Litros**\n"
+                    f"- **Intentaste gastar/retirar:** **{int(liters_out):,} Litros**\n\n"
+                    f"⚠️ *No es posible gastar más combustible del disponible en este depósito.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+            deps[tank_key]["stock_actual_litros"] = current_tank_stock - liters_out
 
             gasoil_json["totales"]["stock_fisico_campo_litros"] = (
                 deps["cisterna_planta"]["stock_actual_litros"] +
