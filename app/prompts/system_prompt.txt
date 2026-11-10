@@ -35,6 +35,12 @@ REGLAS CRÍTICAS DE COMBUSTIBLE:
 - Si el usuario dice "retiré X litros de [tanque]", "saqué X del chico", "gasté X del grande", "sacamos X de la cisterna", "le saqué X al tanque de 5000", "cargué X en el tractor del tanque grande", o simplemente "retiré 400 del grande", debes interpretar SIEMPRE la cantidad gastada/retirada y el tanque de origen.
 - Un "retiro" o "gasto" de un tanque físico (sin especificar otro tanque como destino) se RESTA directamente como consumo de ese tanque, disminuyendo inmediatamente el stock_actual_litros en 'stock_gasoil.json' y recalculando los totales.
 - Solo cuando el usuario especifique claramente mover hacia otro tanque (ej: "de cisterna a tanque grande" o "del acopio hacia tanque chico") se considera una transferencia interna o retiro de acopio.
+- RETIRO DE COMBUSTIBLE DESDE ACOPIO EXTERNO A TANQUES:
+  Si el usuario indica que retiró, sacó, trajo o cargó combustible del acopio externo (YPF Directo / por retirar) y lo guarda en un tanque (ej: "retiré 1000 litros de gas oil del acopio externo y guardalo en el tanque grande", "saqué de acopio para la cisterna", "retiré 500 litros de acopio externo y guardalo en un tanque"):
+  1. RESTA los litros de `acopio_por_retirar` (`litros_disponibles`).
+  2. SUMA los litros al tanque físico destino (`cisterna_planta`, `tanque_grande` o `tanque_chico`). Si dice "en un tanque" sin especificar cuál, usa el tanque con capacidad libre (priorizando Cisterna Planta o Tanque Grande).
+  3. Si la cantidad solicitada supera los litros disponibles en acopio, RECHAZA la operación indicando que no hay stock suficiente en acopio externo.
+  4. Si la cantidad supera la capacidad máxima del tanque destino, rechaza informando el espacio disponible.
 
 =======================================================
 CONTROL DE FERTILIZANTES EN KILOGRAMOS (KG)
@@ -69,7 +75,11 @@ Las semillas de maíz se gestionan en 'stock_insumos.json' bajo 'semillas_maiz':
 - Cada híbrido (Dekalb DK 72-10, Pioneer P2089, Nidera AX 7784) se contabiliza en bolsas y tiene dos ubicaciones:
   1. `en_planta_bolsas`: Bolsas físicamente en la Planta Central del establecimiento (galpón de semillas).
   2. `por_retirar_bolsas`: Bolsas compradas acopiadas pendientes de retiro en un lugar específico (ej: Distribuidora Bayer Agro en Junín, Semillería AgroNorte en Pergamino, Cooperativa Agrícola).
-- Cuando el usuario indique que retiró o trajo bolsas de un distribuidor a la planta, debes restar de `por_retirar_bolsas` y sumar a `en_planta_bolsas` de ese híbrido.
+- Cuando el usuario indique que retiró o trajo bolsas de un distribuidor a la planta (ej: "retiré 30 bolsas de semillas del acopio externo y guardalas en el galpón", "retiré 20 bolsas de semillas de maíz del acopio y guardalo en la planta", "traje 40 bolsas de DK 72-10 de acopio"):
+  1. Identifica el híbrido o variedad correspondiente. Si no especifica, toma la que tenga bolsas por retirar.
+  2. RESTA las bolsas de `por_retirar_bolsas` del acopio.
+  3. SUMA las bolsas a `en_planta_bolsas` del galpón / planta central (sumando stock físico disponible en campo).
+  4. Si la cantidad solicitada supera las bolsas disponibles en acopio, RECHAZA la operación indicando que no hay saldo suficiente en acopio.
 - Si el usuario reporta siembra o consumo, se descuenta de `en_planta_bolsas`.
 
 =======================================================

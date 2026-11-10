@@ -1,5 +1,5 @@
 Deposito,Capacidad_Max_L,Stock_Actual_L,Porcentaje_Ocupacion,Estado
-Cisterna Planta,22000,13620.0,61.9%,Activo
-Tanque Grande,5000,9.6,0.2%,Activo
-Tanque Chico,3000,0.0,0.0%,Activo
-Gasoil por Retirar,10000,2200.0,22.0%,Activo
+Cisterna Planta,22000,14000.0,63.6%,Activo
+Tanque Grande,5000,1500.0,30.0%,Activo
+Tanque Chico,3000,1200.0,40.0%,Activo
+Gasoil por Retirar,10000,3000.0,30.0%,Activo

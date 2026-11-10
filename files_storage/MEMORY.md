@@ -62,3 +62,11 @@
 - [2026-11-09 23:01:14] Consumo general registrado (Uso operativo general) por Productor: -200 L de Cisterna Planta. Saldo restante: 13,700 L.
 - [2026-11-09 23:01:28] Consumo general registrado (Camioneta) por Productor: -40 L de Tanque Grande. Saldo restante: 9 L.
 - [2026-11-09 23:01:28] Consumo general registrado (Uso operativo general) por Productor: -80 L de Cisterna Planta. Saldo restante: 13,620 L.
+- [2026-11-09 23:39:05] Retiro de 500 L de acopio YPF hacia Tanque Grande
+- [2026-11-09 23:39:07] Retiro de 300 L de acopio YPF hacia Cisterna Planta
+- [2026-11-09 23:39:08] Retiro de 20 bolsas de semilla Dekalb DK 72-10 VT3P desde acopio proveedor hacia Galpón Central de Insumos (Planta)
+- [2026-11-09 23:39:08] Retiro de 15 bolsas de semilla Pioneer P2089 VYHR desde acopio proveedor hacia Galpón Central de Insumos (Planta)
+- [2026-11-09 23:40:12] Retiro de 500 L de acopio YPF hacia Tanque Grande
+- [2026-11-09 23:40:13] Retiro de 300 L de acopio YPF hacia Cisterna Planta
+- [2026-11-09 23:40:14] Retiro de 20 bolsas de semilla Dekalb DK 72-10 VT3P desde acopio proveedor hacia Galpón Central de Insumos (Planta)
+- [2026-11-09 23:40:15] Retiro de 15 bolsas de semilla Pioneer P2089 VYHR desde acopio proveedor hacia Galpón Central de Insumos (Planta)

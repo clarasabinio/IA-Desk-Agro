@@ -517,6 +517,44 @@ def api_confirmar_propuesta_ia_view(request: HttpRequest):
                 "stock_data": get_dashboard_summary()
             })
 
+        elif action == "retiro_acopio_combustible":
+            litros = float(prop.get("litros", 0))
+            destino = prop.get("destino_codigo", "cisterna_planta")
+
+            res = StockIntegrityService.registrar_retiro_acopio_combustible(
+                litros=litros,
+                destino_codigo=destino,
+                operario=operario,
+                observaciones="Retiro de acopio confirmado desde chat",
+                idempotency_token=idempotency_token
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
+        elif action == "retiro_acopio_semilla":
+            bolsas = int(prop.get("bolsas", 0))
+            hibrido = prop.get("hibrido", "")
+            deposito_destino = prop.get("deposito_destino", "Galpón Central de Insumos")
+
+            res = StockIntegrityService.registrar_retiro_acopio_semilla(
+                bolsas=bolsas,
+                hibrido_o_nombre=hibrido,
+                deposito_destino_nombre=deposito_destino,
+                operario=operario,
+                observaciones="Retiro de semillas de acopio confirmado desde chat",
+                idempotency_token=idempotency_token
+            )
+            return JsonResponse({
+                "status": "success",
+                "message": res["mensaje"],
+                "data": res,
+                "stock_data": get_dashboard_summary()
+            })
+
         else:
             return JsonResponse({"status": "error", "message": f"Acción '{action}' no soportada para confirmación."}, status=400)
 

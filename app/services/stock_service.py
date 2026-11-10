@@ -353,6 +353,188 @@ class StockIntegrityService:
             "mensaje": f"Consumo registrado: {cant} {insumo.unidad_medida} de {insumo.nombre}. Quedan {saldo_post} en galpón."
         }
 
+
+    @classmethod
+    @transaction.atomic
+    def registrar_retiro_acopio_combustible(
+        cls,
+        litros: float,
+        destino_codigo: str = "cisterna_planta",
+        operario: str = "Productor",
+        observaciones: str = "",
+        idempotency_token: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Registra el retiro de gasoil desde el acopio externo (YPF Directo) hacia un tanque
+        del establecimiento (Cisterna Planta, Tanque Grande o Tanque Chico).
+        Valida stock en acopio externo, valida capacidad en destino y SUMA los litros al tanque.
+        """
+        cant = Decimal(str(round(litros, 2)))
+        if cant <= Decimal("0.00"):
+            raise ValidationError("La cantidad de combustible a retirar debe ser mayor a 0.")
+
+        if idempotency_token:
+            existente = MovimientoStock.objects.filter(idempotency_token=idempotency_token).first()
+            if existente:
+                return {"success": True, "duplicado_evitado": True, "movimiento_id": existente.id}
+
+        dep_origen = Deposito.objects.select_for_update().get(codigo="acopio_por_retirar")
+        dep_destino = Deposito.objects.select_for_update().get(codigo=destino_codigo)
+
+        if dep_origen.stock_actual < cant:
+            raise ValidationError(
+                f"No es posible retirar combustible porque no hay saldo suficiente en el acopio externo. "
+                f"Saldo disponible en acopio YPF: {dep_origen.stock_actual:,.1f} L. Solicitado a retirar: {cant:,.1f} L."
+            )
+
+        espacio_libre = dep_destino.capacidad_maxima - dep_destino.stock_actual
+        if dep_destino.capacidad_maxima > 0 and (dep_destino.stock_actual + cant) > (dep_destino.capacidad_maxima + Decimal("0.01")):
+            raise ValidationError(
+                f"Capacidad máxima excedida en {dep_destino.nombre}. Capacidad máxima: {dep_destino.capacidad_maxima:,.0f} L. "
+                f"Stock actual: {dep_destino.stock_actual:,.1f} L. Espacio libre para guardar: {espacio_libre:,.1f} L."
+            )
+
+        saldo_origen_ant = dep_origen.stock_actual
+        saldo_destino_ant = dep_destino.stock_actual
+
+        # Impacto atómico: RESTA del acopio externo y SUMA al tanque destino
+        dep_origen.stock_actual -= cant
+        dep_origen.save(update_fields=["stock_actual"])
+
+        dep_destino.stock_actual += cant
+        dep_destino.save(update_fields=["stock_actual"])
+
+        insumo = cls.get_or_create_gasoil_insumo()
+        token_final = idempotency_token or f"retiro_acopio_{uuid.uuid4().hex[:12]}"
+        obs_final = observaciones or f"Retiro de {cant:,.1f} L de acopio YPF hacia {dep_destino.nombre}"
+
+        mov = MovimientoStock.objects.create(
+            insumo=insumo,
+            tipo_movimiento="retiro_acopio",
+            estado="confirmado",
+            cantidad=cant,
+            fecha=timezone.now().date(),
+            deposito_origen_fk=dep_origen,
+            deposito_destino_fk=dep_destino,
+            labor_realizada="Retiro desde Acopio Externo",
+            maquinaria="Flete / Tanque móvil",
+            operario=operario,
+            saldo_anterior=saldo_destino_ant,
+            saldo_posterior=dep_destino.stock_actual,
+            observaciones=obs_final,
+            idempotency_token=token_final
+        )
+
+        cls.sincronizar_gasoil_json()
+
+        try:
+            from app.services.google_sheets_service import on_movement_recorded
+            on_movement_recorded(mov)
+        except Exception as e:
+            logger.warning(f"No se pudo sincronizar automáticamente con Google Sheets: {e}")
+
+        return {
+            "success": True,
+            "movimiento_id": mov.id,
+            "litros": float(cant),
+            "origen": dep_origen.nombre,
+            "destino": dep_destino.nombre,
+            "saldo_acopio_nuevo": float(dep_origen.stock_actual),
+            "saldo_destino_nuevo": float(dep_destino.stock_actual),
+            "mensaje": f"Se retiraron {cant:,.1f} L del acopio externo y se sumaron exitosamente a {dep_destino.nombre}."
+        }
+
+    @classmethod
+    @transaction.atomic
+    def registrar_retiro_acopio_semilla(
+        cls,
+        bolsas: int,
+        hibrido_o_nombre: str = "",
+        deposito_destino_nombre: str = "Galpón Central de Insumos",
+        operario: str = "Productor",
+        observaciones: str = "",
+        idempotency_token: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Registra el retiro de bolsas de semilla desde el acopio del proveedor hacia el
+        galpón o planta central. Valida saldo disponible por retirar y SUMA las bolsas al stock físico en campo.
+        """
+        cant_bolsas = Decimal(str(int(bolsas)))
+        if cant_bolsas <= Decimal("0"):
+            raise ValidationError("La cantidad de bolsas a retirar debe ser mayor a 0.")
+
+        if idempotency_token:
+            existente = MovimientoStock.objects.filter(idempotency_token=idempotency_token).first()
+            if existente:
+                return {"success": True, "duplicado_evitado": True, "movimiento_id": existente.id}
+
+        insumos_query = Insumo.objects.filter(categoria="semilla")
+        target_insumo = None
+
+        if hibrido_o_nombre:
+            for word in hibrido_o_nombre.lower().replace("-", " ").split():
+                if len(word) >= 2:
+                    cand = insumos_query.filter(nombre__icontains=word).first()
+                    if cand:
+                        target_insumo = cand
+                        break
+
+        if not target_insumo:
+            target_insumo = insumos_query.filter(stock_por_retirar__gt=0).first() or insumos_query.first()
+
+        if not target_insumo:
+            raise ValidationError("No se encontró ningún insumo de semilla registrado en el sistema.")
+
+        if target_insumo.stock_por_retirar < cant_bolsas:
+            raise ValidationError(
+                f"No es posible retirar {int(cant_bolsas)} bolsas porque solo hay {int(target_insumo.stock_por_retirar)} "
+                f"bolsas disponibles en acopio de {target_insumo.nombre}."
+            )
+
+        saldo_planta_ant = target_insumo.stock_actual
+        saldo_acopio_ant = target_insumo.stock_por_retirar
+
+        # Impacto atómico: RESTA del acopio externo y SUMA a la planta / galpón
+        target_insumo.stock_por_retirar -= cant_bolsas
+        target_insumo.stock_actual += cant_bolsas
+        target_insumo.save(update_fields=["stock_por_retirar", "stock_actual"])
+
+        token_final = idempotency_token or f"retiro_sem_{uuid.uuid4().hex[:12]}"
+        obs_final = observaciones or f"Retiro de {int(cant_bolsas)} bolsas de {target_insumo.nombre} de acopio hacia {deposito_destino_nombre}"
+
+        mov = MovimientoStock.objects.create(
+            insumo=target_insumo,
+            tipo_movimiento="retiro_acopio",
+            estado="confirmado",
+            cantidad=cant_bolsas,
+            fecha=timezone.now().date(),
+            labor_realizada="Retiro de Semillas de Acopio",
+            maquinaria="Camioneta / Flete",
+            operario=operario,
+            saldo_anterior=saldo_planta_ant,
+            saldo_posterior=target_insumo.stock_actual,
+            observaciones=obs_final,
+            idempotency_token=token_final
+        )
+
+        cls.sincronizar_insumos_json()
+
+        try:
+            from app.services.google_sheets_service import on_movement_recorded
+            on_movement_recorded(mov)
+        except Exception as e:
+            logger.warning(f"No se pudo sincronizar automáticamente con Google Sheets: {e}")
+
+        return {
+            "success": True,
+            "movimiento_id": mov.id,
+            "insumo": target_insumo.nombre,
+            "bolsas": int(cant_bolsas),
+            "saldo_planta_nuevo": int(target_insumo.stock_actual),
+            "saldo_acopio_nuevo": int(target_insumo.stock_por_retirar),
+            "mensaje": f"Se retiraron {int(cant_bolsas)} bolsas de {target_insumo.nombre} del acopio y se sumaron a {deposito_destino_nombre}."
+        }
+
     # ==============================================================
     # SINCRONIZACIÓN AUTOMÁTICA CON PROYECCIONES JSON Y EXCEL
     # ==============================================================
@@ -442,7 +624,7 @@ class StockIntegrityService:
     @classmethod
     def sincronizar_insumos_json(cls):
         """
-        Exporta el estado de semillas y fertilizantes a stock_insumos.json.
+        Exporta el estado verificado de semillas y fertilizantes a stock_insumos.json.
         """
         import json
         json_path = settings.FILES_STORAGE_DIR / "stock_insumos.json"
@@ -457,18 +639,40 @@ class StockIntegrityService:
                 ins = Insumo.objects.filter(nombre__icontains=h.get("hibrido", "")[:10]).first()
                 if ins:
                     h["en_planta_bolsas"] = int(ins.stock_actual)
-                    h["total_bolsas"] = h["en_planta_bolsas"] + h.get("por_retirar_bolsas", 0)
+                    h["por_retirar_bolsas"] = int(ins.stock_por_retirar)
+                    h["total_bolsas"] = h["en_planta_bolsas"] + h["por_retirar_bolsas"]
+
+            mz_hibridos = data.get("semillas_maiz", {}).get("hibridos", [])
+            data.setdefault("semillas_maiz", {}).setdefault("totales", {})
+            data["semillas_maiz"]["totales"]["bolsas_en_planta"] = sum(h.get("en_planta_bolsas", 0) for h in mz_hibridos)
+            data["semillas_maiz"]["totales"]["bolsas_por_retirar"] = sum(h.get("por_retirar_bolsas", 0) for h in mz_hibridos)
+            data["semillas_maiz"]["totales"]["total_general_bolsas"] = (
+                data["semillas_maiz"]["totales"]["bolsas_en_planta"] +
+                data["semillas_maiz"]["totales"]["bolsas_por_retirar"]
+            )
 
             for v in data.get("semillas_soja", {}).get("variedades", []):
                 ins = Insumo.objects.filter(nombre__icontains=v.get("variedad", "")[:10]).first()
                 if ins:
                     v["en_planta_bolsas"] = int(ins.stock_actual)
-                    v["total_bolsas"] = v["en_planta_bolsas"]
+                    v["por_retirar_bolsas"] = int(ins.stock_por_retirar)
+                    v["total_bolsas"] = v["en_planta_bolsas"] + v["por_retirar_bolsas"]
+
+            sj_vars = data.get("semillas_soja", {}).get("variedades", [])
+            data.setdefault("semillas_soja", {}).setdefault("totales", {})
+            data["semillas_soja"]["totales"]["bolsas_en_planta"] = sum(v.get("en_planta_bolsas", 0) for v in sj_vars)
+            data["semillas_soja"]["totales"]["bolsas_por_retirar"] = sum(v.get("por_retirar_bolsas", 0) for v in sj_vars)
+            data["semillas_soja"]["totales"]["total_general_bolsas"] = (
+                data["semillas_soja"]["totales"]["bolsas_en_planta"] +
+                data["semillas_soja"]["totales"]["bolsas_por_retirar"]
+            )
 
             for fert in data.get("fertilizantes", []):
                 ins = Insumo.objects.filter(nombre__icontains=fert.get("nombre", "")[:10]).first()
                 if ins:
                     fert["en_galpon_kg"] = float(ins.stock_actual)
+                    if ins.stock_por_retirar > 0:
+                        fert["por_retirar_kg"] = float(ins.stock_por_retirar)
                     fert["total_kg"] = fert["en_galpon_kg"] + fert.get("por_retirar_kg", 0)
 
             with open(json_path, "w", encoding="utf-8") as f:

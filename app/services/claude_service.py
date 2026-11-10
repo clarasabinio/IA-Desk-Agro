@@ -300,16 +300,46 @@ def identify_tank(msg: str) -> str:
         return "cisterna_planta"
     if any(w in msg_low for w in ["grande", "5000", "5.000", "5k", "móvil", "movil"]):
         return "tanque_grande"
-    if any(w in msg_low for w in ["acopio", "ypf", "distribuidor", "por retirar", "saldo"]):
+    if any(w in msg_low for w in ["acopio", "acpio", "ypf", "distribuidor", "por retirar", "saldo"]):
         return "acopio_por_retirar"
     return "tanque_grande"
 
-def is_fuel_transfer_or_acopio(msg: str) -> bool:
+def identify_destination_tank(msg: str, default: str = "cisterna_planta") -> str:
+    """
+    Identifica el tanque físico DESTINO para un movimiento o retiro de combustible.
+    Nunca devuelve 'acopio_por_retirar' como destino.
+    """
     msg_low = msg.lower()
-    if any(w in msg_low for w in ["pasar", "transferir", "mover", "trasladar"]):
+    if any(w in msg_low for w in ["chico", "chiquito", "pequeño", "pequeno", "carretón", "carreton", "3000", "3.000", "3k", "auxilio"]):
+        return "tanque_chico"
+    if any(w in msg_low for w in ["grande", "5000", "5.000", "5k", "móvil", "movil", "cisterna móvil", "cisterna movil"]):
+        return "tanque_grande"
+    if any(w in msg_low for w in ["planta", "central", "22000", "22.000", "22k", "tanque fijo", "cisterna"]):
+        return "cisterna_planta"
+    return default
+
+def is_fuel_transfer_or_acopio(msg: str) -> bool:
+    """
+    Detecta si el mensaje es un retiro desde acopio externo hacia tanques o una transferencia entre tanques.
+    """
+    msg_low = msg.lower()
+
+    # 1. Retiro desde Acopio Externo / YPF hacia depósitos del campo
+    has_acopio = any(w in msg_low for w in ["acopio", "acpio", "acoppio", "ypf", "distribuidor", "externo", "exteno", "por retirar"])
+    has_move_action = any(w in msg_low for w in [
+        "retir", "saqu", "sacar", "saco", "traer", "traje", "trajo", "trajimos",
+        "pas", "carg", "llev", "guard", "mov", "traslad", "descarg", "poner", "puse"
+    ])
+    has_fuel_or_tank = any(w in msg_low for w in [
+        "gasoil", "gas oil", "diesel", "combustible", "combustibles", "litros", "lts", "lt", "tanque", "cisterna"
+    ])
+    if has_acopio and has_move_action and has_fuel_or_tank:
         return True
-    if "acopio" in msg_low and any(w in msg_low for w in ["traer", "retirar", "flete", "mandar", "cargar", "llevar", "pasar"]):
+
+    # 2. Transferencias internas explícitas entre tanques
+    if any(w in msg_low for w in ["pasar", "pasé", "pase", "transferir", "transferí", "mover", "moví", "trasladar", "trasladé"]):
         return True
+
     tanks_mentioned = []
     if any(w in msg_low for w in ["chico", "3000"]):
         tanks_mentioned.append("tanque_chico")
@@ -317,8 +347,9 @@ def is_fuel_transfer_or_acopio(msg: str) -> bool:
         tanks_mentioned.append("tanque_grande")
     if any(w in msg_low for w in ["cisterna", "planta", "22000"]):
         tanks_mentioned.append("cisterna_planta")
-    if len(tanks_mentioned) >= 2 and any(p in msg_low for p in [" a ", " al ", " hacia ", " para el tanque"]):
+    if len(tanks_mentioned) >= 2 and any(p in msg_low for p in [" a ", " al ", " hacia ", " para el tanque", " y "]):
         return True
+
     return False
 
 
@@ -1158,6 +1189,144 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         }
 
     # ==============================================================
+    # 0.9 RETIRO DE SEMILLAS DE ACOPIO EXTERNO HACIA GALPÓN / PLANTA
+    # ==============================================================
+    has_seed_word = any(w in msg for w in [
+        "semilla", "semillas", "bolsa", "bolsas", "hibrido", "híbrido", "hibridos", "híbridos",
+        "maiz", "maíz", "soja", "dk", "dekalb", "pioneer", "p2089", "nidera", "ax7784", "ax 7784",
+        "don mario", "dm46", "dm 46"
+    ])
+    has_seed_acopio = any(w in msg for w in [
+        "acopio", "acpio", "acoppio", "proveedor", "distribuidor", "externo", "exteno", "por retirar",
+        "bayer", "corteva", "cooperativa", "semilleria", "semillería"
+    ])
+    has_seed_move = any(w in msg for w in [
+        "retir", "saqu", "sacar", "saco", "traer", "traje", "trajo", "trajimos",
+        "pas", "carg", "llev", "guard", "almacen", "pon", "pus"
+    ])
+
+    is_seed_withdrawal = (
+        (has_seed_word and has_seed_acopio and has_seed_move) or
+        (has_seed_word and ("acopio" in msg or "acpio" in msg) and any(w in msg for w in ["retir", "saqu", "trae", "guard"])) or
+        ("semilla" in msg and any(w in msg for w in ["retiré", "retire", "retiramos", "traje", "trajimos", "traer"]) and any(w in msg for w in ["planta", "galpon", "galpón", "guard", "tanque", "lugar"]))
+    )
+
+    if is_seed_withdrawal:
+        insumos_raw, meta_ins = execute_native_tool("read_file", {"filename": "stock_insumos.json"})
+        executed_tools.append(meta_ins)
+        insumos_json = json.loads(insumos_raw)
+        mz_dict = insumos_json.get("semillas_maiz", {})
+        hibridos = mz_dict.get("hibridos", [])
+        soja_dict = insumos_json.get("semillas_soja", {})
+        variedades = soja_dict.get("variedades", [])
+
+        target_seed = None
+        crop_type = "maiz"
+
+        if any(w in msg for w in ["soja", "dm", "don mario", "46r18"]):
+            crop_type = "soja"
+            target_seed = variedades[0] if variedades else None
+        elif "dk" in msg or "72-10" in msg or "7210" in msg or "dekalb" in msg:
+            target_seed = next((h for h in hibridos if "DK" in h["id"]), None)
+        elif "pioneer" in msg or "2089" in msg:
+            target_seed = next((h for h in hibridos if "P2089" in h["id"]), None)
+        elif "nidera" in msg or "7784" in msg or "ax" in msg:
+            target_seed = next((h for h in hibridos if "AX7784" in h["id"]), None)
+
+        if not target_seed:
+            cand = next((h for h in hibridos if h.get("por_retirar_bolsas", 0) > 0), None)
+            if cand:
+                target_seed = cand
+                crop_type = "maiz"
+            elif variedades and variedades[0].get("por_retirar_bolsas", 0) > 0:
+                target_seed = variedades[0]
+                crop_type = "soja"
+            else:
+                target_seed = hibridos[0] if hibridos else None
+
+        bags_match = re.search(r"(\d+(?:[\.,]\d+)?)\s*(?:bolsas?|bolsa )", msg)
+        if bags_match:
+            bags_qty = int(float(bags_match.group(1).replace(".", "").replace(",", ".")))
+        else:
+            m_num = re.search(r"\b(\d+)\b", msg)
+            bags_qty = int(m_num.group(1)) if m_num else (target_seed.get("por_retirar_bolsas", 20) if target_seed else 20)
+
+        seed_name = target_seed.get("hibrido") or target_seed.get("variedad", "Semilla Fiscalizada") if target_seed else "Semilla"
+        available_acopio = target_seed.get("por_retirar_bolsas", 0) if target_seed else 0
+        lugar_dest = "Galpón Central de Insumos (Planta)" if not any(w in msg for w in ["lote"]) else "Depósito de Campo"
+
+        # Validación estricta: No permitir retirar más del stock disponible en acopio
+        if bags_qty > available_acopio:
+            reply = (
+                f"❌ **No es posible realizar el retiro porque no hay suficientes bolsas en el acopio externo.**\n\n"
+                f"- **Semilla:** **{seed_name}**\n"
+                f"- **Bolsas disponibles en acopio proveedor:** **{available_acopio} bolsas**\n"
+                f"- **Intentaste retirar:** **{bags_qty} bolsas**\n\n"
+                f"⚠️ *No es posible retirar más bolsas de las compradas y disponibles en acopio.*"
+            )
+            append_to_history(user_message, reply, executed_tools)
+            return {
+                "response": reply,
+                "tool_calls": executed_tools,
+                "is_demo": True,
+                "stock_data": get_dashboard_summary()
+            }
+
+        # Actualización de inventario: RESTA de acopio y SUMA a la planta / galpón
+        target_seed["por_retirar_bolsas"] -= bags_qty
+        target_seed["en_planta_bolsas"] += bags_qty
+        target_seed["total_bolsas"] = target_seed["en_planta_bolsas"] + target_seed["por_retirar_bolsas"]
+
+        if crop_type == "maiz":
+            tot_planta = sum(h["en_planta_bolsas"] for h in hibridos)
+            tot_retiro = sum(h["por_retirar_bolsas"] for h in hibridos)
+            mz_dict["totales"]["bolsas_en_planta"] = tot_planta
+            mz_dict["totales"]["bolsas_por_retirar"] = tot_retiro
+            mz_dict["totales"]["total_general_bolsas"] = tot_planta + tot_retiro
+        else:
+            tot_planta = sum(v["en_planta_bolsas"] for v in variedades)
+            tot_retiro = sum(v["por_retirar_bolsas"] for v in variedades)
+            soja_dict["totales"]["bolsas_en_planta"] = tot_planta
+            soja_dict["totales"]["bolsas_por_retirar"] = tot_retiro
+            soja_dict["totales"]["total_general_bolsas"] = tot_planta + tot_retiro
+
+        _, meta_w = execute_native_tool("write_file", {"filename": "stock_insumos.json", "content": json.dumps(insumos_json, indent=2, ensure_ascii=False)})
+        executed_tools.append(meta_w)
+
+        motivo = f"Retiro de {bags_qty} bolsas de semilla {seed_name} desde acopio proveedor hacia {lugar_dest}"
+        _, meta_m = execute_native_tool("append_memory", {"entry": motivo})
+        executed_tools.append(meta_m)
+
+        # Persistir en base de datos relacional y sincronizar planillas de Google Drive
+        try:
+            from app.services.stock_service import StockIntegrityService
+            StockIntegrityService.registrar_retiro_acopio_semilla(
+                bolsas=bags_qty,
+                hibrido_o_nombre=seed_name,
+                deposito_destino_nombre=lugar_dest,
+                operario=sender_name,
+                observaciones=motivo
+            )
+        except Exception as e:
+            print(f"Error registrando retiro de semilla en DB: {e}")
+
+        reply = (
+            f"📦 **Retiro de Semillas de Acopio Externo Asentado con Éxito:**\n\n"
+            f"- **Híbrido / Variedad:** **{seed_name}** ({target_seed.get('proveedor', 'Proveedor')}).\n"
+            f"- **Bolsas retiradas del acopio:** **{bags_qty} bolsas**.\n"
+            f"- **Guardado en:** **{lugar_dest}** (+{bags_qty} bolsas sumadas al stock físico disponible).\n"
+            f"- **Nuevo stock disponible en campo:** **{target_seed['en_planta_bolsas']} bolsas**.\n"
+            f"- **Saldo restante por retirar en proveedor:** **{target_seed['por_retirar_bolsas']} bolsas**."
+        )
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
+    # ==============================================================
     # 1. CASO SEMILLAS DE MAÍZ POR HÍBRIDO (BOLSAS EN PLANTA O POR RETIRAR)
     # ==============================================================
     is_corn_seed_query_or_action = not is_fuel_context and (
@@ -1836,19 +2005,59 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         )
 
     elif is_transfer:
-        liters_to_move = extract_liters(user_message, default=2000.0)
+        liters_to_move = extract_liters(user_message, default=1000.0)
 
-        if "acopio" in msg:
-            destino_key = "tanque_chico" if "chico" in msg else ("tanque_grande" if "grande" in msg else "cisterna_planta")
+        is_from_acopio = any(w in msg for w in ["acopio", "acpio", "acoppio", "externo", "exteno", "ypf", "distribuidor", "por retirar"])
+
+        if is_from_acopio:
+            origen_key = "acopio_por_retirar"
+            destino_key = identify_destination_tank(user_message, default="cisterna_planta")
             actual_acopio = deps["acopio_por_retirar"]["litros_disponibles"]
-            liters_moved = min(actual_acopio, liters_to_move)
 
+            # Validación estricta de stock en acopio externo
+            if liters_to_move > actual_acopio:
+                reply = (
+                    f"❌ **No es posible realizar el retiro porque no hay stock suficiente en el acopio externo.**\n\n"
+                    f"- **Stock disponible en acopio YPF:** **{int(actual_acopio):,} Litros**\n"
+                    f"- **Intentaste retirar:** **{int(liters_to_move):,} Litros**\n\n"
+                    f"⚠️ *No es posible retirar más combustible del disponible en el acopio externo.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+            espacio_libre = deps[destino_key]["capacidad_max_litros"] - deps[destino_key]["stock_actual_litros"]
+            if liters_to_move > espacio_libre:
+                # Si el usuario no especificó tanque y se desborda, probar cisterna_planta si tiene espacio
+                if not any(w in msg for w in ["chico", "grande", "cisterna", "planta"]) and (deps["cisterna_planta"]["capacidad_max_litros"] - deps["cisterna_planta"]["stock_actual_litros"]) >= liters_to_move:
+                    destino_key = "cisterna_planta"
+                else:
+                    reply = (
+                        f"❌ **El depósito de destino ({deps[destino_key]['nombre']}) no tiene suficiente capacidad.**\n\n"
+                        f"- **Capacidad máxima:** **{int(deps[destino_key]['capacidad_max_litros']):,} Litros**\n"
+                        f"- **Stock actual:** **{int(deps[destino_key]['stock_actual_litros']):,} Litros**\n"
+                        f"- **Espacio libre para guardar:** **{int(espacio_libre):,} Litros**\n\n"
+                        f"⚠️ *No es posible guardar {int(liters_to_move):,} L sin exceder la capacidad física del tanque.*"
+                    )
+                    append_to_history(user_message, reply, executed_tools)
+                    return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+            liters_moved = liters_to_move
             deps["acopio_por_retirar"]["litros_disponibles"] -= liters_moved
-            deps[destino_key]["stock_actual_litros"] = min(
-                deps[destino_key]["capacidad_max_litros"],
-                deps[destino_key]["stock_actual_litros"] + liters_moved
-            )
+            deps[destino_key]["stock_actual_litros"] += liters_moved
             motivo = f"Retiro de {int(liters_moved):,} L de acopio YPF hacia {deps[destino_key]['nombre']}"
+
+            # Impacto atómico en base de datos relacional y sincronización con Google Drive
+            try:
+                from app.services.stock_service import StockIntegrityService
+                StockIntegrityService.registrar_retiro_acopio_combustible(
+                    litros=liters_moved,
+                    destino_codigo=destino_key,
+                    operario=sender_name,
+                    observaciones=motivo
+                )
+            except Exception as e:
+                print(f"Error registrando retiro acopio combustible en DB: {e}")
+
         else:
             if "chico" in msg and ("cisterna" in msg or "planta" in msg):
                 origen_key = "cisterna_planta"
@@ -1873,13 +2082,36 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 )
                 append_to_history(user_message, reply, executed_tools)
                 return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
+            espacio_libre = deps[destino_key]["capacidad_max_litros"] - deps[destino_key]["stock_actual_litros"]
+            if liters_to_move > espacio_libre:
+                reply = (
+                    f"❌ **El depósito de destino ({deps[destino_key]['nombre']}) no tiene suficiente capacidad.**\n\n"
+                    f"- **Capacidad máxima:** **{int(deps[destino_key]['capacidad_max_litros']):,} Litros**\n"
+                    f"- **Stock actual:** **{int(deps[destino_key]['stock_actual_litros']):,} Litros**\n"
+                    f"- **Espacio libre:** **{int(espacio_libre):,} Litros**\n\n"
+                    f"⚠️ *No es posible transferir {int(liters_to_move):,} L sin exceder la capacidad del tanque.*"
+                )
+                append_to_history(user_message, reply, executed_tools)
+                return {"response": reply, "tool_calls": executed_tools, "is_demo": True, "stock_data": get_dashboard_summary()}
+
             liters_moved = liters_to_move
             deps[origen_key]["stock_actual_litros"] -= liters_moved
-            deps[destino_key]["stock_actual_litros"] = min(
-                deps[destino_key]["capacidad_max_litros"],
-                deps[destino_key]["stock_actual_litros"] + liters_moved
-            )
+            deps[destino_key]["stock_actual_litros"] += liters_moved
             motivo = f"Transferencia interna de {int(liters_moved):,} L desde {deps[origen_key]['nombre']} hacia {deps[destino_key]['nombre']}"
+
+            # Impacto atómico en DB y sincronización con Google Drive
+            try:
+                from app.services.stock_service import StockIntegrityService
+                StockIntegrityService.registrar_traslado_combustible(
+                    litros=liters_moved,
+                    origen_codigo=origen_key,
+                    destino_codigo=destino_key,
+                    operario=sender_name,
+                    observaciones=motivo
+                )
+            except Exception as e:
+                print(f"Error registrando traslado de combustible en DB: {e}")
 
         gasoil_json["totales"]["stock_fisico_campo_litros"] = (
             deps["cisterna_planta"]["stock_actual_litros"] +
@@ -1907,6 +2139,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         reply = (
             f"🚚 **Movimiento de Combustible Registrado con Éxito:**\n\n"
             f"- **Operación:** {motivo}.\n"
+            f"- **Tanque Destino ({deps[destino_key]['nombre']}):** **+{int(liters_moved):,} Litros sumados** (Nuevo saldo: **{int(deps[destino_key]['stock_actual_litros']):,} Litros**).\n"
             f"- **Cisterna Planta (Máx 22.000 L):** {int(deps['cisterna_planta']['stock_actual_litros']):,} Litros.\n"
             f"- **Tanque Grande (Máx 5.000 L):** {int(deps['tanque_grande']['stock_actual_litros']):,} Litros.\n"
             f"- **Tanque Chico (Máx 3.000 L):** {int(deps['tanque_chico']['stock_actual_litros']):,} Litros.\n"

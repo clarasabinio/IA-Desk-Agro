@@ -13,7 +13,7 @@ def get_drive_folder_id() -> str:
 def get_google_sheet_id() -> Optional[str]:
     return getattr(settings, "GOOGLE_SHEET_ID", os.getenv("GOOGLE_SHEET_ID", None))
 
-def on_movement_recorded():
+def on_movement_recorded(mov=None):
     """
     Se ejecuta automáticamente cada vez que la IA registra un movimiento, consumo o labor.
     Regenera las hojas de cálculo locales (Excel y CSVs) y, si está configurado,
