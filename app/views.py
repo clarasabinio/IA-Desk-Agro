@@ -54,6 +54,10 @@ def index_view(request: HttpRequest):
         logger.warning(f"Error obteniendo campos con lotes: {e}")
         campos_data = []
 
+    # Evaluar alertas de stock crítico
+    from .services.alertas_service import evaluar_stock_critico
+    alertas_data = evaluar_stock_critico()
+
     context = {
         "storage_files": storage_files,
         "has_anthropic_key": has_anthropic_key,
@@ -62,6 +66,7 @@ def index_view(request: HttpRequest):
         "field_name": "Campo La Esperanza",
         "season": "Campaña Gruesa 2026/2027",
         "stock": stock_data,
+        "alertas": alertas_data,
         "lotes": lotes_data,
         "campos": campos_data,
         "google_drive_folder_url": drive_url,
@@ -692,3 +697,64 @@ def api_campo_crear_view(request: HttpRequest):
     except Exception as e:
         logger.error(f"Error registrando nuevo campo: {e}", exc_info=True)
         return JsonResponse({"status": "error", "message": f"Error registrando el campo: {str(e)}"}, status=500)
+
+
+# ==============================================================
+# ENDPOINTS SISTEMA DE ALERTAS Y UMBRALES DE STOCK CRÍTICO
+# ==============================================================
+@require_http_methods(["GET"])
+def api_alertas_stock_critico_view(request: HttpRequest):
+    """Retorna el estado de alertas de stock crítico y los umbrales configurados."""
+    from .services.alertas_service import evaluar_stock_critico
+    try:
+        data = evaluar_stock_critico()
+        return JsonResponse({"status": "success", "data": data})
+    except Exception as e:
+        logger.error(f"Error evaluando alertas de stock: {e}", exc_info=True)
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_alertas_configurar_umbral_view(request: HttpRequest):
+    """Actualiza los umbrales mínimos de stock de alerta para insumos y tanques."""
+    from .services.alertas_service import actualizar_umbral_individual, guardar_umbrales, obtener_umbrales, evaluar_stock_critico
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"status": "error", "message": "JSON inválido"}, status=400)
+
+    try:
+        if "umbrales" in payload and isinstance(payload["umbrales"], dict):
+            current = obtener_umbrales()
+            for cat, items in payload["umbrales"].items():
+                if cat in current:
+                    for k, v in items.items():
+                        if k in current[cat]:
+                            val = float(v.get("minimo", v) if isinstance(v, dict) else v)
+                            current[cat][k]["minimo"] = val
+            guardar_umbrales(current)
+            eval_nueva = evaluar_stock_critico()
+            return JsonResponse({
+                "status": "success",
+                "message": "Umbrales mínimos de seguridad actualizados exitosamente.",
+                "umbrales": current,
+                "alertas": eval_nueva
+            })
+        elif "item_id" in payload and "minimo" in payload:
+            item_id = payload["item_id"]
+            minimo = float(payload["minimo"])
+            updated = actualizar_umbral_individual(item_id, minimo)
+            if updated:
+                eval_nueva = evaluar_stock_critico()
+                return JsonResponse({
+                    "status": "success",
+                    "message": f"Umbral de {updated['nombre']} actualizado a {updated['nuevo_minimo']} {updated['unidad']}.",
+                    "updated": updated,
+                    "alertas": eval_nueva
+                })
+            return JsonResponse({"status": "error", "message": f"Insumo o depósito '{item_id}' no encontrado."}, status=404)
+
+        return JsonResponse({"status": "error", "message": "Datos de umbrales no especificados correctamente."}, status=400)
+    except Exception as e:
+        logger.error(f"Error actualizando umbrales de stock: {e}", exc_info=True)
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)

@@ -22,7 +22,8 @@
   },
   "totales": {
     "stock_fisico_campo_litros": 8590.0,
-    "stock_total_con_acopio_litros": 11090.0
+    "stock_total_con_acopio_litros": 11050.0,
+    "total_disponible_litros": 11090.0
   },
   "entradas": [
     {

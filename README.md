@@ -55,6 +55,20 @@ A continuación se detallan las mejoras clave incorporadas al sistema para optim
   * **Coordenadas geográficas GPS:** Posibilidad de cargar coordenadas GPS a cada lote para una trazabilidad satelital exacta.
   * **Sincronización con Hojas de Cálculo Conectadas:** Toda labor, consumo o modificación de campos y lotes se asienta automáticamente en el libro maestro consolidado de Excel (`IA_Desk_Agro_Consolidado.xlsx` con 7 pestañas) y en las planillas por cultivo (Maíz, Soja 1ra, Soja 2da, Trigo), manteniendo sincronización con Google Drive y Google Sheets.
 
+* ⚠️ **Sistema de Alertas de Stock Crítico y Umbrales Personalizados para Compras:**
+  * **Configuración personalizada de stock mínimo de seguridad:** Permite establecer y modificar en cualquier momento el umbral mínimo deseado para cada insumo (tanques de gasoil, híbridos de maíz, semillas de soja/trigo, fertilizantes y agroquímicos), persistiendo las preferencias en almacenamiento seguro (`umbrales_stock_critico.json`).
+  * **Doble nivel de alerta inteligente (Prevención + Acción de Compra):**
+    * 🟡 **Aviso Preventivo Temprano (Próximo al Límite):** Se activa automáticamente cuando el stock disponible se encuentra a un 125% del umbral mínimo configurado, alertando con antelación para que el productor coordine presupuestos, fletes y compras antes de que el producto se agote.
+    * 🔴 **Alerta Crítica de Reposición Inmediata:** Se dispara cuando el stock físico es igual o inferior al umbral mínimo, indicando la cantidad exacta que falta para recuperar el nivel de seguridad.
+  * **Panel y Modal Interactivo en la Web:**
+    * Botón en la barra superior con badge dinámico de alertas activas (`⚠️ Alertas Stock (X)`).
+    * Tarjeta resumen (*Alert Banner Card*) destacada en el lateral del dashboard en vivo.
+    * Modal interactivo (`#modal-umbrales-stock`) organizado por pestañas (*Combustibles, Semillas, Fertilizantes, Fitosanitarios*), con inputs numéricos para ajustar umbrales en tiempo real y botón para restablecer los valores agronómicos recomendados (INTA / AAPRESID).
+  * **Consultas y Configuración por Lenguaje Natural en Copiloto y WhatsApp:**
+    * **Consultas directas:** Al preguntar *"¿qué alertas de stock hay?"*, *"¿qué insumos están en stock crítico?"* o *"¿qué tengo que comprar?"*, el asistente entrega un informe completo con los faltantes exactos y sugerencias de compra.
+    * **Ajuste de umbrales por mensaje:** Permite modificar los umbrales directamente conversando (ej: *"poner stock mínimo de tanque grande en 1000 litros"*, *"cambiar umbral de urea a 3000 kg"*).
+    * **Avisos proactivos post-consumo:** Al registrar una labor o retiro de combustible que deje al depósito por debajo o próximo a su umbral, el sistema anexa automáticamente la alerta de stock crítico al resumen de la operación.
+
 ---
 
 ## 🚀 Características Principales
@@ -85,6 +99,11 @@ A continuación se detallan las mejoras clave incorporadas al sistema para optim
 * Soporta el desafío `hub.challenge` de Meta for Developers (Token de verificación: `ia_desk_agro_meta_verify_2026`).
 * Incluye simulador visual integrado en el Dashboard para evaluar mensajes de campo sin costo.
 
+
+### ⚠️ 6. Alertas de Stock Crítico y Reposición Anticipada
+* **Monitoreo continuo en vivo:** Control automático de 16 insumos y depósitos contra umbrales mínimos de seguridad configurables.
+* **Aviso preventivo (125%) y alerta crítica (<= mínimo):** Alertas escalonadas para planificar las compras con anticipación.
+* **Integración API REST:** Endpoints `/api/alertas/stock-critico/` (GET) y `/api/alertas/configurar-umbral/` (POST) para interoperabilidad con sistemas externos y ERPs agropecuarios.
 ---
 
 ## 📁 Estructura del Repositorio

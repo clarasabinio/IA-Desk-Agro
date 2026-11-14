@@ -21,6 +21,10 @@ urlpatterns = [
     path('api/campos/', views.api_campos_list_view, name='api_campos_list'),
     path('api/campos/crear/', views.api_campo_crear_view, name='api_campo_crear'),
 
+    # Endpoints Sistema de Alertas de Stock Crítico
+    path('api/alertas/stock-critico/', views.api_alertas_stock_critico_view, name='api_alertas_stock_critico'),
+    path('api/alertas/configurar-umbral/', views.api_alertas_configurar_umbral_view, name='api_alertas_configurar_umbral'),
+
     
     # Endpoints de Hojas de Cálculo & Google Drive
     path('api/sheets/download/', views.api_sheets_download_view, name='api_sheets_download'),

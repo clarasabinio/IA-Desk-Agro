@@ -34,7 +34,12 @@
                 </div>
             </div>
 
-            <div class="header-actions">
+                        <div class="header-actions">
+                <button type="button" id="btn-open-alertas" class="btn-alertas-pill" onclick="openModalAlertas()" title="Ver alertas de stock crítico y configurar umbrales de seguridad">
+                    <span>⚠️</span>
+                    <span>Alertas Stock</span>
+                    <span class="badge-alertas-count {% if alertas.total_criticos == 0 %}count-zero{% endif %}" id="header-alertas-badge">{{ alertas.total_criticos }}</span>
+                </button>
                 <button type="button" id="btn-open-nuevo-campo" class="btn-nuevo-campo-pill" onclick="openModalCampo()" title="Registrar nuevo establecimiento agrícola en IA Desk Agro">
                     <span>➕</span>
                     <span>Nuevo Campo</span>
@@ -147,7 +152,52 @@
             </section>
 
             <!-- Right: Live Agricultural Dashboard -->
-            <aside class="agro-dashboard-sidebar">
+                        <aside class="agro-dashboard-sidebar">
+                <!-- Alertas de Stock Crítico y Reposición Banner Card -->
+                <div class="dash-card {% if alertas.total_criticos > 0 %}alert-banner-card{% elif alertas.total_advertencias > 0 %}alert-banner-card{% else %}alert-banner-card-ok{% endif %}" id="card-alertas-banner">
+                    <div class="dash-card-header-row">
+                        <h2 class="dash-card-title" style="color: {% if alertas.total_criticos > 0 %}#f87171{% elif alertas.total_advertencias > 0 %}#fbbf24{% else %}#34d399{% endif %}; display: flex; align-items: center; gap: 8px;">
+                            <span class="alert-pulse-dot {% if alertas.total_criticos > 0 %}dot-critical{% elif alertas.total_advertencias > 0 %}dot-warning{% else %}dot-ok{% endif %}"></span>
+                            <span>{% if alertas.total_criticos > 0 %}🚨 Alertas Stock Crítico{% elif alertas.total_advertencias > 0 %}⚠️ Próximo al Límite{% else %}✅ Stocks en Nivel Óptimo{% endif %}</span>
+                        </h2>
+                        <span class="badge-alert-count" id="sidebar-alert-badge">
+                            {% if alertas.total_criticos > 0 %}
+                                {{ alertas.total_criticos }} críticos
+                            {% elif alertas.total_advertencias > 0 %}
+                                {{ alertas.total_advertencias }} en aviso
+                            {% else %}
+                                Todo OK
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="alert-items-preview" id="sidebar-alert-preview">
+                        {% if alertas.alertas_criticas %}
+                            {% for it in alertas.alertas_criticas|slice:":3" %}
+                            <div class="alert-preview-row alert-row-critical">
+                                <span class="alert-item-name">{{ it.nombre }}</span>
+                                <span class="alert-item-badge">{{ it.stock_actual|floatformat:0 }} {{ it.unidad }} <span class="alert-min-ref">(mín {{ it.minimo|floatformat:0 }})</span></span>
+                            </div>
+                            {% endfor %}
+                            {% if alertas.alertas_criticas|length > 3 %}
+                            <div class="alert-more-hint">+{{ alertas.alertas_criticas|length|add:"-3" }} insumos más bajo el umbral de seguridad</div>
+                            {% endif %}
+                        {% elif alertas.alertas_advertencia %}
+                            {% for it in alertas.alertas_advertencia|slice:":3" %}
+                            <div class="alert-preview-row alert-row-warning">
+                                <span class="alert-item-name">{{ it.nombre }}</span>
+                                <span class="alert-item-badge" style="color: #fbbf24;">{{ it.stock_actual|floatformat:0 }} {{ it.unidad }} <span class="alert-min-ref">(próx. {{ it.minimo|floatformat:0 }})</span></span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="alert-ok-text">Todos los depósitos e insumos están por encima de sus umbrales para comprar con tranquilidad.</p>
+                        {% endif %}
+                    </div>
+
+                    <button type="button" class="btn-configurar-umbrales" onclick="openModalAlertas()">
+                        ⚙️ Configurar Umbrales de Stock
+                    </button>
+                </div>
                 <!-- 4 Fuel Storage Options Card -->
                 <div class="dash-card">
                     <div class="dash-card-header-row">
@@ -1019,6 +1069,234 @@
         </div>
     </div>
 
+    <!-- Modal de Configuración de Umbrales y Alertas de Stock Crítico -->
+    <div id="modal-umbrales-stock" class="modal-overlay hidden" style="display: none;">
+        <div class="modal-box umbrales-modal-box">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="modal-badge-icon" style="background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">⚠️</div>
+                    <div>
+                        <h2 class="modal-title" style="color: #fbbf24;">Sistema de Alertas de Stock Crítico y Umbrales</h2>
+                        <span class="modal-subtitle">Establece el stock mínimo de seguridad para cada insumo. Recibirás avisos preventivos tempranos (al 125%) y alertas críticas para coordinar la compra antes de que se agote.</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeModalAlertas()" title="Cerrar ventana">✕</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tabs-umbrales-nav">
+                <button type="button" class="tab-umbral-btn active" id="tab-btn-combustibles" onclick="switchAlertasTab('combustibles')">
+                    ⛽ Combustibles (<span id="tab-count-combustibles">{{ alertas.items_por_categoria.Combustibles|length }}</span>)
+                </button>
+                <button type="button" class="tab-umbral-btn" id="tab-btn-semillas" onclick="switchAlertasTab('semillas')">
+                    🌱 Semillas (<span id="tab-count-semillas">{{ alertas.items_por_categoria.Semillas|length }}</span>)
+                </button>
+                <button type="button" class="tab-umbral-btn" id="tab-btn-fertilizantes" onclick="switchAlertasTab('fertilizantes')">
+                    🧪 Fertilizantes (<span id="tab-count-fertilizantes">{{ alertas.items_por_categoria.Fertilizantes|length }}</span>)
+                </button>
+                <button type="button" class="tab-umbral-btn" id="tab-btn-fitosanitarios" onclick="switchAlertasTab('fitosanitarios')">
+                    🛡️ Fitosanitarios (<span id="tab-count-fitosanitarios">{{ alertas.items_por_categoria.Fitosanitarios|length }}</span>)
+                </button>
+            </div>
+
+            <!-- Modal Body: Category Tables -->
+            <div class="modal-body" style="padding: 16px 24px; overflow-y: auto; max-height: calc(85vh - 220px);">
+                <!-- Tab Pane: Combustibles -->
+                <div class="tab-umbral-pane" id="pane-combustibles">
+                    <table class="table-umbrales">
+                        <thead>
+                            <tr>
+                                <th>Depósito / Tanque</th>
+                                <th>Stock Físico Actual</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Umbral Mínimo de Alerta</th>
+                                <th>Aviso Preventivo (125%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in alertas.items_por_categoria.Combustibles %}
+                            <tr id="row-umbral-{{ it.id }}">
+                                <td>
+                                    <strong style="color: #f8fafc;">{{ it.nombre }}</strong>
+                                    {% if it.capacidad %}<div style="color: #94a3b8; font-size: 0.72rem;">Capacidad máx: {{ it.capacidad|floatformat:0 }} {{ it.unidad }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    <strong style="color: {% if it.estado == 'critico' %}#f87171{% elif it.estado == 'advertencia' %}#fbbf24{% else %}#34d399{% endif %}; font-size: 0.95rem;">
+                                        {{ it.stock_actual|floatformat:0 }} {{ it.unidad }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge-status-pill badge-status-{{ it.estado }}">
+                                        {% if it.estado == 'critico' %}🔴 Crítico{% elif it.estado == 'advertencia' %}🟡 Próximo al límite{% else %}🟢 Óptimo{% endif %}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <input type="number" min="0" step="any" class="input-umbral-edit" id="input-min-{{ it.id }}" data-item-id="{{ it.id }}" data-category="combustibles" value="{{ it.minimo|floatformat:0 }}">
+                                        <span style="color: #94a3b8; font-size: 0.76rem;">{{ it.unidad }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="umbral-adv-hint" id="hint-adv-{{ it.id }}">Alerta preventiva al llegar a {{ it.minimo|floatformat:0 }} {{ it.unidad }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab Pane: Semillas -->
+                <div class="tab-umbral-pane" id="pane-semillas" style="display: none;">
+                    <table class="table-umbrales">
+                        <thead>
+                            <tr>
+                                <th>Híbrido / Variedad</th>
+                                <th>Bolsas en Galpón</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Umbral Mínimo de Alerta</th>
+                                <th>Aviso Preventivo (125%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in alertas.items_por_categoria.Semillas %}
+                            <tr id="row-umbral-{{ it.id }}">
+                                <td>
+                                    <strong style="color: #f8fafc;">{{ it.nombre }}</strong>
+                                    {% if it.acopio_pendiente %}<div style="color: #6ee7b7; font-size: 0.72rem;">Pendiente acopio: {{ it.acopio_pendiente|floatformat:0 }} bolsas</div>{% endif %}
+                                </td>
+                                <td>
+                                    <strong style="color: {% if it.estado == 'critico' %}#f87171{% elif it.estado == 'advertencia' %}#fbbf24{% else %}#34d399{% endif %}; font-size: 0.95rem;">
+                                        {{ it.stock_actual|floatformat:0 }} {{ it.unidad }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge-status-pill badge-status-{{ it.estado }}">
+                                        {% if it.estado == 'critico' %}🔴 Crítico{% elif it.estado == 'advertencia' %}🟡 Próximo al límite{% else %}🟢 Óptimo{% endif %}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <input type="number" min="0" step="any" class="input-umbral-edit" id="input-min-{{ it.id }}" data-item-id="{{ it.id }}" data-category="semillas" value="{{ it.minimo|floatformat:0 }}">
+                                        <span style="color: #94a3b8; font-size: 0.76rem;">{{ it.unidad }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="umbral-adv-hint" id="hint-adv-{{ it.id }}">Alerta preventiva al llegar a {{ it.minimo|floatformat:0 }} {{ it.unidad }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab Pane: Fertilizantes -->
+                <div class="tab-umbral-pane" id="pane-fertilizantes" style="display: none;">
+                    <table class="table-umbrales">
+                        <thead>
+                            <tr>
+                                <th>Fertilizante</th>
+                                <th>Stock en Galpón</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Umbral Mínimo de Alerta</th>
+                                <th>Aviso Preventivo (125%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in alertas.items_por_categoria.Fertilizantes %}
+                            <tr id="row-umbral-{{ it.id }}">
+                                <td>
+                                    <strong style="color: #f8fafc;">{{ it.nombre }}</strong>
+                                    {% if it.acopio_pendiente %}<div style="color: #6ee7b7; font-size: 0.72rem;">Pendiente acopio: {{ it.acopio_pendiente|floatformat:0 }} kg</div>{% endif %}
+                                </td>
+                                <td>
+                                    <strong style="color: {% if it.estado == 'critico' %}#f87171{% elif it.estado == 'advertencia' %}#fbbf24{% else %}#34d399{% endif %}; font-size: 0.95rem;">
+                                        {{ it.stock_actual|floatformat:0 }} {{ it.unidad }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge-status-pill badge-status-{{ it.estado }}">
+                                        {% if it.estado == 'critico' %}🔴 Crítico{% elif it.estado == 'advertencia' %}🟡 Próximo al límite{% else %}🟢 Óptimo{% endif %}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <input type="number" min="0" step="any" class="input-umbral-edit" id="input-min-{{ it.id }}" data-item-id="{{ it.id }}" data-category="fertilizantes" value="{{ it.minimo|floatformat:0 }}">
+                                        <span style="color: #94a3b8; font-size: 0.76rem;">{{ it.unidad }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="umbral-adv-hint" id="hint-adv-{{ it.id }}">Alerta preventiva al llegar a {{ it.minimo|floatformat:0 }} {{ it.unidad }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab Pane: Fitosanitarios -->
+                <div class="tab-umbral-pane" id="pane-fitosanitarios" style="display: none;">
+                    <table class="table-umbrales">
+                        <thead>
+                            <tr>
+                                <th>Principio Activo / Insumo</th>
+                                <th>Stock en Galpón</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Umbral Mínimo de Alerta</th>
+                                <th>Aviso Preventivo (125%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in alertas.items_por_categoria.Fitosanitarios %}
+                            <tr id="row-umbral-{{ it.id }}">
+                                <td>
+                                    <strong style="color: #f8fafc;">{{ it.nombre }}</strong>
+                                    {% if it.acopio_pendiente %}<div style="color: #6ee7b7; font-size: 0.72rem;">Pendiente acopio: {{ it.acopio_pendiente|floatformat:0 }} L</div>{% endif %}
+                                </td>
+                                <td>
+                                    <strong style="color: {% if it.estado == 'critico' %}#f87171{% elif it.estado == 'advertencia' %}#fbbf24{% else %}#34d399{% endif %}; font-size: 0.95rem;">
+                                        {{ it.stock_actual|floatformat:0 }} {{ it.unidad }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge-status-pill badge-status-{{ it.estado }}">
+                                        {% if it.estado == 'critico' %}🔴 Crítico{% elif it.estado == 'advertencia' %}🟡 Próximo al límite{% else %}🟢 Óptimo{% endif %}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <input type="number" min="0" step="any" class="input-umbral-edit" id="input-min-{{ it.id }}" data-item-id="{{ it.id }}" data-category="fitosanitarios" value="{{ it.minimo|floatformat:0 }}">
+                                        <span style="color: #94a3b8; font-size: 0.76rem;">{{ it.unidad }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="umbral-adv-hint" id="hint-adv-{{ it.id }}">Alerta preventiva al llegar a {{ it.minimo|floatformat:0 }} {{ it.unidad }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; background: rgba(15, 23, 42, 0.7); border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="btn-reset-umbrales" onclick="restablecerUmbralesDefault()" title="Volver a los umbrales mínimos estándar del INTA y fabricantes">
+                        🔄 Restablecer Valores Recomendados
+                    </button>
+                    <span id="umbrales-feedback" style="font-size: 0.8rem; font-weight: 600;"></span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="closeModalAlertas()">Cerrar</button>
+                    <button type="button" class="btn-save-umbrales" id="btn-save-umbrales-action" onclick="guardarUmbralesStock()">
+                        💾 Guardar Umbrales de Stock
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast de Notificación Agro -->
     <div id="agro-toast" class="agro-toast">
         <span style="font-size: 1.2rem;">🌾</span>
@@ -1269,6 +1547,142 @@
         window.cargarDatosCampoSeleccionado = cargarDatosCampoSeleccionado;
         window.editarCampoPorId = editarCampoPorId;
         window.editarCampoActivo = editarCampoActivo;
+
+        // ==============================================================
+        // GESTIÓN DE MODAL Y UMBRALES DE STOCK CRÍTICO
+        // ==============================================================
+        function openModalAlertas() {
+            var modal = document.getElementById('modal-umbrales-stock');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.setProperty('display', 'flex', 'important');
+                var fb = document.getElementById('umbrales-feedback');
+                if (fb) fb.textContent = '';
+            }
+        }
+
+        function closeModalAlertas() {
+            var modal = document.getElementById('modal-umbrales-stock');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        function switchAlertasTab(catKey) {
+            document.querySelectorAll('.tab-umbral-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-umbral-pane').forEach(pane => pane.style.display = 'none');
+
+            var activeBtn = document.getElementById('tab-btn-' + catKey);
+            var activePane = document.getElementById('pane-' + catKey);
+
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activePane) activePane.style.display = 'block';
+        }
+
+        async function guardarUmbralesStock() {
+            var inputs = document.querySelectorAll('.input-umbral-edit');
+            var payload = { umbrales: { combustibles: {}, semillas: {}, fertilizantes: {}, fitosanitarios: {} } };
+
+            inputs.forEach(inp => {
+                var cat = inp.dataset.category;
+                var itemId = inp.dataset.itemId;
+                var val = parseFloat(inp.value);
+                if (isNaN(val) || val < 0) val = 0.0;
+                if (cat && itemId) {
+                    if (!payload.umbrales[cat]) payload.umbrales[cat] = {};
+                    payload.umbrales[cat][itemId] = { minimo: val };
+                }
+            });
+
+            var btnSave = document.getElementById('btn-save-umbrales-action');
+            var fb = document.getElementById('umbrales-feedback');
+            if (btnSave) btnSave.disabled = true;
+            if (fb) { fb.textContent = 'Guardando cambios...'; fb.style.color = '#fbbf24'; }
+
+            try {
+                var res = await fetch('/api/alertas/configurar-umbral/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                var data = await res.json();
+                if (data.status === 'success') {
+                    if (fb) { fb.textContent = '✅ Umbrales actualizados con éxito'; fb.style.color = '#34d399'; }
+                    
+                    var toastEl = document.getElementById('agro-toast');
+                    var toastMsg = document.getElementById('agro-toast-msg');
+                    if (toastEl && toastMsg) {
+                        toastMsg.textContent = '✅ Umbrales mínimos de stock guardados exitosamente.';
+                        toastEl.classList.add('show');
+                        setTimeout(function() { toastEl.classList.remove('show'); }, 3500);
+                    }
+
+                    setTimeout(function() {
+                        location.reload();
+                    }, 800);
+                } else {
+                    if (fb) { fb.textContent = '❌ ' + (data.message || 'Error'); fb.style.color = '#f87171'; }
+                }
+            } catch (e) {
+                if (fb) { fb.textContent = '❌ Error de conexión al servidor'; fb.style.color = '#f87171'; }
+            } finally {
+                if (btnSave) btnSave.disabled = false;
+            }
+        }
+
+        async function restablecerUmbralesDefault() {
+            if (!confirm('¿Deseas restablecer todos los umbrales de stock a los valores estándar recomendados?')) return;
+            var fb = document.getElementById('umbrales-feedback');
+            if (fb) { fb.textContent = 'Restableciendo valores...'; fb.style.color = '#fbbf24'; }
+            try {
+                var res = await fetch('/api/alertas/configurar-umbral/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        umbrales: {
+                            combustibles: {
+                                cisterna_planta: 4000.0,
+                                tanque_grande: 800.0,
+                                tanque_chico: 500.0,
+                                acopio_por_retirar: 1000.0
+                            },
+                            semillas: {
+                                "MZ-DK7210": 10.0,
+                                "MZ-P2089": 10.0,
+                                "MZ-AX7784": 10.0,
+                                "SJ-DM46R18": 100.0,
+                                "TR-BAGUETTE": 80.0
+                            },
+                            fertilizantes: {
+                                "FERT-01": 500.0,
+                                "FERT-02": 1000.0,
+                                "FERT-03": 500.0
+                            },
+                            fitosanitarios: {
+                                "FITO-01": 200.0,
+                                "FITO-02": 150.0,
+                                "FITO-03": 20.0,
+                                "FITO-04": 30.0
+                            }
+                        }
+                    })
+                });
+                var data = await res.json();
+                if (data.status === 'success') {
+                    if (fb) { fb.textContent = '🔄 Valores restablecidos'; fb.style.color = '#34d399'; }
+                    setTimeout(function() { location.reload(); }, 600);
+                }
+            } catch(e) {
+                if (fb) { fb.textContent = '❌ Error al restablecer'; fb.style.color = '#f87171'; }
+            }
+        }
+
+        window.openModalAlertas = openModalAlertas;
+        window.closeModalAlertas = closeModalAlertas;
+        window.switchAlertasTab = switchAlertasTab;
+        window.guardarUmbralesStock = guardarUmbralesStock;
+        window.restablecerUmbralesDefault = restablecerUmbralesDefault;
 
     </script>
 

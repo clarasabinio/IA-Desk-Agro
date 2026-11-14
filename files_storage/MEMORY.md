@@ -141,3 +141,5 @@
 - [2026-11-14 13:42:52] Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande
 - [2026-11-14 16:42:54] Salida combustible: 170.0 L de Tanque Grande (Siembra en Lote 2 - El Ombú (25.0 ha) - Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm) por Juan Sembrador. Saldo restante: 420.0 L.
 - [2026-11-14 13:42:55] Labor confirmada Siembra en Campo La Esperanza (Lote 2 - El Ombú - Maíz): 25.0 ha, -170 L Tanque Grande, semilla: Dekalb DK 72-10 VT3P (24 bolsas)
+- [2026-11-14 17:50:06] Consumo general registrado (Uso operativo general) por Productor: -20 L de Tanque Chico. Saldo restante: 450 L.
+- [2026-11-14 17:51:44] Consumo general registrado (Uso operativo general) por Productor: -20 L de Tanque Chico. Saldo restante: 430 L.

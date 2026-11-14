@@ -866,6 +866,10 @@ def _execute_confirmed_labor(prop: Dict[str, Any], sender_name: str, executed_to
         f"• 📋 **Gasoil por Retirar (Acopio YPF):** **{int(deps['acopio_por_retirar']['litros_disponibles']):,} L**\n\n"
         f"👉 **Total físico en campo:** **{int(tot_campo):,} Litros** | **Total con acopio:** **{int(tot_gral):,} Litros**."
     )
+    from .alertas_service import verificar_alerta_para_item
+    alerta_comb = verificar_alerta_para_item(tank_key, float(deps[tank_key]["stock_actual_litros"]))
+    if alerta_comb:
+        reply += alerta_comb
     append_to_history(prop.get("user_message", "Labor"), reply, executed_tools)
     return {
         "response": reply,
@@ -1338,6 +1342,10 @@ def _build_fitosanitarios_query_reply(msg: str, executed_tools: list) -> str:
         f"👉 **Total Disponible:** **{int(tot_gral):,} Litros**."
     )
 
+def _build_alertas_query_reply() -> str:
+    from .alertas_service import generar_reporte_alertas_chat
+    return generar_reporte_alertas_chat()
+
 def detect_query_domains(user_message: str) -> List[Tuple[str, Any]]:
     clean = normalizar_texto(user_message)
     from .campo_service import obtener_campos_con_lotes
@@ -1430,6 +1438,13 @@ def detect_query_domains(user_message: str) -> List[Tuple[str, Any]]:
     if is_fito:
         detected.append(("fitosanitarios", None))
 
+    # 8. Alertas de Stock Crítico y Compras
+    is_alertas = any(w in clean for w in [
+        "alerta", "alertas", "stock critico", "insumo critico", "insumos criticos", "que comprar", "cuando comprar", "por agotarse", "por terminarse"
+    ]) and not any(w in clean for w in ["poner", "cambiar", "configurar", "establecer", "modificar", "actualizar", "fijar"])
+    if is_alertas:
+        detected.append(("alertas", None))
+
     # Ordenar dominios por la posición en que aparecen en el mensaje
     def get_pos(d):
         dom, data = d
@@ -1459,6 +1474,10 @@ def detect_query_domains(user_message: str) -> List[Tuple[str, Any]]:
                 if p != -1: return p
         elif dom == "fitosanitarios":
             for kw in ["fitosanitario", "insumo", "glifosato", "2,4-d", "enlist"]:
+                p = clean.find(kw)
+                if p != -1: return p
+        elif dom == "alertas":
+            for kw in ["alerta", "alertas", "stock critico", "que comprar", "cuando comprar"]:
                 p = clean.find(kw)
                 if p != -1: return p
         return 9999
@@ -1492,6 +1511,8 @@ def process_multi_query(user_message: str, is_whatsapp: bool, sender_name: str, 
             sections.append(prefix + _build_fertilizantes_query_reply(user_message, executed_tools))
         elif dom == "fitosanitarios":
             sections.append(prefix + _build_fitosanitarios_query_reply(user_message, executed_tools))
+        elif dom == "alertas":
+            sections.append(prefix + _build_alertas_query_reply())
 
     if len(sections) >= 2:
         header = "📋 **Respuestas a tus consultas:**\n\n"
@@ -1693,6 +1714,44 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
             "stock_data": get_dashboard_summary()
         }
 
+    # -------------------------------------------------------------
+    # CONFIGURACIÓN DE UMBRALES Y ALERTAS DE STOCK CRÍTICO POR LENGUAJE NATURAL
+    # -------------------------------------------------------------
+    pattern_umbral = re.compile(
+        r"(?:poner|configurar|cambiar|establecer|modificar|actualizar|fijar)?\s*"
+        r"(?:el\s+)?(?:stock\s+m[ií]nimo|umbral(?:\s+cr[ií]tico)?|m[ií]nimo|alerta(?:\s+de\s+stock)?)\s+"
+        r"(?:de|para|del)\s+([^0-9]+?)\s+(?:en|a|=|:)\s+(\d+(?:[\.,]\d+)?)",
+        re.IGNORECASE
+    )
+    match_umbral = pattern_umbral.search(user_message)
+    if match_umbral and any(w in msg for w in ["poner", "configurar", "cambiar", "establecer", "modificar", "actualizar", "fijar", "stock minimo", "stock mínimo", "umbral", "alerta"]):
+        from .alertas_service import actualizar_umbral_individual
+        item_raw = match_umbral.group(1).strip()
+        val_raw = float(match_umbral.group(2).replace(".", "").replace(",", "."))
+        res_u = actualizar_umbral_individual(item_raw, val_raw)
+        if res_u:
+            val_disp = int(res_u["nuevo_minimo"]) if res_u["nuevo_minimo"].is_integer() else res_u["nuevo_minimo"]
+            adv_disp = int(res_u["nuevo_minimo"] * 1.25)
+            reply = (
+                "✅ **Umbral de Stock Mínimo de Alerta Actualizado:**\n\n"
+                f"• **Insumo / Depósito:** **{res_u['nombre']}** ({res_u['categoria'].capitalize()})\n"
+                f"• **Nuevo Stock Mínimo:** **{val_disp} {res_u['unidad']}**\n\n"
+                f"🔔 *A partir de ahora, el sistema emitirá un aviso preventivo cuando el stock esté al 125% ({adv_disp} {res_u['unidad']}) y una alerta crítica cuando esté por debajo del mínimo para saber cuándo comprar con anticipación.*"
+            )
+        else:
+            reply = (
+                f"⚠️ No pude identificar con precisión a qué insumo o depósito te refieres ('{item_raw}').\n\n"
+                "Puedes configurar los umbrales para: *Cisterna Planta, Tanque Grande, Tanque Chico, Híbridos de Maíz (Dekalb, Pioneer, Nidera), Soja DM 46R18, Trigo, Urea, MAP, Microessentials, Glifosato, 2,4-D Enlist, Coragen o Coadyuvante*."
+            )
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
+
+
     # ==============================================================
     # ==============================================================
         # ==============================================================
@@ -1705,8 +1764,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         buscar_campo_en_mensaje,
         buscar_lote_en_campo,
         generar_respuesta_campo,
-        generar_resumen_todos_los_campos,
-        normalizar_texto
+        generar_resumen_todos_los_campos
     )
 
     is_labor_verb = any(w in msg for w in [
@@ -1755,6 +1813,25 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         if multi_res:
             append_to_history(user_message, multi_res["response"], executed_tools)
             return multi_res
+
+    # Consulta directa de alertas de stock crítico y reposición
+    clean_norm = normalizar_texto(user_message)
+    is_direct_alert_query = any(p in clean_norm for p in [
+        "alerta", "alertas", "stock critico", "insumo critico", "insumos criticos",
+        "que comprar", "que tengo que comprar", "cuando comprar", "hace falta comprar",
+        "por agotarse", "por terminarse", "bajo minimo", "bajo umbral", "stock de seguridad"
+    ]) and not any(w in clean_norm for w in ["poner", "cambiar", "configurar", "establecer", "modificar", "actualizar", "fijar"])
+
+    if is_direct_alert_query and not is_field_labor_action and not is_pure_fuel_movement(user_message):
+        from .alertas_service import generar_reporte_alertas_chat
+        reply = generar_reporte_alertas_chat()
+        append_to_history(user_message, reply, executed_tools)
+        return {
+            "response": reply,
+            "tool_calls": executed_tools,
+            "is_demo": True,
+            "stock_data": get_dashboard_summary()
+        }
 
     if is_field_labor_action:
         from .crop_sheets_service import append_labor_to_crop, generate_crop_workbook
@@ -2303,8 +2380,7 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
         buscar_campo_en_mensaje,
         buscar_lote_en_campo,
         generar_respuesta_campo,
-        generar_resumen_todos_los_campos,
-        normalizar_texto
+        generar_resumen_todos_los_campos
     )
 
     # Identificar si es un reporte de labor que debe procesarse con descuento de combustible/insumos
@@ -3434,6 +3510,10 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"• 📋 **Gasoil por Retirar (Acopio YPF):** **{int(deps['acopio_por_retirar']['litros_disponibles']):,} L**\n\n"
                 f"👉 **Total físico en campo:** **{int(tot_campo):,} Litros** | **Total con acopio:** **{int(tot_gral):,} Litros**."
             )
+            from .alertas_service import verificar_alerta_para_item
+            alerta_comb = verificar_alerta_para_item(tank_key, float(deps[tank_key]["stock_actual_litros"]))
+            if alerta_comb:
+                reply += alerta_comb
         else:
             current_tank_stock = deps[tank_key]["stock_actual_litros"]
             if liters_out > current_tank_stock:
@@ -3555,6 +3635,10 @@ def _simulate_agro_engine(user_message: str, is_whatsapp: bool, sender_name: str
                 f"• 📋 **Gasoil por Retirar (Acopio YPF):** **{int(deps['acopio_por_retirar']['litros_disponibles']):,} L**\n\n"
                 f"👉 **Total físico en campo:** **{int(tot_campo):,} Litros** | **Total con acopio:** **{int(tot_gral):,} Litros**."
             )
+            from .alertas_service import verificar_alerta_para_item
+            alerta_comb = verificar_alerta_para_item(tank_key, float(deps[tank_key]["stock_actual_litros"]))
+            if alerta_comb:
+                reply += alerta_comb
 
     elif is_fuel_context or any(w in msg for w in ["gasoil", "gas oil", "combustible", "combustibles", "diesel", "gas-oil", "tanque", "cisterna", "acopio"]):
         reply = _build_combustible_query_reply(user_message, executed_tools)

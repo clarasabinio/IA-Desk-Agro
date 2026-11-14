@@ -1,0 +1,122 @@
+{
+  "combustibles": {
+    "cisterna_planta": {
+      "id": "cisterna_planta",
+      "nombre": "Cisterna Planta",
+      "minimo": 4000.0,
+      "unidad": "Litros",
+      "categoria": "Combustible"
+    },
+    "tanque_grande": {
+      "id": "tanque_grande",
+      "nombre": "Tanque Grande",
+      "minimo": 800.0,
+      "unidad": "Litros",
+      "categoria": "Combustible"
+    },
+    "tanque_chico": {
+      "id": "tanque_chico",
+      "nombre": "Tanque Chico",
+      "minimo": 500.0,
+      "unidad": "Litros",
+      "categoria": "Combustible"
+    },
+    "acopio_por_retirar": {
+      "id": "acopio_por_retirar",
+      "nombre": "Gasoil en Acopio YPF",
+      "minimo": 1000.0,
+      "unidad": "Litros",
+      "categoria": "Combustible"
+    }
+  },
+  "fertilizantes": {
+    "FERT-01": {
+      "id": "FERT-01",
+      "nombre": "Fosfato Monoamónico (MAP)",
+      "minimo": 500.0,
+      "unidad": "kg",
+      "categoria": "Fertilizante"
+    },
+    "FERT-02": {
+      "id": "FERT-02",
+      "nombre": "Urea Granulada",
+      "minimo": 3000.0,
+      "unidad": "kg",
+      "categoria": "Fertilizante"
+    },
+    "FERT-03": {
+      "id": "FERT-03",
+      "nombre": "MicroEssentials SZ",
+      "minimo": 2000.0,
+      "unidad": "kg",
+      "categoria": "Fertilizante"
+    }
+  },
+  "semillas": {
+    "MZ-DK7210": {
+      "id": "MZ-DK7210",
+      "nombre": "Dekalb DK 72-10 VT3P",
+      "minimo": 10.0,
+      "unidad": "bolsas",
+      "categoria": "Semilla"
+    },
+    "MZ-P2089": {
+      "id": "MZ-P2089",
+      "nombre": "Pioneer P2089 VYHR",
+      "minimo": 10.0,
+      "unidad": "bolsas",
+      "categoria": "Semilla"
+    },
+    "MZ-AX7784": {
+      "id": "MZ-AX7784",
+      "nombre": "Nidera AX 7784 VIP3",
+      "minimo": 10.0,
+      "unidad": "bolsas",
+      "categoria": "Semilla"
+    },
+    "SJ-DM46R18": {
+      "id": "SJ-DM46R18",
+      "nombre": "Soja Don Mario DM 46R18",
+      "minimo": 30.0,
+      "unidad": "bolsas",
+      "categoria": "Semilla"
+    },
+    "TR-MSINTA119": {
+      "id": "TR-MSINTA119",
+      "nombre": "Trigo Pan MS INTA 119",
+      "minimo": 25.0,
+      "unidad": "bolsas",
+      "categoria": "Semilla"
+    }
+  },
+  "fitosanitarios": {
+    "FITO-01": {
+      "id": "FITO-01",
+      "nombre": "Glifosato 66% Concentrado",
+      "minimo": 300.0,
+      "unidad": "Litros",
+      "categoria": "Fitosanitario"
+    },
+    "FITO-02": {
+      "id": "FITO-02",
+      "nombre": "2,4-D Enlist Colex-D",
+      "minimo": 150.0,
+      "unidad": "Litros",
+      "categoria": "Fitosanitario"
+    },
+    "FITO-03": {
+      "id": "FITO-03",
+      "nombre": "Coadyuvante Siliconado",
+      "minimo": 50.0,
+      "unidad": "Litros",
+      "categoria": "Fitosanitario"
+    },
+    "FITO-04": {
+      "id": "FITO-04",
+      "nombre": "Coragen (Clorantraniliprol)",
+      "minimo": 20.0,
+      "unidad": "Litros",
+      "categoria": "Fitosanitario"
+    }
+  }
+}
