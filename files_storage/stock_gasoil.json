@@ -3,26 +3,26 @@
     "cisterna_planta": {
       "nombre": "Cisterna Planta",
       "capacidad_max_litros": 22000,
-      "stock_actual_litros": 14000.0
+      "stock_actual_litros": 7700.0
     },
     "tanque_grande": {
       "nombre": "Tanque Grande",
       "capacidad_max_litros": 5000,
-      "stock_actual_litros": 1500.0
+      "stock_actual_litros": 420.0
     },
     "tanque_chico": {
       "nombre": "Tanque Chico",
       "capacidad_max_litros": 3000,
-      "stock_actual_litros": 1200.0
+      "stock_actual_litros": 470.0
     },
     "acopio_por_retirar": {
       "nombre": "Gasoil por Retirar",
-      "litros_disponibles": 3000.0
+      "litros_disponibles": 2500.0
     }
   },
   "totales": {
-    "stock_fisico_campo_litros": 16700.0,
-    "stock_total_con_acopio_litros": 19700.0
+    "stock_fisico_campo_litros": 8590.0,
+    "stock_total_con_acopio_litros": 11090.0
   },
   "entradas": [
     {
@@ -34,6 +34,246 @@
     }
   ],
   "salidas": [
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 - El Ombú (25.0 ha)",
+      "litros": 170.0,
+      "operario": "Juan Sembrador"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere 7200R",
+      "labor": "Labor Agrícola con Implemento en Lote 1 (23.0 ha)",
+      "litros": 115.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 - El Ombú (25.0 ha)",
+      "litros": 170.0,
+      "operario": "Juan Sembrador"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 - El Ombú (25.0 ha)",
+      "litros": 170.0,
+      "operario": "Juan Sembrador"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 2 (18.0 ha)",
+      "litros": 180.0,
+      "operario": "Marcos (Maquinista)"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 - El Ombú (25.0 ha)",
+      "litros": 170.0,
+      "operario": "Juan Sembrador"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 2 - El Ombú (25.0 ha)",
+      "litros": 170.0,
+      "operario": "Juan Sembrador"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Cisterna Planta",
+      "maquinaria": "Tractor John Deere",
+      "labor": "Consumo general de combustible",
+      "litros": 300.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Cisterna Planta",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
+      "labor": "Siembra en Lote 1 - La Esperanza (120.0 ha)",
+      "litros": 1500.0,
+      "operario": "Carlos (Encargado Galpón)"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Cisterna Planta",
+      "maquinaria": "Tractor John Deere 7200R",
+      "labor": "Labor Agrícola con Implemento en Lote 1 - La Esperanza (120.0 ha)",
+      "litros": 1000.0,
+      "operario": "Carlos Galpón"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Sembradora fina Crucianelli a 17.5 cm",
+      "labor": "Siembra en Lote 1 (20.0 ha)",
+      "litros": 250.0,
+      "operario": "Juan González (Tractorista)"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Sembradora fina Crucianelli a 17.5 cm",
+      "labor": "Siembra en Lote 1 (20.0 ha)",
+      "litros": 200.0,
+      "operario": "Juan (Tractorista)"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Sembradora fina Crucianelli a 17.5 cm",
+      "labor": "Siembra en Lote 1 (20.0 ha)",
+      "litros": 200.0,
+      "operario": "Juan (Tractorista)"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 1 (15.0 ha)",
+      "litros": 110.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 1 (15.0 ha)",
+      "litros": 110.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 1 (15.0 ha)",
+      "litros": 110.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 1 (15.0 ha)",
+      "litros": 110.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 1 Norte (50.0 ha)",
+      "litros": 340.0,
+      "operario": "Esteban"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 1 Norte (50.0 ha)",
+      "litros": 340.0,
+      "operario": "Esteban"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas a 52.5 cm",
+      "labor": "Siembra en Lote 1 Norte (250.0 ha)",
+      "litros": 340.0,
+      "operario": "Esteban"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor John Deere 7200R",
+      "labor": "Labor con Implemento Agrícola en Lote 1 (23.0 ha)",
+      "litros": 115.0,
+      "operario": "Esteban"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Chico",
+      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
+      "labor": "Pasada de Rastra de Discos en Lote 2 (18.0 ha)",
+      "litros": 140.0,
+      "operario": "Esteban"
+    },
+    {
+      "fecha": "2026-11-14",
+      "deposito_origen": "Tanque Grande",
+      "maquinaria": "Tractor JD 7200R + Sembradora fina Crucianelli a 17.5 cm",
+      "labor": "Siembra en Lote 1 (23.0 ha)",
+      "litros": 200.0,
+      "operario": "Esteban"
+    },
     {
       "fecha": "2026-11-10",
       "deposito_origen": "Cisterna Planta",
@@ -73,246 +313,6 @@
       "labor": "Control de malezas en barbecho",
       "litros": 50.0,
       "operario": "Carlos Gimenez"
-    },
-    {
-      "fecha": "2026-10-26",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
-      "labor": "Siembra en Lote 1 (35.0 ha)",
-      "litros": 180.0,
-      "operario": "Juan González (Tractorista)"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
-      "labor": "Siembra (30.0 ha)",
-      "litros": 165.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "John Deere 7200",
-      "labor": "Control de malezas en barbecho",
-      "litros": 50.0,
-      "operario": "Carlos Gimenez"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
-      "labor": "Siembra (30.0 ha)",
-      "litros": 178.2,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "John Deere 7200",
-      "labor": "Control de malezas en barbecho",
-      "litros": 50.0,
-      "operario": "Carlos Gimenez"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
-      "labor": "Siembra (30.0 ha)",
-      "litros": 178.2,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "John Deere 7200",
-      "labor": "Control de malezas en barbecho",
-      "litros": 50.0,
-      "operario": "Carlos Gimenez"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Tractor JD 7200R (200 HP) + Crucianelli 27 líneas",
-      "labor": "Siembra (30.0 ha)",
-      "litros": 178.2,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "John Deere 7200",
-      "labor": "Control de malezas en barbecho",
-      "litros": 50.0,
-      "operario": "Carlos Gimenez"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Tractor JD 7200R + Rastra de 44 discos desencontrados",
-      "labor": "Pasada de Rastra de Discos en Lote 1 (15.0 ha)",
-      "litros": 137.7,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Maquinaria de labor",
-      "labor": "Labor Agrícola General",
-      "litros": 50.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-23",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Maquinaria de labor",
-      "labor": "Prueba de Barbecho",
-      "litros": 100.0,
-      "operario": "Tractorista Test"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 1 (20.0 ha)",
-      "litros": 118.8,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Uso operativo general",
-      "labor": "Pasada de Rastra de Discos en Lote 1 (30.0 ha)",
-      "litros": 240.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 2 (50.0 ha)",
-      "litros": 367.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 1 (35.0 ha)",
-      "litros": 200.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 1 (35.0 ha)",
-      "litros": 50.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 360.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-22",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 750.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-10",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 200.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-10",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 2 (50.0 ha)",
-      "litros": 300.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-10",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 2 (50.0 ha)",
-      "litros": 300.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-10",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Siembra en Lote 2 (50.0 ha)",
-      "litros": 300.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-10",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Pasada de Rastra de Discos en Lote 2 (45.0 ha)",
-      "litros": 240.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 300.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 100.0,
-      "operario": "Esteban Maquinista"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 200.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Tanque Chico",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 150.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Cisterna Planta",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 200.0,
-      "operario": "Productor"
-    },
-    {
-      "fecha": "2026-10-08",
-      "deposito_origen": "Tanque Grande",
-      "maquinaria": "Uso operativo general",
-      "labor": "Consumo general de combustible",
-      "litros": 400.0,
-      "operario": "Productor"
     }
   ],
   "transferencias_internas": [
@@ -406,6 +406,54 @@
       "motivo": "Retiro de 300 L de acopio YPF hacia Cisterna Planta",
       "litros": 300.0,
       "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-13",
+      "motivo": "Retiro de 500 L de acopio YPF hacia Tanque Chico",
+      "litros": 500.0,
+      "operario": "Productor"
+    },
+    {
+      "fecha": "2026-11-13",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-13",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-13",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-13",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
+    },
+    {
+      "fecha": "2026-11-14",
+      "motivo": "Transferencia interna de 500 L desde Cisterna Planta hacia Tanque Grande",
+      "litros": 500.0,
+      "operario": "Carlos Maquinista"
     }
   ]
 }

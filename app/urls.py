@@ -12,11 +12,15 @@ urlpatterns = [
     path('api/storage/', views.api_storage_list, name='api_storage_list'),
     path('api/storage/<str:filename>/', views.api_storage_file_content, name='api_storage_file_content'),
     path('api/reset-history/', views.api_reset_history, name='api_reset_history'),
-    # Endpoints Field Data & Confirmación IA
+    # Endpoints Registro Directo & Confirmación IA
     path('api/movimientos/crear/', views.api_movimiento_directo_view, name='api_movimiento_directo'),
     path('api/chat/confirmar/', views.api_confirmar_propuesta_ia_view, name='api_confirmar_propuesta_ia'),
 
     path('api/lotes/update/', views.api_lote_update_view, name='api_lote_update'),
+    # Endpoints Gestión de Campos
+    path('api/campos/', views.api_campos_list_view, name='api_campos_list'),
+    path('api/campos/crear/', views.api_campo_crear_view, name='api_campo_crear'),
+
     
     # Endpoints de Hojas de Cálculo & Google Drive
     path('api/sheets/download/', views.api_sheets_download_view, name='api_sheets_download'),

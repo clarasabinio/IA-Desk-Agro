@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" width="100%" height="100%" style="background:#060e0a; border-radius:12px; font-family:'Outfit',sans-serif;">
+    <defs>
+        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(16,185,129,0.07)" stroke-width="1"/>
+        </pattern>
+        <linearGradient id="topBannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0e2a1e" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#07140e" stop-opacity="0.95"/>
+        </linearGradient>
+        <linearGradient id="borderGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981"/>
+            <stop offset="50%" stop-color="#059669"/>
+            <stop offset="100%" stop-color="#d97706"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Fondo y Grilla Cartografica -->
+    <rect width="800" height="520" fill="#07120c"/>
+    <rect width="800" height="520" fill="url(#grid)"/>
+
+    <!-- Marco Perimetral -->
+    <rect x="15" y="15" width="770" height="490" rx="14" fill="none" stroke="url(#borderGlow)" stroke-width="2" stroke-opacity="0.4"/>
+
+    <!-- Header / Banner Cartografico -->
+    <rect x="25" y="25" width="750" height="95" rx="10" fill="url(#topBannerGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    
+    <!-- Insignia IA Desk Agro -->
+    <rect x="40" y="38" width="86" height="22" rx="11" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+    <text x="83" y="53" font-family="'JetBrains Mono', monospace" font-size="10" fill="#10b981" font-weight="bold" text-anchor="middle">IA DESK AGRO</text>
+
+    <!-- Titulo del Campo y Datos Principales -->
+    <text x="136" y="55" font-size="20" fill="#ffffff" font-weight="800">Campo Don Alfredo</text>
+    <rect x="650" y="38" width="110" height="26" rx="13" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="1.5"/>
+    <text x="705" y="55" font-family="'JetBrains Mono', monospace" font-size="13" fill="#34d399" font-weight="bold" text-anchor="middle">520.0 Has</text>
+
+    <!-- Subtitulos de Ubicacion y Tenencia -->
+    <text x="40" y="82" font-size="11" fill="#94a3b8">📍 Ruta Provincial 6 Km 45, Marcos Juárez • Córdoba | Tenencia: <tspan fill="#f59e0b" font-weight="600">Propio</tspan></text>
+    <text x="40" y="102" font-size="11" fill="#64748b">🌐 GPS: <tspan fill="#38bdf8">-32.6975, -62.1064</tspan> | Partida: 14-089-2231 | RENSPA: 04.015.0.01982/00</text>
+
+    <!-- Parcelas de los Lotes -->
+    
+        <!-- Parcela Lote 1 Norte -->
+        <g class="lote-parcel">
+            <rect x="50" y="140" width="340" height="320" rx="10" 
+                  fill="#0d9488" fill-opacity="0.22" stroke="#14b8a6" stroke-width="2" 
+                  stroke-dasharray="6 3" />
+            <rect x="54" y="144" width="332" height="312" rx="8" 
+                  fill="none" stroke="#0f766e" stroke-width="1" opacity="0.5" />
+            <circle cx="66" cy="156" r="8" fill="#14b8a6" fill-opacity="0.3" stroke="#14b8a6" stroke-width="1.5" />
+            <text x="66" y="160" font-family="'JetBrains Mono', monospace" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">1</text>
+            <text x="220" y="288" font-family="'Outfit', sans-serif" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">Lote 1 Norte</text>
+            <rect x="165" y="296" width="110" height="20" rx="10" fill="#000000" fill-opacity="0.6" stroke="#14b8a6" stroke-width="1" />
+            <text x="220" y="310" font-family="'JetBrains Mono', monospace" font-size="11" fill="#14b8a6" font-weight="600" text-anchor="middle">250 Has</text>
+            <text x="220" y="330" font-family="'Outfit', sans-serif" font-size="11" fill="#cbd5e1" text-anchor="middle">Maíz temprano</text>
+            <text x="220" y="346" font-family="'JetBrains Mono', monospace" font-size="9" fill="#94a3b8" text-anchor="middle">DK 72-10</text>
+        </g>
+
+        <!-- Parcela Lote 2 Sur -->
+        <g class="lote-parcel">
+            <rect x="410" y="140" width="340" height="320" rx="10" 
+                  fill="#059669" fill-opacity="0.22" stroke="#10b981" stroke-width="2" 
+                  stroke-dasharray="6 3" />
+            <rect x="414" y="144" width="332" height="312" rx="8" 
+                  fill="none" stroke="#047857" stroke-width="1" opacity="0.5" />
+            <circle cx="426" cy="156" r="8" fill="#10b981" fill-opacity="0.3" stroke="#10b981" stroke-width="1.5" />
+            <text x="426" y="160" font-family="'JetBrains Mono', monospace" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">2</text>
+            <text x="580" y="288" font-family="'Outfit', sans-serif" font-size="15" fill="#ffffff" font-weight="700" text-anchor="middle">Lote 2 Sur</text>
+            <rect x="525" y="296" width="110" height="20" rx="10" fill="#000000" fill-opacity="0.6" stroke="#10b981" stroke-width="1" />
+            <text x="580" y="310" font-family="'JetBrains Mono', monospace" font-size="11" fill="#10b981" font-weight="600" text-anchor="middle">240 Has</text>
+            <text x="580" y="330" font-family="'Outfit', sans-serif" font-size="11" fill="#cbd5e1" text-anchor="middle">Soja de 1ra</text>
+            <text x="580" y="346" font-family="'JetBrains Mono', monospace" font-size="9" fill="#94a3b8" text-anchor="middle">DM 46R18</text>
+        </g>
+
+    <!-- Rosa de los vientos / Brujula Cartografica -->
+    <g transform="translate(740, 160)">
+        <circle cx="0" cy="0" r="18" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+        <path d="M 0 -14 L 4 0 L 0 3 L -4 0 Z" fill="#ef4444"/>
+        <path d="M 0 14 L 4 0 L 0 -3 L -4 0 Z" fill="#94a3b8"/>
+        <text x="0" y="-16" font-family="'JetBrains Mono', monospace" font-size="9" fill="#ef4444" font-weight="bold" text-anchor="middle">N</text>
+    </g>
+
+    <!-- Barra Inferior de Escala y Resumen -->
+    <rect x="25" y="475" width="750" height="30" rx="6" fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="40" y="495" font-size="10" fill="#94a3b8">🌾 Total Lotes: <tspan fill="#ffffff" font-weight="bold">2</tspan> | Sistema Cartográfico IA Desk Agro Pro 2026/2027</text>
+    <text x="760" y="495" font-family="'JetBrains Mono', monospace" font-size="10" fill="#10b981" text-anchor="end">● GEORREFERENCIADO ACTIVO</text>
+</svg>

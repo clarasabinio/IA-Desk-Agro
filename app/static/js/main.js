@@ -290,29 +290,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let proposalHtml = '';
         if (proposal) {
-            proposalHtml = `
-                <div class="proposal-box-interactive" id="prop-box-${proposal.idempotency_token}">
-                    <div class="proposal-badge-header">
-                        <span>⚠️ Vista Previa de Movimiento — Requiere Confirmación</span>
+            const isLabor = proposal.action_type === 'labor_agricola';
+            const propToken = proposal.idempotency_token || ('prop_' + Math.random().toString(36).substring(2, 9));
+
+            if (isLabor) {
+                proposalHtml = `
+                    <div class="proposal-box-interactive" id="prop-box-${propToken}">
+                        <div class="proposal-badge-header" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.35); color: #fbbf24;">
+                            <span>⚠️ Doble Verificación de Labor Agrícola • IA Desk Agro</span>
+                        </div>
+                        <table class="proposal-table-mini">
+                            <tr><td><strong>Establecimiento:</strong></td><td><strong>${escapeHtml(proposal.campo_display || proposal.campo_nombre)}</strong></td></tr>
+                            <tr><td><strong>Lote asignado:</strong></td><td><strong>${escapeHtml(proposal.lote_display || proposal.lote_id)}</strong> (${proposal.has_done} Has de ${escapeHtml(proposal.crop_name || 'Cultivo')})</td></tr>
+                            <tr><td><strong>Labor a registrar:</strong></td><td>${escapeHtml(proposal.labor_nombre)} (${escapeHtml(proposal.maquinaria)})</td></tr>
+                            <tr><td><strong>Combustible:</strong></td><td><strong style="color: #6ee7b7;">${Number(proposal.liters_spent).toLocaleString('es-AR')} Litros</strong> (${escapeHtml(proposal.tank_key)})</td></tr>
+                            ${proposal.semilla_str && proposal.semilla_str !== '-' ? `<tr><td><strong>Semillas:</strong></td><td>🌱 ${escapeHtml(proposal.semilla_str)}</td></tr>` : ''}
+                            ${proposal.fert_str && proposal.fert_str !== '-' ? `<tr><td><strong>Fertilizante:</strong></td><td>🧪 ${escapeHtml(proposal.fert_str)}</td></tr>` : ''}
+                            ${proposal.fito_str && proposal.fito_str !== '-' ? `<tr><td><strong>Fitosanitario:</strong></td><td>🛡️ ${escapeHtml(proposal.fito_str)}</td></tr>` : ''}
+                            <tr><td><strong>Operario:</strong></td><td><em>${escapeHtml(proposal.sender_name || 'Operario')}</em></td></tr>
+                        </table>
+                        <div class="proposal-buttons-row">
+                            <button type="button" class="btn-confirm-prop" data-token="${propToken}">
+                                ✅ Confirmar y Asentar Labor
+                            </button>
+                            <button type="button" class="btn-cancel-prop" data-token="${propToken}">
+                                ❌ Cancelar
+                            </button>
+                        </div>
                     </div>
-                    <table class="proposal-table-mini">
-                        <tr><td><strong>Operación:</strong></td><td>${escapeHtml(proposal.labor || 'Consumo reportado')}</td></tr>
-                        <tr><td><strong>Depósito:</strong></td><td>${escapeHtml(proposal.deposito_nombre || 'Tanque')}</td></tr>
-                        <tr><td><strong>Cantidad:</strong></td><td><strong style="color: #6ee7b7;">${proposal.litros || proposal.cantidad} L</strong></td></tr>
-                        <tr><td><strong>Saldo Actual:</strong></td><td>${proposal.saldo_actual ? Number(proposal.saldo_actual).toLocaleString('es-AR') + ' L' : '-'}</td></tr>
-                        <tr><td><strong>Saldo Resultante:</strong></td><td><strong style="color: #38bdf8;">${proposal.saldo_proyectado ? Number(proposal.saldo_proyectado).toLocaleString('es-AR') + ' L' : '-'}</strong></td></tr>
-                        ${proposal.lote_nombre ? `<tr><td><strong>Lote:</strong></td><td>${escapeHtml(proposal.lote_nombre)}</td></tr>` : ''}
-                    </table>
-                    <div class="proposal-buttons-row">
-                        <button type="button" class="btn-confirm-prop" data-token="${proposal.idempotency_token}">
-                            ✅ Confirmar y Asentar en Base de Datos
-                        </button>
-                        <button type="button" class="btn-cancel-prop" data-token="${proposal.idempotency_token}">
-                            ❌ Descartar
-                        </button>
+                `;
+            } else {
+                proposalHtml = `
+                    <div class="proposal-box-interactive" id="prop-box-${propToken}">
+                        <div class="proposal-badge-header">
+                            <span>⚠️ Vista Previa de Movimiento — Requiere Confirmación</span>
+                        </div>
+                        <table class="proposal-table-mini">
+                            <tr><td><strong>Operación:</strong></td><td>${escapeHtml(proposal.labor || 'Consumo reportado')}</td></tr>
+                            <tr><td><strong>Depósito:</strong></td><td>${escapeHtml(proposal.deposito_nombre || 'Tanque')}</td></tr>
+                            <tr><td><strong>Cantidad:</strong></td><td><strong style="color: #6ee7b7;">${proposal.litros || proposal.cantidad} L</strong></td></tr>
+                            <tr><td><strong>Saldo Actual:</strong></td><td>${proposal.saldo_actual ? Number(proposal.saldo_actual).toLocaleString('es-AR') + ' L' : '-'}</td></tr>
+                            <tr><td><strong>Saldo Resultante:</strong></td><td><strong style="color: #38bdf8;">${proposal.saldo_proyectado ? Number(proposal.saldo_proyectado).toLocaleString('es-AR') + ' L' : '-'}</strong></td></tr>
+                            ${proposal.lote_nombre ? `<tr><td><strong>Lote:</strong></td><td>${escapeHtml(proposal.lote_nombre)}</td></tr>` : ''}
+                        </table>
+                        <div class="proposal-buttons-row">
+                            <button type="button" class="btn-confirm-prop" data-token="${propToken}">
+                                ✅ Confirmar y Asentar en Base de Datos
+                            </button>
+                            <button type="button" class="btn-cancel-prop" data-token="${propToken}">
+                                ❌ Descartar
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
 
         card.innerHTML = `
@@ -347,7 +378,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (cData.status === 'success') {
                             const box = document.getElementById(`prop-box-${btnConf.dataset.token}`);
                             if (box) {
-                                box.innerHTML = `<div style="color: #10b981; font-weight: 700; padding: 6px 0;">✓ Movimiento asentado exitosamente en Base de Datos (Asiento #${cData.data.movimiento_id || 'OK'})</div>`;
+                                if (proposal.action_type === 'labor_agricola') {
+                                    box.innerHTML = `<div style="color: #10b981; font-weight: 700; padding: 6px 0;">✓ Labor confirmada y registrada en el campo con éxito.</div>`;
+                                    if (cData.message) {
+                                        appendBotMessage(cData.message, cData.data?.tool_calls || []);
+                                    }
+                                } else {
+                                    box.innerHTML = `<div style="color: #10b981; font-weight: 700; padding: 6px 0;">✓ Movimiento asentado exitosamente en Base de Datos (Asiento #${cData.data.movimiento_id || 'OK'})</div>`;
+                                }
                             }
                             if (cData.stock_data) updateLiveMetrics(cData.stock_data);
                         } else {
@@ -362,10 +400,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             if (btnCanc) {
-                btnCanc.addEventListener('click', () => {
+                btnCanc.addEventListener('click', async () => {
                     const box = document.getElementById(`prop-box-${btnCanc.dataset.token}`);
                     if (box) {
-                        box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.82rem; font-style: italic;">Propuesta descartada sin modificar existencias.</div>`;
+                        box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.82rem; font-style: italic;">Propuesta cancelada sin modificar existencias en el campo.</div>`;
+                    }
+                    if (proposal.action_type === 'labor_agricola') {
+                        try {
+                            await fetch('/api/whatsapp-simulator/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ message: 'No, cancelar', sender: proposal.sender_name || 'Operario', is_audio: false })
+                            });
+                        } catch (e) {}
                     }
                 });
             }
@@ -786,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==============================================================
-    // FIELD DATA MULTI-MODULE NAVIGATION & DIRECT FORMS
+    // IA DESK AGRO MULTI-MODULE NAVIGATION & DIRECT FORMS
     // ==============================================================
 
     window.switchTab = function(tabName) {
@@ -931,4 +978,267 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) searchInput.addEventListener('input', applyTableFilters);
     if (filterTipo) filterTipo.addEventListener('change', applyTableFilters);
     if (filterLote) filterLote.addEventListener('change', applyTableFilters);
+
+    // ==============================================================
+    // ALTA DE NUEVO CAMPO Y SUBDIVISIÓN DE LOTES EN IA DESK AGRO
+    // ==============================================================
+    const modalNuevoCampo = document.getElementById('modal-nuevo-campo');
+    const btnOpenNuevoCampo = document.getElementById('btn-open-nuevo-campo');
+    const btnCardNuevoCampo = document.getElementById('btn-card-nuevo-campo');
+    const btnCloseNuevoCampo = document.getElementById('btn-close-nuevo-campo');
+    const btnCancelNuevoCampo = document.getElementById('btn-cancel-nuevo-campo');
+    const formNuevoCampo = document.getElementById('form-nuevo-campo');
+    const btnSubmitNuevoCampo = document.getElementById('btn-submit-nuevo-campo');
+    const campoFeedback = document.getElementById('campo-form-feedback');
+    const btnGetGps = document.getElementById('btn-get-gps');
+    const campoGpsInput = document.getElementById('campo-gps');
+    const campoSupTotalInput = document.getElementById('campo-superficie-total');
+    const campoSupAgricolaInput = document.getElementById('campo-superficie-agricola');
+    const lotesTbody = document.getElementById('lotes-tbody');
+    const btnAddLoteRow = document.getElementById('btn-add-lote-row');
+    const lotesSumHaSpan = document.getElementById('lotes-sum-ha');
+    const campoHaRefSpan = document.getElementById('campo-ha-ref');
+    const agroToast = document.getElementById('agro-toast');
+    const agroToastMsg = document.getElementById('agro-toast-msg');
+
+    const showAgroToast = (msg) => {
+        if (!agroToast) return;
+        agroToastMsg.textContent = msg;
+        agroToast.classList.add('show');
+        setTimeout(() => {
+            agroToast.classList.remove('show');
+        }, 4000);
+    };
+
+    const openModalCampo = () => {
+        if (!modalNuevoCampo) return;
+        modalNuevoCampo.classList.remove('hidden');
+        if (campoFeedback) {
+            campoFeedback.textContent = '';
+            campoFeedback.className = 'campo-feedback';
+        }
+        setTimeout(() => {
+            const nombreInput = document.getElementById('campo-nombre');
+            if (nombreInput) nombreInput.focus();
+        }, 100);
+        updateLotesSum();
+    };
+
+    const closeModalCampo = () => {
+        if (!modalNuevoCampo) return;
+        modalNuevoCampo.classList.add('hidden');
+    };
+
+    if (btnOpenNuevoCampo) btnOpenNuevoCampo.addEventListener('click', openModalCampo);
+    if (btnCardNuevoCampo) btnCardNuevoCampo.addEventListener('click', openModalCampo);
+    if (btnCloseNuevoCampo) btnCloseNuevoCampo.addEventListener('click', closeModalCampo);
+    if (btnCancelNuevoCampo) btnCancelNuevoCampo.addEventListener('click', closeModalCampo);
+
+    if (modalNuevoCampo) {
+        modalNuevoCampo.addEventListener('click', (e) => {
+            if (e.target === modalNuevoCampo) closeModalCampo();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalNuevoCampo && !modalNuevoCampo.classList.contains('hidden')) {
+            closeModalCampo();
+        }
+    });
+
+    // Geolocalización del navegador
+    if (btnGetGps && campoGpsInput) {
+        btnGetGps.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert('La geolocalización no está soportada en este navegador.');
+                return;
+            }
+            btnGetGps.textContent = '📍 Obteniendo...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(5);
+                    const lon = pos.coords.longitude.toFixed(5);
+                    campoGpsInput.value = `${lat}, ${lon}`;
+                    btnGetGps.textContent = '✓ GPS Listo';
+                    setTimeout(() => { btnGetGps.textContent = '📍 Mi GPS'; }, 2500);
+                },
+                (err) => {
+                    console.warn('Error GPS:', err);
+                    btnGetGps.textContent = '📍 Mi GPS';
+                    alert('No se pudo obtener la ubicación GPS actual. Puedes escribir las coordenadas manualmente.');
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        });
+    }
+
+    // Cálculo y validación de suma de hectáreas de lotes
+    const updateLotesSum = () => {
+        window.updateLotesSum = updateLotesSum;
+        if (!lotesTbody) return;
+        let total = 0;
+        lotesTbody.querySelectorAll('.lote-row-ha').forEach(input => {
+            const val = parseFloat(input.value) || 0;
+            total += val;
+        });
+        if (lotesSumHaSpan) lotesSumHaSpan.textContent = total.toFixed(1);
+        
+        const campoTotal = parseFloat(campoSupTotalInput ? campoSupTotalInput.value : 0) || 0;
+        if (campoHaRefSpan) campoHaRefSpan.textContent = campoTotal.toFixed(1);
+
+        if (lotesSumHaSpan) {
+            if (campoTotal > 0 && total > campoTotal) {
+                lotesSumHaSpan.style.color = '#f87171'; // Alerta: supera el total
+            } else {
+                lotesSumHaSpan.style.color = '#34d399';
+            }
+        }
+    };
+
+    if (campoSupTotalInput) {
+        campoSupTotalInput.addEventListener('input', () => {
+            if (campoSupAgricolaInput && !campoSupAgricolaInput.value) {
+                campoSupAgricolaInput.value = campoSupTotalInput.value;
+            }
+            updateLotesSum();
+        });
+    }
+
+    if (lotesTbody) {
+        lotesTbody.addEventListener('input', (e) => {
+            if (e.target.classList.contains('lote-row-ha')) {
+                updateLotesSum();
+            }
+        });
+
+        // Eliminar fila de lote
+        lotesTbody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-remove-lote-row') || e.target.closest('.btn-remove-lote-row')) {
+                const rows = lotesTbody.querySelectorAll('.lote-row-item');
+                if (rows.length > 1) {
+                    const row = e.target.closest('.lote-row-item');
+                    if (row) row.remove();
+                } else {
+                    const row = rows[0];
+                    row.querySelector('.lote-row-nombre').value = 'Lote 1';
+                    row.querySelector('.lote-row-ha').value = '';
+                    row.querySelector('.lote-row-variedad').value = '';
+                }
+                updateLotesSum();
+            }
+        });
+    }
+
+    // Agregar nueva fila de lote
+    if (btnAddLoteRow && lotesTbody) {
+        btnAddLoteRow.addEventListener('click', () => {
+            const currentCount = lotesTbody.querySelectorAll('.lote-row-item').length + 1;
+            const tr = document.createElement('tr');
+            tr.className = 'lote-row-item';
+            tr.innerHTML = `
+                <td><input type="text" class="lote-input-mini lote-row-nombre" value="Lote ${currentCount}" placeholder="ej: Lote ${currentCount}" required></td>
+                <td><input type="number" step="0.1" min="0.1" class="lote-input-mini lote-row-ha" placeholder="ha" required></td>
+                <td>
+                    <select class="lote-input-mini lote-row-cultivo">
+                        <option value="Soja de 1ra">Soja de 1ra</option>
+                        <option value="Soja de 2da">Soja de 2da</option>
+                        <option value="Maíz temprano">Maíz temprano</option>
+                        <option value="Maíz tardío">Maíz tardío</option>
+                        <option value="Trigo Pan">Trigo Pan</option>
+                        <option value="Girasol">Girasol</option>
+                        <option value="Barbecho">Barbecho</option>
+                    </select>
+                </td>
+                <td><input type="text" class="lote-input-mini lote-row-variedad" placeholder="ej: DM 46R18 / DK 72-10"></td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-remove-lote-row" title="Eliminar fila de lote">✕</button>
+                </td>
+            `;
+            lotesTbody.appendChild(tr);
+            tr.querySelector('.lote-row-ha').focus();
+            updateLotesSum();
+        });
+    }
+
+    // Envío del Formulario de Alta de Campo (AJAX multipart/form-data)
+    if (formNuevoCampo) {
+        formNuevoCampo.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!campoFeedback || !btnSubmitNuevoCampo) return;
+
+            const nombreVal = document.getElementById('campo-nombre')?.value.trim();
+            const haTotalVal = parseFloat(campoSupTotalInput?.value) || 0;
+
+            if (!nombreVal) {
+                campoFeedback.className = 'campo-feedback error';
+                campoFeedback.textContent = '⚠️ Por favor ingresa el nombre del campo.';
+                return;
+            }
+            if (haTotalVal <= 0) {
+                campoFeedback.className = 'campo-feedback error';
+                campoFeedback.textContent = '⚠️ La superficie total debe ser mayor a 0 ha.';
+                return;
+            }
+
+            // Recopilar lotes
+            const lotes = [];
+            lotesTbody.querySelectorAll('.lote-row-item').forEach((row, idx) => {
+                const lNombre = row.querySelector('.lote-row-nombre')?.value.trim() || `Lote ${idx+1}`;
+                const lHa = parseFloat(row.querySelector('.lote-row-ha')?.value) || 0;
+                const lCultivo = row.querySelector('.lote-row-cultivo')?.value || 'Agrícola';
+                const lVariedad = row.querySelector('.lote-row-variedad')?.value.trim() || '';
+                if (lNombre) {
+                    lotes.push({
+                        nombre: lNombre,
+                        superficie_ha: lHa,
+                        cultivo: lCultivo,
+                        variedad: lVariedad
+                    });
+                }
+            });
+
+            const formData = new FormData(formNuevoCampo);
+            formData.append('lotes', JSON.stringify(lotes));
+
+            const origBtnHtml = btnSubmitNuevoCampo.innerHTML;
+            btnSubmitNuevoCampo.disabled = true;
+            const isEdit = Boolean(document.getElementById('campo-id')?.value || document.getElementById('campo-original-nombre')?.value);
+            btnSubmitNuevoCampo.innerHTML = isEdit ? '<span>⏳ Guardando Cambios en IA Desk Agro...</span>' : '<span>⏳ Guardando en IA Desk Agro...</span>';
+            campoFeedback.className = 'campo-feedback';
+            campoFeedback.textContent = 'Procesando georreferenciación y subdivisión de lotes...';
+
+            try {
+                const response = await fetch('/api/campos/crear/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    campoFeedback.className = 'campo-feedback success';
+                    campoFeedback.textContent = `✓ ${result.message}`;
+                    const actionTxt = result.campo.es_modificacion ? 'actualizado y corregido' : 'cargado';
+                    showAgroToast(`🌾 ¡${result.campo.nombre} (${result.campo.superficie_ha} ha) ${actionTxt} con éxito en IA Desk Agro!`);
+                    
+                    formNuevoCampo.reset();
+                    setTimeout(() => {
+                        closeModalCampo();
+                        window.location.reload();
+                    }, 1200);
+                } else {
+                    campoFeedback.className = 'campo-feedback error';
+                    campoFeedback.textContent = `⚠️ Error: ${result.message || 'No se pudo guardar el campo.'}`;
+                    btnSubmitNuevoCampo.disabled = false;
+                    btnSubmitNuevoCampo.innerHTML = origBtnHtml;
+                }
+            } catch (err) {
+                console.error('Error al guardar campo:', err);
+                campoFeedback.className = 'campo-feedback error';
+                campoFeedback.textContent = '⚠️ Error de conexión con el servidor.';
+                btnSubmitNuevoCampo.disabled = false;
+                btnSubmitNuevoCampo.innerHTML = origBtnHtml;
+            }
+        });
+    }
+
 });

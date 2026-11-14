@@ -260,6 +260,24 @@ def get_resumen_rows_for_crop(crop_key: str, lotes_json: dict) -> List[List[Any]
         {"nombre": "El Ombu", "display": "El Ombú", "lotes_desc": "Lotes Norte", "estado": "Vegetativo / Manejo", "rinde": "Rinde objetivo"},
         {"nombre": "San Jose", "display": "San José", "lotes_desc": "Lotes Sur", "estado": "Manejo de lote", "rinde": "Rinde proyectado"}
     ]
+    try:
+        campos_path = settings.FILES_STORAGE_DIR / "registro_campos.json"
+        if campos_path.exists():
+            with open(campos_path, "r", encoding="utf-8") as fc:
+                rc_data = json.load(fc)
+                for c in rc_data.get("campos", []):
+                    c_n = c.get("nombre", "")
+                    clean_n = c_n.replace("Campo ", "").replace("Establecimiento ", "").strip()
+                    if not any(cm["nombre"].lower() == clean_n.lower() or cm["nombre"].lower() == c_n.lower() for cm in campos_meta):
+                        campos_meta.append({
+                            "nombre": clean_n,
+                            "display": c_n,
+                            "lotes_desc": f"{len(c.get('lotes', []))} Lotes",
+                            "estado": "Activo",
+                            "rinde": "Rinde objetivo"
+                        })
+    except Exception:
+        pass
 
     resumen_filas = []
     for c in campos_meta:
@@ -326,12 +344,28 @@ def generate_crop_workbook(crop_key: str) -> Path:
     lotes_json = get_lotes_data()
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    # Campos del establecimiento
-    campos = [
-        {"nombre": "La Esperanza", "subtitulo": "Campo Central - Casco Principal"},
-        {"nombre": "El Ombu", "subtitulo": "Campo Norte - Lotes Agrícolas"},
-        {"nombre": "San Jose", "subtitulo": "Campo Sur - Cuenca Productiva"}
-    ]
+    # Campos del establecimiento (base y dinámicos)
+    campos_dict = {
+        "La Esperanza": {"nombre": "La Esperanza", "subtitulo": "Campo Central - Casco Principal"},
+        "El Ombu": {"nombre": "El Ombu", "subtitulo": "Campo Norte - Lotes Agrícolas"},
+        "San Jose": {"nombre": "San Jose", "subtitulo": "Campo Sur - Cuenca Productiva"}
+    }
+    try:
+        campos_path = settings.FILES_STORAGE_DIR / "registro_campos.json"
+        if campos_path.exists():
+            with open(campos_path, "r", encoding="utf-8") as fc:
+                rc_data = json.load(fc)
+                for c in rc_data.get("campos", []):
+                    c_n = c.get("nombre", "")
+                    clean_n = c_n.replace("Campo ", "").replace("Establecimiento ", "").strip()
+                    if clean_n not in campos_dict:
+                        campos_dict[clean_n] = {
+                            "nombre": clean_n,
+                            "subtitulo": f"{c.get('ubicacion', 'Zona Núcleo')} - {c.get('superficie_ha', '-')} ha"
+                        }
+    except Exception:
+        pass
+    campos = list(campos_dict.values())
 
     # ==============================================================
     # SOLAPA 1: 📊 Resumen Ejecutivo del Cultivo
@@ -369,14 +403,16 @@ def generate_crop_workbook(crop_key: str) -> Path:
                 cell.alignment = Alignment(horizontal="center")
 
     # Fila de Totales del Cultivo
+    start_r = 5
+    end_r = max(start_r, 4 + len(resumen_filas))
     ws_res.append([
         "TOTAL GENERAL CULTIVO",
         "Todos los campos",
-        "=SUM(C5:C7)",
+        f"=SUM(C{start_r}:C{end_r})",
         "En seguimiento activo",
-        "=SUM(E5:E7)",
-        "=SUM(F5:F7)",
-        "=SUM(G5:G7)",
+        f"=SUM(E{start_r}:E{end_r})",
+        f"=SUM(F{start_r}:F{end_r})",
+        f"=SUM(G{start_r}:G{end_r})",
         "Promedio consolidado"
     ])
     curr = ws_res.max_row
@@ -397,7 +433,7 @@ def generate_crop_workbook(crop_key: str) -> Path:
     # SOLAPAS 2, 3, 4: 🏡 Una solapa por cada Campo
     # ==============================================================
     for campo in campos:
-        ws_campo = wb.create_sheet(title=f"Campo {campo['nombre']}")
+        ws_campo = wb.create_sheet(title=f"Campo {campo['nombre']}"[:31])
         ws_campo.views.sheetView[0].showGridLines = True
 
         ws_campo["A1"] = f"{theme['icon']} {theme['title']} - CAMPO {campo['nombre'].upper()}"
@@ -486,6 +522,7 @@ def append_labor_to_crop(crop_key: str, campo_nombre: str, lote_id: str, labor_d
     Registra una nueva labor efectuada en un lote de un cultivo y campo determinado,
     asociando el combustible, fertilizante o semilla utilizada, y regenera las hojas.
     """
+    import unicodedata
     path = settings.FILES_STORAGE_DIR / "registro_lotes.json"
     data = get_lotes_data()
 
@@ -494,11 +531,53 @@ def append_labor_to_crop(crop_key: str, campo_nombre: str, lote_id: str, labor_d
     labor_data["campo_nombre"] = campo_nombre
 
     lotes = data.get("lotes", [])
+
+    def _norm(s):
+        if not s:
+            return ""
+        return "".join(c for c in unicodedata.normalize("NFD", str(s)) if unicodedata.category(c) != "Mn").lower().strip()
+
+    STOPWORDS = {"campo", "establecimiento", "estancia", "chacra", "lote", "parcela", "los", "las", "del", "san", "don", "de", "el", "la"}
+
+    c_req = _norm(campo_nombre)
+    l_req = _norm(lote_id)
+    l_req_num = re.search(r"(?:lote|parcela)\s*([0-9a-zA-Z]+)", l_req)
+    req_digit = l_req_num.group(1) if l_req_num else l_req
+
     target_lote = None
+
+    # 1. Búsqueda exacta por ID (ej: LOTE-08)
     for l in lotes:
-        if lote_id.lower() in l.get("nombre", "").lower() or lote_id.lower() in l.get("id", "").lower():
+        if _norm(l.get("id")) == l_req or l.get("id") == lote_id:
             target_lote = l
             break
+
+    # 2. Si no hubo match por ID, filtrar por Campo primero
+    if not target_lote:
+        matched_lotes_campo = []
+        if c_req:
+            c_words = [w for w in c_req.split() if w not in STOPWORDS and len(w) >= 3]
+            for l in lotes:
+                c_l = _norm(l.get("campo"))
+                if c_req in c_l or c_l in c_req:
+                    matched_lotes_campo.append(l)
+                elif c_words and any(w in c_l for w in c_words):
+                    matched_lotes_campo.append(l)
+
+        search_pool = matched_lotes_campo if matched_lotes_campo else lotes
+
+        for l in search_pool:
+            l_l = _norm(l.get("nombre"))
+            if l_req in l_l or l_l in l_req:
+                target_lote = l
+                break
+            l_num = re.search(r"(?:lote|parcela)\s*([0-9a-zA-Z]+)", l_l)
+            if l_num and (l_num.group(1) == req_digit or l_num.group(1) in l_req):
+                target_lote = l
+                break
+
+        if not target_lote and search_pool:
+            target_lote = search_pool[0]
 
     if target_lote:
         target_lote.setdefault("labores", []).append(labor_data)
@@ -506,6 +585,13 @@ def append_labor_to_crop(crop_key: str, campo_nombre: str, lote_id: str, labor_d
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     # Regenerar el libro específico del cultivo y el consolidado
-    generate_crop_workbook(crop_key)
-    from .sheets_export_service import generate_consolidated_workbook
-    generate_consolidated_workbook()
+    try:
+        generate_crop_workbook(crop_key)
+    except Exception as ex_cw:
+        logger.warning(f"Aviso generando libro de cultivo {crop_key}: {ex_cw}")
+
+    try:
+        from .sheets_export_service import generate_consolidated_workbook
+        generate_consolidated_workbook()
+    except Exception as ex_cons:
+        logger.warning(f"Aviso generando consolidado: {ex_cons}")

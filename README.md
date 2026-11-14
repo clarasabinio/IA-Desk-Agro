@@ -18,7 +18,42 @@
 2. **Copiloto IA y Motor Agronómico:** Asistente inteligente capaz de procesar lenguaje coloquial de productores y maquinistas mediante ejecución de herramientas (*tool calling*), calculando consumos basados en normas técnicas (INTA CostoMaq y AAPRESID).
 3. **Integridad Transaccional y Control de Stock:** Protección estricta que **impide registrar consumos o retiros superiores al stock real disponible**, evitando saldos negativos en depósitos físicos, galpones y silos.
 4. **Sincronización Continua con Google Drive & Google Sheets:** Cada movimiento asienta automáticamente en la base de datos relacional (SQLite), en archivos de proyección JSON/CSV y regenera las 5 planillas maestras en Excel (`.xlsx`), sincronizables con Google Drive mediante Google Apps Script.
-5. **Canal de Comunicación WhatsApp Cloud API (Meta):** Webhook oficial preparado para la capa 100% gratuita de Meta for Developers para recibir reportes directos de operarios en lote (Field Data).
+5. **Canal de Comunicación WhatsApp Cloud API (Meta):** Webhook oficial preparado para la capa 100% gratuita de Meta for Developers para recibir reportes directos de operarios en lote (Reportes Operativos).
+
+---
+
+## 🌟 Mejoras y Nuevas Funcionalidades Implementadas
+
+A continuación se detallan las mejoras clave incorporadas al sistema para optimizar la operación diaria a campo y el control administrativo:
+
+* **📱 Conexión con WhatsApp y Simulador Interactivo de Mensajes:**
+  * Integración con la **WhatsApp Cloud API de Meta** mediante webhook oficial para producción (`/api/webhook/whatsapp/`).
+  * **Simulador de WhatsApp integrado en el Dashboard web:** Permite realizar y verificar pruebas completas de mensajería y flujos conversacionales de campo en tiempo real, sin requerir una línea telefónica activa ni incurrir en costos de mensajería.
+
+* **🛡️ Restricción de Acciones por WhatsApp y Doble Verificación Operativa:**
+  * **Permisos controlados por canal:** Por WhatsApp únicamente se permite consultar información y asentar **datos y registros operativos menores** (labores agrícolas, consumos de insumos y retiros de combustible). Se **restringe estrictamente la creación o alteración de campos**, garantizando que la estructura de los establecimientos solo pueda ser gestionada desde la interfaz web por el administrador.
+  * **Doble verificación previa de labores:** Al reportar una labor agrícola vía WhatsApp, el sistema no descuenta insumos a ciegas; genera una propuesta con el resumen de la operación (campo, lote, hectáreas, labor, maquinaria, combustible estimado e insumos a descontar) y **solicita confirmación expresa (*"Sí, confirmar"* o *"Confirmar"*)** antes de asentar los cambios, previniendo malinterpretaciones o errores de tipeo.
+  * **Retiros de combustible limpios:** Los movimientos y retiros de combustible se asientan de inmediato con respuesta directa (*"Perfecto, ya registré lo que pediste."*) y resumen de saldos restantes, sin asociarse erróneamente a lotes agrícolas.
+
+* **🎯 Consultas Específicas Inteligentes y Soporte Multi-Consulta:**
+  * **Respuestas precisas a preguntas puntuales:** El copiloto reconoce exactamente qué se le está consultando y devuelve **únicamente el dato solicitado**, evitando listados innecesarios:
+    * Si preguntas por el **Tanque Chico de gasoil**, informa exclusivamente el saldo y estado de ese tanque, sin listar los demás depósitos.
+    * Si consultas por una **semilla o híbrido puntual** (ej: *Pioneer P2089*, *Dekalb DK 72-10*, *Nidera*, *Soja* o *Trigo*), responde solo sobre esa variedad (bolsas en planta vs. por retirar en acopio).
+    * Si consultas por un **fertilizante o químico específico** (ej: solo *Urea* o solo *Glifosato*), responde únicamente las existencias de ese producto.
+    * Si consultas por un **cereal en silos** (ej: *Soja* o *Trigo*), responde solo las toneladas de ese grano.
+  * **Soporte para consultas compuestas (Multi-Query):** Si en un mismo mensaje de WhatsApp se realizan dos o más preguntas (ej: *"¿Cuánto gasoil queda en el tanque chico y cuántas semillas de Pioneer tenemos?"*), el motor detecta todos los temas y responde a **ambas consultas de manera completa, ordenada y numerada (`1️⃣`, `2️⃣`, etc.)**.
+  * **Modo general disponible:** Si la consulta es amplia (ej: *"¿cuánto gasoil queda?"* o *"¿qué semillas tenemos?"*), continúa entregando el consolidado general de todos los depósitos y variedades.
+
+* **🚜 Cálculo Automático de Consumos y Cuentas de Labores (Motor Agronómico INTA):**
+  * **Cuentas automáticas sobre labores realizadas:** Al reportar una labor en un lote (ej: pasada de rastra de discos, siembra, fertilización, pulverización o trilla), el sistema **calcula automáticamente el gasto de gasoil** multiplicando las hectáreas trabajadas por la tasa técnica oficial (**INTA CostoMaq / AAPRESID**).
+  * **Ajuste dinámico en vivo por suelo y clima:** Conexión con la **Open-Meteo Agro API** para obtener la humedad edáfica superficial en tiempo real, ajustando el factor de tracción y resistencia al avance (+8% a +15% de combustible en suelos pesados/húmedos).
+  * **Cálculo de dosis y descuento de insumos:** Determina y descuenta automáticamente las bolsas de semillas recomendadas (densidad agronómica en maíz, soja o trigo) y los kilogramos de fertilizantes requeridos (MAP, Urea, MicroEssentials). Si el maquinista especifica los litros o bolsas reales gastadas, el sistema respeta con prioridad el dato real informado.
+
+* **🗺️ Botón "Agregar Campo", Modificación de Lotes, Fotos/Croquis y Hojas Conectadas:**
+  * **Alta y modificación web completa:** Se incorporó el botón **"Agregar Campo"** en el panel principal y la funcionalidad para **editar y modificar en cualquier momento los datos de campos y lotes existentes**, permitiendo corregir errores de carga fácilmente.
+  * **Subida de croquis y fotos reales:** Permite adjuntar imágenes reales (`.jpg`, `.png`), mapas y croquis del establecimiento, mostrándolos en la ficha técnica del campo junto con la descripción detallada de cada parcela y sus hectáreas.
+  * **Coordenadas geográficas GPS:** Posibilidad de cargar coordenadas GPS a cada lote para una trazabilidad satelital exacta.
+  * **Sincronización con Hojas de Cálculo Conectadas:** Toda labor, consumo o modificación de campos y lotes se asienta automáticamente en el libro maestro consolidado de Excel (`IA_Desk_Agro_Consolidado.xlsx` con 7 pestañas) y en las planillas por cultivo (Maíz, Soja 1ra, Soja 2da, Trigo), manteniendo sincronización con Google Drive y Google Sheets.
 
 ---
 
@@ -201,18 +236,21 @@ Para acceder al Panel de Administración de Django:
 
 Puedes escribirle en lenguaje natural a través del chat o del simulador de WhatsApp:
 
-* **Gasto sin labor aclarada:**
-  * *"Gasté 200 litros de combustible"* ➔ El sistema busca el depósito con saldo disponible y asienta el consumo de inmediato.
-* **Gasto con maquinaria:**
-  * *"Cargamos 40 litros de gasoil en la camioneta"* ➔ Descuenta y etiqueta el gasto a la camioneta.
+* **Consultas Específicas:**
+  * *"¿Cuánto gas oil queda en el tanque chico?"* ➔ Responde únicamente sobre el Tanque Chico (sin listar los demás tanques).
+  * *"¿Cuántas bolsas de Pioneer tenemos?"* ➔ Responde exclusivamente las bolsas del híbrido Pioneer P2089 (en planta vs por retirar).
+  * *"¿Cuánta urea queda?"* ➔ Detalla únicamente las existencias de Urea Granulada en galpón y acopio.
+* **Consultas Múltiples (Multi-Query):**
+  * *"¿Cuánto gasoil queda en el tanque chico y cuántas semillas de Pioneer tenemos?"* ➔ Responde de forma estructurada a ambas preguntas (`1️⃣` Tanque Chico, `2️⃣` Pioneer P2089).
+* **Cálculo Automático de Labores con Doble Verificación:**
+  * *"Pasé la rastra de discos en el Lote 1 (50 ha)"* ➔ Calcula automáticamente el consumo de gasoil ($50 \text{ ha} \times 8.5 \text{ L/ha} = 425 \text{ L}$, ajustado por suelo Open-Meteo) y solicita confirmación antes de asentar.
+  * *"Sí, confirmar"* ➔ Descuenta el combustible del tanque, asienta la labor en el lote y actualiza las planillas.
+* **Retiro de Combustible Limpio:**
+  * *"Retiré 300 litros del tanque grande para el tractor"* ➔ Responde: *"Perfecto, ya registré lo que pediste"* y detalla el saldo restante sin asociarlo a lotes.
 * **Control de stock insuficiente:**
-  * *"Gasté 50.000 litros de gasoil del tanque chico"* ➔ **Rechazado:** Avisa que no hay stock suficiente indicando el saldo real.
+  * *"Gasté 50.000 litros de gasoil del tanque chico"* ➔ **Rechazado:** Avisa que no hay stock suficiente indicando el saldo real disponible.
 * **Transferencias entre tanques:**
-  * *"Pasamos 1.500 litros de la cisterna al tanque grande"* ➔ Asienta el traslado y verifica la capacidad máxima del tanque de destino.
-* **Semillas y siembra:**
-  * *"Sembré 40 bolsas de maíz DK 72-10 en Lote 2"* ➔ Descuenta las bolsas de Planta Central y asienta la labor en la hoja de Maíz.
-* **Granos y silos:**
-  * *"Despachar 30 toneladas de soja del Silo 1 a camión puerto"* ➔ Registra el despacho y recalcula la ocupación del silo.
+  * *"Pasamos 1.500 litros de la cisterna al tanque grande"* ➔ Asienta el traslado interno y verifica la capacidad máxima del tanque destino.
 
 ---
 

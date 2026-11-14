@@ -7,9 +7,14 @@ from decimal import Decimal
 class Campo(models.Model):
     """
     Establecimiento o campo general (ej: Campo La Esperanza, Campo El Ombú).
+    Compatible con especificaciones SIG / GIS agrícola.
     """
     nombre = models.CharField(max_length=150, unique=True, verbose_name="Nombre del Establecimiento")
+    titular = models.CharField(max_length=150, blank=True, null=True, default="Propio", verbose_name="Titular / Productor")
+    tenencia = models.CharField(max_length=50, blank=True, null=True, default="Propio", verbose_name="Condición de Tenencia (Propio/Arrendado)")
+    sector = models.CharField(max_length=150, blank=True, null=True, verbose_name="Sector / Zona Operativa")
     ubicacion = models.CharField(max_length=250, blank=True, null=True, verbose_name="Ubicación / Localidad")
+    provincia = models.CharField(max_length=100, blank=True, null=True, default="Buenos Aires", verbose_name="Provincia")
     superficie_total_ha = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
@@ -17,7 +22,24 @@ class Campo(models.Model):
         validators=[MinValueValidator(Decimal("0.00"))],
         verbose_name="Superficie Total (ha)"
     )
-    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción / Instalaciones")
+    superficie_agricola_ha = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal("0.00"), 
+        blank=True,
+        null=True,
+        verbose_name="Superficie Agrícola Útil (ha)"
+    )
+    partida_inmobiliaria = models.CharField(max_length=100, blank=True, null=True, verbose_name="Partida Inmobiliaria / Catastro")
+    renspa = models.CharField(max_length=100, blank=True, null=True, verbose_name="Código RENSPA")
+    coordenadas_gps = models.CharField(max_length=100, blank=True, null=True, verbose_name="Coordenadas GPS (Lat, Long)")
+    tipo_suelo = models.CharField(max_length=250, blank=True, null=True, verbose_name="Tipo de Suelo / Serie Agrícola")
+    indice_productividad = models.CharField(max_length=100, blank=True, null=True, verbose_name="Índice de Productividad / Aptitud")
+    instalaciones = models.TextField(blank=True, null=True, verbose_name="Instalaciones e Infraestructura")
+    cultivos_principales = models.CharField(max_length=250, blank=True, null=True, verbose_name="Cultivos de la Campaña")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción / Notas Operativas")
+    diagrama_url = models.CharField(max_length=300, blank=True, null=True, verbose_name="URL o Ruta del Plano / Diagrama")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Fecha de Creación")
 
     class Meta:
         verbose_name = "Campo / Establecimiento"
@@ -48,6 +70,8 @@ class Lote(models.Model):
         verbose_name="Superficie Agrícola (ha)"
     )
     tipo_suelo = models.CharField(max_length=150, blank=True, null=True, verbose_name="Tipo de Suelo / Serie")
+    cultivo_actual = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cultivo Actual")
+    variedad_hibrido = models.CharField(max_length=150, blank=True, null=True, verbose_name="Variedad o Híbrido Sembrado")
     activo = models.BooleanField(default=True, verbose_name="Lote Activo en Producción")
 
     class Meta:

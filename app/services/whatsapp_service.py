@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class WhatsAppCloudService:
     """
     Servicio para integración con la API gratuita de WhatsApp Cloud (Meta for Developers).
-    Permite validar webhooks, procesar mensajes de texto y notas de voz de campo (FieldData),
+    Permite validar webhooks, procesar mensajes de texto y notas de voz de campo (datos de campo),
     y enviar respuestas automáticas de confirmación de stock.
     """
 

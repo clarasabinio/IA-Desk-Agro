@@ -20,10 +20,10 @@
         "variedad": "P2089 Leptra",
         "proveedor": "Corteva Agriscience",
         "presentacion": "Bolsas de 80.000 semillas",
-        "en_planta_bolsas": 100,
+        "en_planta_bolsas": 4,
         "por_retirar_bolsas": 60,
         "lugar_retiro": "Semillería AgroNorte - Pergamino",
-        "total_bolsas": 160,
+        "total_bolsas": 64,
         "tratamiento": "LumiGEN fungicida + insecticida"
       },
       {
@@ -40,9 +40,9 @@
       }
     ],
     "totales": {
-      "bolsas_en_planta": 100,
+      "bolsas_en_planta": 4,
       "bolsas_por_retirar": 150,
-      "total_general_bolsas": 250
+      "total_general_bolsas": 154
     }
   },
   "semillas_soja": {
@@ -53,17 +53,17 @@
         "variedad": "Don Mario DM 46R18 STS",
         "proveedor": "Semillero Don Mario",
         "presentacion": "Bolsas de 40 kg",
-        "en_planta_bolsas": 358,
+        "en_planta_bolsas": 178,
         "por_retirar_bolsas": 0,
         "lugar_retiro": "Galpón 1 - Planta Central",
-        "total_bolsas": 358,
+        "total_bolsas": 178,
         "poder_germinativo_pct": 94
       }
     ],
     "totales": {
-      "bolsas_en_planta": 358,
+      "bolsas_en_planta": 178,
       "bolsas_por_retirar": 0,
-      "total_general_bolsas": 358
+      "total_general_bolsas": 178
     }
   },
   "fertilizantes": [
@@ -73,10 +73,10 @@
       "formula": "11-52-0",
       "formato": "A granel / Big Bags",
       "unidad": "Kilogramos (kg)",
-      "en_galpon_kg": 6000.0,
+      "en_galpon_kg": 50.0,
       "por_retirar_kg": 4000.0,
       "lugar_retiro": "YPF Agro Directo - Junín",
-      "total_kg": 10000.0,
+      "total_kg": 4050.0,
       "ubicacion_galpon": "Galpón 1 - Tinglado central"
     },
     {
@@ -151,13 +151,33 @@
     }
   ],
   "fertilizantes_totales": {
-    "en_galpon_kg": 22600.0,
+    "en_galpon_kg": 16650.0,
     "por_retirar_kg": 15000.0,
-    "total_general_kg": 37600.0
+    "total_general_kg": 31650.0
   },
   "fitosanitarios_totales": {
     "en_galpon_litros": 1540.0,
     "a_retirar_litros": 270.0,
     "total_general_litros": 1810.0
+  },
+  "semillas_trigo": {
+    "descripcion": "Semillas de Trigo Pan fiscalizadas para siembra de fina",
+    "variedades": [
+      {
+        "id": "TR-MSINTA119",
+        "variedad": "Trigo Pan MS INTA 119",
+        "proveedor": "Criadero Klein / INTA",
+        "presentacion": "Bolsas de 40 kg",
+        "en_planta_bolsas": 100,
+        "por_retirar_bolsas": 120,
+        "lugar_retiro": "Cooperativa Agrícola Ganadera",
+        "total_bolsas": 220
+      }
+    ],
+    "totales": {
+      "bolsas_en_planta": 100,
+      "bolsas_por_retirar": 120,
+      "total_general_bolsas": 220
+    }
   }
 }

@@ -47,11 +47,11 @@ def index_view(request: HttpRequest):
         lotes_data = []
 
     # Cargar campos y sus diagramas
-    campos_path = settings.FILES_STORAGE_DIR / "registro_campos.json"
+    from .services.campo_service import obtener_campos_con_lotes
     try:
-        with open(campos_path, "r", encoding="utf-8") as f:
-            campos_data = json.load(f).get("campos", [])
-    except Exception:
+        campos_data = obtener_campos_con_lotes()
+    except Exception as e:
+        logger.warning(f"Error obteniendo campos con lotes: {e}")
         campos_data = []
 
     context = {
@@ -316,14 +316,14 @@ def api_lote_update_view(request: HttpRequest):
 
 
 # ==============================================================
-# ENDPOINTS FIELD DATA: REGISTROS DIRECTOS Y CONFIRMACIÓN DE IA
+# ENDPOINTS REGISTROS DIRECTOS Y CONFIRMACIÓN DE IA
 # ==============================================================
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_movimiento_directo_view(request: HttpRequest):
     """
-    Endpoint para formularios directos (Field Data) de combustible,
+    Endpoint para formularios directos (Registros Directos) de combustible,
     traslados, compras y aplicación de insumos.
     """
     try:
@@ -555,6 +555,18 @@ def api_confirmar_propuesta_ia_view(request: HttpRequest):
                 "stock_data": get_dashboard_summary()
             })
 
+        elif action == "labor_agricola":
+            from .services.claude_service import _execute_confirmed_labor, clear_pending_labor_proposal
+            executed_tools = []
+            res_dict = _execute_confirmed_labor(prop, operario, executed_tools)
+            clear_pending_labor_proposal()
+            return JsonResponse({
+                "status": "success",
+                "message": res_dict["response"],
+                "data": res_dict,
+                "stock_data": res_dict.get("stock_data") or get_dashboard_summary()
+            })
+
         else:
             return JsonResponse({"status": "error", "message": f"Acción '{action}' no soportada para confirmación."}, status=400)
 
@@ -574,7 +586,7 @@ def api_whatsapp_webhook_view(request: HttpRequest):
     """
     Endpoint para WhatsApp Cloud API (Meta for Developers).
     - GET: Responde al desafío (hub.challenge) de verificación de Meta.
-    - POST: Procesa mensajes de maquinistas y operarios de campo (FieldData: gasoil, lotes, stock).
+    - POST: Procesa mensajes de maquinistas y operarios de campo (gasoil, lotes, stock).
     """
     from .services.whatsapp_service import WhatsAppCloudService
 
@@ -625,3 +637,58 @@ def api_whatsapp_webhook_view(request: HttpRequest):
             return HttpResponse("EVENT_RECEIVED", status=200)
 
     return HttpResponse("Method not allowed", status=405)
+
+
+# ==============================================================
+# ALTA Y GESTIÓN DE CAMPOS (IA DESK AGRO)
+# ==============================================================
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_campos_list_view(request: HttpRequest):
+    """Retorna la lista de campos y establecimientos registrados con sus lotes estructurados."""
+    from .services.campo_service import obtener_campos_con_lotes
+    try:
+        campos_data = obtener_campos_con_lotes()
+    except Exception:
+        campos_data = []
+    return JsonResponse({"status": "success", "campos": campos_data})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_campo_crear_view(request: HttpRequest):
+    """
+    Registra un nuevo campo/establecimiento agrícola con todos sus datos en IA Desk Agro:
+    - Nombre, Titular, Régimen de Tenencia, Sector, Ubicación, Provincia
+    - Superficie total y agrícola, Partida inmobiliaria, RENSPA, Coordenadas GPS
+    - Suelo, Índice productividad, Instalaciones, Cultivos principales
+    - Lotes asociados y archivo de diagrama o generación de cartografía SVG
+    """
+    from .services.campo_service import registrar_nuevo_campo
+    try:
+        if request.content_type == "application/json":
+            datos = json.loads(request.body.decode("utf-8"))
+            archivo_diagrama = None
+        else:
+            datos = request.POST.dict()
+            archivo_diagrama = request.FILES.get("foto_diagrama") or request.FILES.get("diagrama_imagen")
+
+        if "lotes" in datos and isinstance(datos["lotes"], str):
+            try:
+                datos["lotes"] = json.loads(datos["lotes"])
+            except Exception:
+                datos["lotes"] = []
+
+        campo_entry = registrar_nuevo_campo(datos, archivo_diagrama=archivo_diagrama)
+        action_msg = "modificado y actualizado" if campo_entry.get("es_modificacion") else "cargado"
+        return JsonResponse({
+            "status": "success",
+            "message": f"Campo '{campo_entry.get('nombre')}' ({campo_entry.get('superficie_ha')} ha) {action_msg} exitosamente en IA Desk Agro.",
+            "campo": campo_entry
+        })
+    except ValueError as ve:
+        return JsonResponse({"status": "error", "message": str(ve)}, status=400)
+    except Exception as e:
+        logger.error(f"Error registrando nuevo campo: {e}", exc_info=True)
+        return JsonResponse({"status": "error", "message": f"Error registrando el campo: {str(e)}"}, status=500)

@@ -57,6 +57,90 @@
       "diagrama_url": "/media/campos/campo_san_jose.jpg",
       "diagrama_nombre": "Mapa de Prescripción y Drenaje - Campo San José (420 Has)",
       "descripcion": "Campo ubicado en la cuenca sur ('Bajo Grande'). Sobresale por su alta estabilidad de rendimientos gracias al régimen hídrico y cortinas forestales. Diseñado para la rotación intensiva de trigo y soja de segunda."
+    },
+    {
+      "id": "CAMPO-04",
+      "nombre": "Campo Don Alfredo",
+      "sector": "Sector Oeste - Lomas Altas",
+      "ubicacion": "Ruta Provincial 6 Km 45, Marcos Juárez (Córdoba)",
+      "superficie_ha": 520.0,
+      "superficie_agricola_ha": 490.0,
+      "tenencia": "Propio",
+      "titular": "Familia Rossi",
+      "coordenadas_gps": "-32.6975, -62.1064",
+      "partida": "14-089-2231",
+      "renspa": "04.015.0.01982/00",
+      "lotes": [
+        "Lote 1 Norte (250 ha - Maíz temprano)",
+        "Lote 2 Sur (240 ha - Soja de 1ra)"
+      ],
+      "instalaciones_clave": "Galpón 600m2, Silo aéreo 200 Tn, Tanque cisterna 12.000 L",
+      "tipo_suelo": "Hapludol típico Serie Marcos Juárez Clase I",
+      "cultivos_campana": "Maíz temprano Dekalb y Soja de 1ra",
+      "diagrama_url": "/media/campos/campo_don_alfredo_cartografia.svg",
+      "diagrama_nombre": "Cartografia y Parcelas IA Desk Agro - Campo Don Alfredo (520 Has)",
+      "descripcion": "Campo agrícola de alta productividad en Marcos Juárez."
+    },
+    {
+      "id": "CAMPO-05",
+      "nombre": "Campo La Paulina",
+      "sector": "Sector Lomas del Este",
+      "ubicacion": "RP 93 Km 28, Firmat (Santa Fe)",
+      "superficie_ha": 325.0,
+      "superficie_agricola_ha": 305.0,
+      "tenencia": "Arrendado (Quintales fijos)",
+      "titular": "Agropecuaria Central S.A.",
+      "coordenadas_gps": "-33.4561, -61.4892",
+      "partida": "21-004-9812",
+      "renspa": "05.012.0.04112/00",
+      "lotes": [
+        "Lote A Norte (165 ha - Soja de 1ra)",
+        "Lote B Sur (140 ha - Maíz temprano)"
+      ],
+      "instalaciones_clave": "Galpón 350 m2, Batería de 2 silos (160 Tn)",
+      "tipo_suelo": "Argiudol típico Serie Firmat",
+      "cultivos_campana": "Soja 1ra y Maíz temprano",
+      "diagrama_url": "/media/campos/campo_la_paulina_cartografia.svg",
+      "diagrama_nombre": "Cartografia y Parcelas IA Desk Agro - Campo La Paulina (325 Has)",
+      "descripcion": "Superficie rectificada a 325 ha. Arrendado a 14 qq/ha."
+    },
+    {
+      "id": "CAMPO-06",
+      "nombre": "Establecimiento Don Lorenzo",
+      "sector": "Azcuenaga",
+      "ubicacion": "San Andrés de Giles (Buenos Aires)",
+      "superficie_ha": 41.0,
+      "superficie_agricola_ha": 41.0,
+      "tenencia": "Propio",
+      "titular": "Zocca",
+      "coordenadas_gps": "-34.337281, -59.358207",
+      "partida": "",
+      "renspa": "",
+      "lotes": [
+        "Lote 1 (23.0 ha - Trigo Pan)",
+        "Lote 2 (18.0 ha - Trigo Pan)"
+      ],
+      "instalaciones_clave": "Puesto de control, caminos afirmados",
+      "tipo_suelo": "Argiudol tipico con drenaje optimo",
+      "cultivos_campana": "Trigo Pan",
+      "diagrama_url": "/media/campos/establecimiento_don_lorenzo_cartografia.svg",
+      "diagrama_nombre": "Cartografía y Parcelas IA Desk Agro - Establecimiento Don Lorenzo (41.0 Has)",
+      "descripcion": "Establecimiento agropecuario Establecimiento Don Lorenzo registrado en IA Desk Agro.",
+      "foto_url": "/media/campos/establecimiento_don_lorenzo.jpg",
+      "lotes_detallados": [
+        {
+          "nombre": "Lote 1",
+          "superficie_ha": 23.0,
+          "cultivo": "Trigo Pan",
+          "variedad": "MS INTA 119"
+        },
+        {
+          "nombre": "Lote 2",
+          "superficie_ha": 18.0,
+          "cultivo": "Trigo Pan",
+          "variedad": "MS INTA 119"
+        }
+      ]
     }
   ]
 }

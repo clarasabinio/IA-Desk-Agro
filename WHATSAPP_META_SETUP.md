@@ -61,7 +61,7 @@ Te dará una URL como: `https://abc-123.ngrok-free.app`
 
 ---
 
-## 📲 Paso 5: Probar el Flujo FieldData desde tu WhatsApp
+## 📲 Paso 5: Probar el Flujo Operativo de Campo desde tu WhatsApp
 
 1. Abrí WhatsApp en tu celular y enviá un mensaje al número de prueba de Meta:
    > *"Hola, cargamos 250 litros del Tanque Chico al John Deere y sembramos 20 hectáreas en el Lote 1."*

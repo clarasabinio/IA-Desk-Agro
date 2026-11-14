@@ -568,16 +568,17 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(4, 8, 6, 0.8);
+    background: rgba(4, 8, 6, 0.85);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 99999 !important;
     padding: 20px;
 }
 .modal-overlay.hidden {
-    display: none;
+    display: none !important;
 }
 .modal-box {
     width: 100%;
@@ -710,6 +711,8 @@ body {
     flex-direction: column;
     gap: 16px;
     background: #0a130f;
+    overflow-y: auto;
+    max-height: calc(85vh - 90px);
 }
 .wa-desc {
     font-size: 0.84rem;
@@ -1455,4 +1458,271 @@ body {
 }
 .btn-cancel-prop:hover {
     background: rgba(239, 68, 68, 0.25);
+}
+
+/* ==============================================================
+   ALTA DE CAMPOS Y ESTABLECIMIENTOS
+   ============================================================== */
+.btn-nuevo-campo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    color: #ffffff;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.38);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-nuevo-campo-pill:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+    box-shadow: 0 0 22px rgba(52, 211, 153, 0.6);
+    transform: translateY(-1px);
+}
+.campo-modal-box {
+    max-width: 880px !important;
+    max-height: 90vh !important;
+    background: #0b1510 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+.campo-modal-body {
+    padding: 18px 24px 24px;
+    overflow-y: auto;
+    max-height: calc(90vh - 140px);
+}
+.campo-hero-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 78, 59, 0.25));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 18px;
+}
+.campo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+    color: #34d399;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+.campo-form-section {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.campo-section-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 6px;
+}
+.campo-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px 16px;
+}
+.campo-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.campo-form-group.full-width {
+    grid-column: 1 / -1;
+}
+.campo-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+.campo-label .req {
+    color: #f43f5e;
+}
+.campo-input, .campo-select, .campo-textarea {
+    width: 100%;
+    background: #060e0a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    color: #f8fafc;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+.campo-input:focus, .campo-select:focus, .campo-textarea:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    background: #08140e;
+}
+.campo-input::placeholder, .campo-textarea::placeholder {
+    color: #64748b;
+}
+.campo-input-with-btn {
+    display: flex;
+    gap: 6px;
+}
+.btn-gps-get {
+    background: rgba(14, 165, 233, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.35);
+    color: #38bdf8;
+    border-radius: 7px;
+    padding: 0 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-gps-get:hover {
+    background: rgba(14, 165, 233, 0.3);
+    color: #ffffff;
+}
+
+/* Lotes Builder Table */
+.lotes-builder-wrapper {
+    margin-top: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+}
+.lotes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.lotes-table th {
+    text-align: left;
+    padding: 6px 8px;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lotes-table td {
+    padding: 6px 6px;
+    vertical-align: middle;
+}
+.lote-input-mini {
+    width: 100%;
+    background: #050b08;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    box-sizing: border-box;
+}
+.btn-remove-lote-row {
+    background: rgba(244, 63, 94, 0.12);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: #fda4af;
+    border-radius: 6px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.15s ease;
+}
+.btn-remove-lote-row:hover {
+    background: rgba(244, 63, 94, 0.3);
+    color: #fff;
+}
+.lotes-footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+.btn-add-lote-row {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #6ee7b7;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-add-lote-row:hover {
+    background: rgba(16, 185, 129, 0.3);
+    color: #fff;
+}
+.lotes-sum-indicator {
+    font-size: 0.76rem;
+    color: #94a3b8;
+    font-family: 'JetBrains Mono', monospace;
+}
+.lotes-sum-indicator .ha-val {
+    color: #34d399;
+    font-weight: 700;
+}
+
+/* Modal Actions Footer */
+.campo-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background: #08100c;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.campo-feedback {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 12px;
+}
+.campo-feedback.error {
+    color: #f87171;
+}
+.campo-feedback.success {
+    color: #34d399;
+}
+
+/* Toast Notification */
+.agro-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #0e2419;
+    border: 1px solid #10b981;
+    color: #ecfdf5;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.agro-toast.show {
+    transform: translateY(0);
+    opacity: 1;
 }

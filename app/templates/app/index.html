@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
 </head>
 <body>
     <div class="agro-app-container">
@@ -35,6 +35,10 @@
             </div>
 
             <div class="header-actions">
+                <button type="button" id="btn-open-nuevo-campo" class="btn-nuevo-campo-pill" onclick="openModalCampo()" title="Registrar nuevo establecimiento agrícola en IA Desk Agro">
+                    <span>➕</span>
+                    <span>Nuevo Campo</span>
+                </button>
                 <a href="https://drive.google.com/drive/folders/11XiJ4FtA-8KOU3BvZWr6yDbxOwVoUvkw?usp=sharing" target="_blank" class="btn-drive-pill" title="Abrir carpeta compartida en Google Drive">
                     <span class="drive-icon">📊</span>
                     <span>Google Drive Online</span>
@@ -497,7 +501,12 @@
                 <div class="dash-card campos-card">
                     <div class="dash-card-header-row">
                         <h2 class="dash-card-title">🗺️ Cartografía & Diagramas de Campos</h2>
-                        <span class="badge-tag text-emerald">{{ campos|length|default:3 }} Campos Registrados</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="badge-tag text-emerald">{{ campos|length|default:3 }} Campos Registrados</span>
+                            <button type="button" id="btn-card-nuevo-campo" class="btn-secondary" onclick="openModalCampo()" style="font-size: 0.75rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px; border-color: rgba(16, 185, 129, 0.4); color: #34d399;" title="Agregar nuevo establecimiento">
+                                <span>➕</span> Agregar Campo
+                            </button>
+                        </div>
                     </div>
                     <p class="section-desc" style="font-size: 0.75rem; color: var(--text-muted); margin: 4px 0 10px;">
                         Planos catastrales, curvas de nivel y zonificación satelital de los establecimientos disponibles para consulta operativa.
@@ -540,7 +549,10 @@
                             <div><strong>🌾 Aptitud agronómica:</strong> <span style="color: var(--text-muted);">{{ c.tipo_suelo }}</span></div>
                         </div>
 
-                        <div class="mt-2" style="display: flex; justify-content: flex-end;">
+                        <div class="mt-2" style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="btn-secondary btn-editar-campo" onclick="editarCampoPorId('{{ c.id }}')" style="font-size: 0.75rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 5px; border-color: rgba(245, 158, 11, 0.45); color: #fbbf24; background: rgba(245, 158, 11, 0.08);" title="Modificar o corregir datos de este campo">
+                                ✏️ Modificar Datos del Campo
+                            </button>
                             <button type="button" class="btn-primary btn-consult-campo" data-campo-query="¿Cómo es el diagrama de {{ c.nombre }}?" style="font-size: 0.75rem; padding: 6px 12px;">
                                 💬 Consultar este campo a la IA
                             </button>
@@ -670,32 +682,48 @@
             
             <div class="wa-modal-body">
                 <p class="wa-desc">
-                    El personal de campo puede reportar consumo indicando el tanque de donde extrajo el combustible o avisar llegadas de flete:
+                    <strong>Canal Operativo WhatsApp:</strong> Permite al personal de campo registrar labores agrícolas y consumos de combustible/insumos, o consultar saldos y lotes en tiempo real. Por seguridad, la creación o modificación de campos y parcelas está reservada a la plataforma web:
                 </p>
 
                 <div class="wa-presets-grid">
-                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que cargamos 250 litros del Tanque Chico al John Deere y sembramos 20 hectáreas en el Lote 1 con 35 bolsas de semilla.">
+                    <button class="wa-preset-btn" data-sender="Juan González (Tractorista)" data-msg="Hola Esteban, te aviso que terminamos de sembrar 20 hectáreas de trigo en el Lote 1 de Don Lorenzo con 35 bolsas de semilla y cargamos 250 litros del Tanque Chico al John Deere.">
                         <div class="wa-preset-top">
-                            <span class="wa-audio-badge">🎙️ Audio 0:22 seg</span>
-                            <span class="wa-sender-lbl">Juan (Siembra)</span>
+                            <span class="wa-audio-badge">🎙️ Audio 0:24 seg</span>
+                            <span class="wa-sender-lbl">🌾 Cargar Labor (Siembra)</span>
                         </div>
-                        <p class="wa-preset-text">"Cargamos 250 L del Tanque Chico al John Deere, sembramos 20 ha con 35 bolsas."</p>
+                        <p class="wa-preset-text">"Sembramos 20 ha de trigo en Lote 1 Don Lorenzo, usamos 35 bolsas y 250 L del Tanque Chico."</p>
+                    </button>
+
+                    <button class="wa-preset-btn" data-sender="Marcos (Maquinista)" data-msg="Pasamos la rastra de disco en el Lote 2 de Don Lorenzo. Cargamos 180 litros del Tanque Grande al tractor.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🎙️ Audio 0:18 seg</span>
+                            <span class="wa-sender-lbl">🚜 Labor con Implemento</span>
+                        </div>
+                        <p class="wa-preset-text">"Pasamos disco en Lote 2 Don Lorenzo. Cargamos 180 L del Tanque Grande al tractor."</p>
                     </button>
 
                     <button class="wa-preset-btn" data-sender="Carlos (Encargado Galpón)" data-msg="Pasamos 1500 litros de la Cisterna Planta al Tanque Grande para tenerlo listo para la sembradora.">
                         <div class="wa-preset-top">
                             <span class="wa-audio-badge">🎙️ Audio 0:16 seg</span>
-                            <span class="wa-sender-lbl">Carlos (Logística)</span>
+                            <span class="wa-sender-lbl">⛽ Movimiento Combustible</span>
                         </div>
                         <p class="wa-preset-text">"Pasamos 1.500 L de Cisterna Planta al Tanque Grande para la sembradora."</p>
                     </button>
 
-                    <button class="wa-preset-btn" data-sender="Esteban (Administrador)" data-msg="Retiramos 3000 litros de gasoil del acopio de YPF Directo y los descargamos en la Cisterna Planta.">
+                    <button class="wa-preset-btn" data-sender="Pedro (Asesor Técnico)" data-msg="¿Cuánto gasoil nos queda en cada tanque y qué cultivos tenemos sembrados en los lotes de Don Lorenzo?">
                         <div class="wa-preset-top">
-                            <span class="wa-audio-badge">🎙️ Audio 0:18 seg</span>
-                            <span class="wa-sender-lbl">Esteban (Acopio)</span>
+                            <span class="wa-audio-badge">💬 Consulta</span>
+                            <span class="wa-sender-lbl">📊 Consultar Todo</span>
                         </div>
-                        <p class="wa-preset-text">"Retiramos 3.000 L del acopio de YPF y los descargamos en Cisterna Planta."</p>
+                        <p class="wa-preset-text">"¿Cuánto gasoil nos queda en cada tanque y qué cultivos tenemos en Don Lorenzo?"</p>
+                    </button>
+
+                    <button class="wa-preset-btn" data-sender="Juan (Operario)" data-msg="Quiero dar de alta un nuevo campo llamado La Posta de 120 hectáreas con 2 lotes.">
+                        <div class="wa-preset-top">
+                            <span class="wa-audio-badge">🔒 Prueba de Seguridad</span>
+                            <span class="wa-sender-lbl">🚫 Intento Cargar Campo (Bloqueado)</span>
+                        </div>
+                        <p class="wa-preset-text">"Quiero dar de alta un nuevo campo llamado La Posta de 120 ha..." (Demuestra bloqueo)</p>
                     </button>
                 </div>
 
@@ -704,7 +732,7 @@
                     <textarea 
                         id="wa-custom-msg" 
                         rows="3" 
-                        placeholder="Ej: 'Cargué 200 litros del tanque grande en la cosechadora...'"
+                        placeholder="Ej: 'Terminamos de sembrar 15 ha en Lote 1...', o '¿Cuánto gasoil queda en el Tanque Chico?'"
                         autocomplete="off"
                         autocorrect="off"
                         autocapitalize="none"
@@ -716,7 +744,7 @@
                     <div class="wa-input-footer">
                         <span class="wa-audio-indicator">🎙️ Simula Nota de Voz de WhatsApp</span>
                         <button id="btn-send-wa-custom" class="btn-primary wa-btn-send">
-                            <span>Enviar Reporte a Claude</span>
+                            <span>Enviar Reporte WhatsApp</span>
                             <span>➔</span>
                         </button>
                     </div>
@@ -740,12 +768,509 @@
                 <pre id="modal-file-content"><code>Cargando contenido...</code></pre>
             </div>
             <div class="modal-footer">
-                <span class="modal-footer-note">Planillas físicas de la empresa modificadas en tiempo real por Claude.</span>
+                <span class="modal-footer-note">Planillas físicas de la empresa modificadas en tiempo real por IA Desk Agro.</span>
                 <button id="btn-refresh-inspector" class="btn-secondary">🔄 Recargar</button>
             </div>
         </div>
     </div>
 
-    <script src="{% static 'js/main.js' %}"></script>
+        <!-- Modal: Alta de Nuevo Campo / Establecimiento -->
+    <div id="modal-nuevo-campo" class="modal-overlay hidden">
+        <div class="modal-box campo-modal-box">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span style="font-size: 1.3rem;">🌾</span>
+                    <div>
+                        <h3 id="modal-campo-title" style="font-size: 1.05rem; color: #ffffff;">Nuevo Campo / Establecimiento</h3>
+                        <span id="modal-campo-subtitle" style="font-size: 0.74rem; color: var(--text-muted); display: block;">Módulo de Establecimientos • Catastro, Tenencia, Suelo y Lotes</span>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-nuevo-campo" class="modal-close" onclick="closeModalCampo()" title="Cerrar modal">✕</button>
+            </div>
+
+            <div class="campo-modal-body">
+                <!-- Banner Informativo -->
+                <div class="campo-hero-banner">
+                    <div>
+                        <strong style="color: #6ee7b7; font-size: 0.85rem; display: block; margin-bottom: 2px;">🚜 Gestión Integral de Campos y Lotes</strong>
+                        <span style="font-size: 0.75rem; color: #cbd5e1;">Carga todos los datos del campo que trabajas. Podrás georreferenciarlo, asignarle labores por lote y calcular stock físico en tiempo real.</span>
+                    </div>
+                    <span class="campo-badge">IA DESK AGRO</span>
+                </div>
+
+                
+                <!-- Selector de Modo: Cargar Nuevo vs Modificar Existente -->
+                <div class="campo-mode-selector-bar" style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 8px 12px; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">Acción:</span>
+                        <button type="button" id="btn-mode-nuevo" class="btn-secondary" onclick="setCampoFormMode('nuevo')" style="padding: 4px 10px; font-size: 0.75rem; border-color: #10b981; color: #34d399;">➕ Cargar Nuevo</button>
+                        <button type="button" id="btn-mode-editar" class="btn-secondary" onclick="setCampoFormMode('editar')" style="padding: 4px 10px; font-size: 0.75rem;">✏️ Modificar Existente</button>
+                    </div>
+                    <div id="campo-select-wrapper" style="display: none; align-items: center; gap: 6px;">
+                        <label for="select-campo-to-edit" style="font-size: 0.75rem; color: #94a3b8;">Campo a modificar:</label>
+                        <select id="select-campo-to-edit" class="campo-select" onchange="cargarDatosCampoSeleccionado(this.value)" style="padding: 4px 8px; font-size: 0.76rem; width: auto; max-width: 260px;">
+                            {% for c in campos %}
+                            <option value="{{ c.id }}">{{ c.nombre }} ({{ c.superficie_ha }} ha)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <form id="form-nuevo-campo" enctype="multipart/form-data">
+                    <input type="hidden" id="campo-id" name="campo_id" value="">
+                    <input type="hidden" id="campo-original-nombre" name="original_nombre" value="">
+                    <!-- 1. Identificación y Régimen de Tenencia -->
+                    <div class="campo-form-section">
+                        <div class="campo-section-title">
+                            <span>🏷️ 1. Identificación y Titularidad</span>
+                            <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">Datos legales del establecimiento</span>
+                        </div>
+                        <div class="campo-form-grid">
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-nombre">Nombre del Campo / Establecimiento <span class="req">*</span></label>
+                                <input type="text" id="campo-nombre" name="nombre" class="campo-input" required placeholder="ej: Campo La Juanita, Don Pedro" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-titular">Titular / Productor / Cliente</label>
+                                <input type="text" id="campo-titular" name="titular" class="campo-input" placeholder="ej: Familia Rossi, Propio" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-tenencia">Condición de Tenencia</label>
+                                <select id="campo-tenencia" name="tenencia" class="campo-select">
+                                    <option value="Propio" selected>Propio</option>
+                                    <option value="Arrendado (Quintales fijos)">Arrendado (Quintales fijos/ha)</option>
+                                    <option value="Arrendado (Porcentaje %)">Arrendado (Porcentaje %)</option>
+                                    <option value="Aparcería">Aparcería</option>
+                                    <option value="Capitalización">Capitalización / Pastoreo</option>
+                                </select>
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-sector">Sector / Zona Operativa</label>
+                                <input type="text" id="campo-sector" name="sector" class="campo-input" placeholder="ej: Sector Norte - Lomas Altas" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Ubicación Geográfica & Coordenadas GPS -->
+                    <div class="campo-form-section">
+                        <div class="campo-section-title">
+                            <span>📍 2. Ubicación Geográfica &amp; Coordenadas GPS</span>
+                            <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">Geolocalización GPS / Satelital</span>
+                        </div>
+                        <div class="campo-form-grid">
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-provincia">Provincia</label>
+                                <select id="campo-provincia" name="provincia" class="campo-select">
+                                    <option value="Buenos Aires" selected>Buenos Aires</option>
+                                    <option value="Córdoba">Córdoba</option>
+                                    <option value="Santa Fe">Santa Fe</option>
+                                    <option value="Entre Ríos">Entre Ríos</option>
+                                    <option value="La Pampa">La Pampa</option>
+                                    <option value="Santiago del Estero">Santiago del Estero</option>
+                                    <option value="San Luis">San Luis</option>
+                                    <option value="Salta">Salta</option>
+                                    <option value="Chaco">Chaco</option>
+                                    <option value="Corrientes">Corrientes</option>
+                                    <option value="Tucumán">Tucumán</option>
+                                    <option value="Mendoza">Mendoza</option>
+                                </select>
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-ubicacion">Localidad / Partido / Departamento</label>
+                                <input type="text" id="campo-ubicacion" name="ubicacion" class="campo-input" placeholder="ej: Pergamino, Ruta 8 Km 220" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-gps">Coordenadas GPS (Lat, Long)</label>
+                                <div class="campo-input-with-btn">
+                                    <input type="text" id="campo-gps" name="coordenadas_gps" class="campo-input" placeholder="ej: -33.8942, -60.5731" autocomplete="off">
+                                    <button type="button" id="btn-get-gps" class="btn-gps-get" title="Capturar coordenadas GPS actuales con el navegador">📍 Mi GPS</button>
+                                </div>
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-partida">Partida Inmobiliaria / Catastro</label>
+                                <input type="text" id="campo-partida" name="partida_inmobiliaria" class="campo-input" placeholder="ej: 087-019284" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-renspa">Código RENSPA</label>
+                                <input type="text" id="campo-renspa" name="renspa" class="campo-input" placeholder="ej: 01.002.0.03841/00" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Superficie & Características Agronómicas -->
+                    <div class="campo-form-section">
+                        <div class="campo-section-title">
+                            <span>📐 3. Superficie &amp; Aptitud Agronómica</span>
+                            <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">Capacidad productiva y suelo</span>
+                        </div>
+                        <div class="campo-form-grid">
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-superficie-total">Superficie Total (ha) <span class="req">*</span></label>
+                                <input type="number" id="campo-superficie-total" name="superficie_total_ha" step="0.1" min="0.1" class="campo-input" required placeholder="ej: 450.0">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-superficie-agricola">Superficie Agrícola Efectiva (ha)</label>
+                                <input type="number" id="campo-superficie-agricola" name="superficie_agricola_ha" step="0.1" min="0.1" class="campo-input" placeholder="ej: 420.0">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-suelo">Tipo de Suelo / Serie</label>
+                                <input type="text" id="campo-suelo" name="tipo_suelo" class="campo-input" placeholder="ej: Argiudol típico Serie Pergamino Clase I" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group">
+                                <label class="campo-label" for="campo-ip">Índice de Productividad (IP)</label>
+                                <input type="text" id="campo-ip" name="indice_productividad" class="campo-input" placeholder="ej: IP 92" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group full-width">
+                                <label class="campo-label" for="campo-cultivos">Cultivos Principales de Campaña</label>
+                                <input type="text" id="campo-cultivos" name="cultivos_campana" class="campo-input" placeholder="ej: Soja de 1ra (DM 46R18 STS), Maíz temprano (DK 72-10), Trigo Pan" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group full-width">
+                                <label class="campo-label" for="campo-instalaciones">Infraestructura e Instalaciones</label>
+                                <input type="text" id="campo-instalaciones" name="instalaciones_clave" class="campo-input" placeholder="ej: Galpón central 500 m2, Cisterna 10.000 L, 2 silos aéreos 120 Tn, balanza de camiones" autocomplete="off">
+                            </div>
+                            <div class="campo-form-group full-width">
+                                <label class="campo-label" for="campo-descripcion">Observaciones Agronómicas / Notas Operativas</label>
+                                <textarea id="campo-descripcion" name="descripcion" rows="2" class="campo-textarea" placeholder="Notas sobre drenaje, rotaciones, curvas de nivel o accesos para maquinaria."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Subdivisión en Lotes y Parcelas Agrícolas -->
+                    <div class="campo-form-section">
+                        <div class="campo-section-title">
+                            <span>🌱 4. Subdivisión en Lotes Agrícolas</span>
+                            <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">Carga parcelaria interactiva</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+                            Agrega los lotes que componen este campo para poder imputar insumos, siembra y cosechas de forma discriminada:
+                        </p>
+
+                        <div class="lotes-builder-wrapper">
+                            <table class="lotes-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 28%;">Nombre del Lote</th>
+                                        <th style="width: 18%;">Superficie (ha)</th>
+                                        <th style="width: 24%;">Cultivo Actual</th>
+                                        <th style="width: 24%;">Híbrido / Variedad</th>
+                                        <th style="width: 6%; text-align: center;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lotes-tbody">
+                                    <tr class="lote-row-item">
+                                        <td><input type="text" class="lote-input-mini lote-row-nombre" value="Lote 1" placeholder="ej: Lote 1 Norte" required></td>
+                                        <td><input type="number" step="0.1" min="0.1" class="lote-input-mini lote-row-ha" placeholder="ha" required></td>
+                                        <td>
+                                            <select class="lote-input-mini lote-row-cultivo">
+                                                <option value="Soja de 1ra">Soja de 1ra</option>
+                                                <option value="Soja de 2da">Soja de 2da</option>
+                                                <option value="Maíz temprano">Maíz temprano</option>
+                                                <option value="Maíz tardío">Maíz tardío</option>
+                                                <option value="Trigo Pan">Trigo Pan</option>
+                                                <option value="Girasol">Girasol</option>
+                                                <option value="Barbecho">Barbecho</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" class="lote-input-mini lote-row-variedad" placeholder="ej: DM 46R18 / DK 72-10"></td>
+                                        <td style="text-align: center;">
+                                            <button type="button" class="btn-remove-lote-row" title="Eliminar fila de lote">✕</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="lotes-footer-bar">
+                                <button type="button" id="btn-add-lote-row" class="btn-add-lote-row">
+                                    <span>➕</span> Agregar otro Lote
+                                </button>
+                                <div class="lotes-sum-indicator">
+                                    Has en Lotes: <span id="lotes-sum-ha" class="ha-val">0.0</span> / Total Campo: <span id="campo-ha-ref" class="ha-val">0.0</span> ha
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Cartografía / Plano Catastral -->
+                    <div class="campo-form-section">
+                        <div class="campo-section-title">
+                            <span>🗺️ 5. Plano Catastral o Imagen Cartográfica (Opcional)</span>
+                        </div>
+                        <div class="campo-form-group">
+                            <label class="campo-label" for="campo-diagrama-file">Adjuntar plano, foto aérea o mapa de ambientación</label>
+                            <input type="file" id="campo-diagrama-file" name="foto_diagrama" accept="image/*" class="campo-input" style="padding: 6px 10px;">
+                            <span style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
+                                💡 <em>Si no dispones de un archivo, IA Desk Agro generará automáticamente una cartografía satelital SVG georreferenciada con la subdivisión de tus lotes.</em>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="campo-modal-footer">
+                <div id="campo-form-feedback" class="campo-feedback"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button type="button" id="btn-cancel-nuevo-campo" class="btn-secondary" onclick="closeModalCampo()">Cancelar</button>
+                    <button type="submit" form="form-nuevo-campo" id="btn-submit-nuevo-campo" class="btn-primary" style="height: 40px; padding: 0 20px;">
+                        <span id="btn-submit-text">💾 Cargar en IA Desk Agro</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificación Agro -->
+    <div id="agro-toast" class="agro-toast">
+        <span style="font-size: 1.2rem;">🌾</span>
+        <span id="agro-toast-msg">Operación completada exitosamente.</span>
+    </div>
+
+    <script src="{% static 'js/main.js' %}?v={% now 'U' %}"></script>
+
+    <script>
+        // Inline Modal Handlers (Garantiza apertura inmediata sin dependencia de caché)
+        window.CAMPOS_CACHE = null;
+
+        async function fetchCamposCache() {
+            try {
+                const res = await fetch('/api/campos/');
+                const data = await res.json();
+                window.CAMPOS_CACHE = data.campos || [];
+                return window.CAMPOS_CACHE;
+            } catch(e) {
+                console.error('Error fetching campos cache:', e);
+                return [];
+            }
+        }
+
+        async function openModalCampo(mode, targetCampoId) {
+            var modal = document.getElementById('modal-nuevo-campo');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.setProperty('display', 'flex', 'important');
+                var fb = document.getElementById('campo-form-feedback');
+                if (fb) { fb.textContent = ''; fb.className = 'campo-feedback'; }
+                
+                await fetchCamposCache();
+                setCampoFormMode(mode || 'nuevo', targetCampoId);
+            } else {
+                console.error('[IA Desk Agro] No se encontró el elemento #modal-nuevo-campo en el DOM');
+            }
+        }
+
+        function closeModalCampo() {
+            var modal = document.getElementById('modal-nuevo-campo');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        function setCampoFormMode(mode, targetCampoId) {
+            const btnNuevo = document.getElementById('btn-mode-nuevo');
+            const btnEditar = document.getElementById('btn-mode-editar');
+            const selectWrapper = document.getElementById('campo-select-wrapper');
+            const selectToEdit = document.getElementById('select-campo-to-edit');
+            const btnSubmitText = document.getElementById('btn-submit-text');
+            const titleEl = document.getElementById('modal-campo-title');
+            const subtitleEl = document.getElementById('modal-campo-subtitle');
+            const form = document.getElementById('form-nuevo-campo');
+
+            if (mode === 'editar') {
+                if (btnEditar) {
+                    btnEditar.style.borderColor = '#fbbf24';
+                    btnEditar.style.color = '#fbbf24';
+                    btnEditar.style.background = 'rgba(245, 158, 11, 0.12)';
+                }
+                if (btnNuevo) {
+                    btnNuevo.style.borderColor = 'rgba(255,255,255,0.12)';
+                    btnNuevo.style.color = '#94a3b8';
+                    btnNuevo.style.background = 'none';
+                }
+                if (selectWrapper) selectWrapper.style.display = 'flex';
+
+                if (selectToEdit) {
+                    if (window.CAMPOS_CACHE && window.CAMPOS_CACHE.length > 0) {
+                        selectToEdit.innerHTML = '';
+                        window.CAMPOS_CACHE.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c.id;
+                            opt.textContent = `${c.nombre} (${c.superficie_ha} ha)`;
+                            selectToEdit.appendChild(opt);
+                        });
+                    }
+                    if (targetCampoId) {
+                        selectToEdit.value = targetCampoId;
+                    }
+                    cargarDatosCampoSeleccionado(selectToEdit.value);
+                }
+            } else {
+                // Modo Nuevo
+                if (btnNuevo) {
+                    btnNuevo.style.borderColor = '#10b981';
+                    btnNuevo.style.color = '#34d399';
+                    btnNuevo.style.background = 'rgba(16, 185, 129, 0.12)';
+                }
+                if (btnEditar) {
+                    btnEditar.style.borderColor = 'rgba(255,255,255,0.12)';
+                    btnEditar.style.color = '#94a3b8';
+                    btnEditar.style.background = 'none';
+                }
+                if (selectWrapper) selectWrapper.style.display = 'none';
+
+                if (titleEl) titleEl.textContent = 'Nuevo Campo / Establecimiento';
+                if (subtitleEl) subtitleEl.textContent = 'Módulo de Establecimientos • Catastro, Tenencia, Suelo y Lotes';
+                if (btnSubmitText) btnSubmitText.textContent = '💾 Cargar en IA Desk Agro';
+
+                // Reset inputs
+                document.getElementById('campo-id').value = '';
+                document.getElementById('campo-original-nombre').value = '';
+                document.getElementById('campo-nombre').value = '';
+                document.getElementById('campo-titular').value = '';
+                document.getElementById('campo-tenencia').value = 'Propio';
+                document.getElementById('campo-sector').value = '';
+                document.getElementById('campo-provincia').value = 'Buenos Aires';
+                document.getElementById('campo-ubicacion').value = '';
+                document.getElementById('campo-gps').value = '';
+                document.getElementById('campo-partida').value = '';
+                document.getElementById('campo-renspa').value = '';
+                document.getElementById('campo-superficie-total').value = '';
+                document.getElementById('campo-superficie-agricola').value = '';
+                document.getElementById('campo-suelo').value = '';
+                document.getElementById('campo-ip').value = '';
+                document.getElementById('campo-cultivos').value = '';
+                document.getElementById('campo-instalaciones').value = '';
+                document.getElementById('campo-descripcion').value = '';
+
+                // Reset lotes table to 1 row
+                const tbody = document.getElementById('lotes-tbody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr class="lote-row-item">
+                            <td><input type="text" class="lote-input-mini lote-row-nombre" value="Lote 1" placeholder="ej: Lote 1 Norte" required></td>
+                            <td><input type="number" step="0.1" min="0.1" class="lote-input-mini lote-row-ha" placeholder="ha" required></td>
+                            <td>
+                                <select class="lote-input-mini lote-row-cultivo">
+                                    <option value="Soja de 1ra">Soja de 1ra</option>
+                                    <option value="Soja de 2da">Soja de 2da</option>
+                                    <option value="Maíz temprano">Maíz temprano</option>
+                                    <option value="Maíz tardío">Maíz tardío</option>
+                                    <option value="Trigo Pan">Trigo Pan</option>
+                                    <option value="Girasol">Girasol</option>
+                                    <option value="Barbecho">Barbecho</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="lote-input-mini lote-row-variedad" placeholder="ej: DM 46R18 / DK 72-10"></td>
+                            <td style="text-align: center;">
+                                <button type="button" class="btn-remove-lote-row" title="Eliminar fila de lote">✕</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                if (window.updateLotesSum) window.updateLotesSum();
+                setTimeout(() => {
+                    const inp = document.getElementById('campo-nombre');
+                    if (inp) inp.focus();
+                }, 80);
+            }
+        }
+
+        async function cargarDatosCampoSeleccionado(campoId) {
+            if (!campoId) return;
+            let campos = window.CAMPOS_CACHE;
+            if (!campos || campos.length === 0) {
+                campos = await fetchCamposCache();
+            }
+            const campo = campos.find(c => c.id === campoId || c.nombre === campoId);
+            if (!campo) return;
+
+            document.getElementById('campo-id').value = campo.id || '';
+            document.getElementById('campo-original-nombre').value = campo.nombre || '';
+            document.getElementById('campo-nombre').value = campo.nombre || '';
+            document.getElementById('campo-titular').value = campo.titular || '';
+            document.getElementById('campo-tenencia').value = campo.tenencia || 'Propio';
+            document.getElementById('campo-sector').value = campo.sector || '';
+            document.getElementById('campo-provincia').value = campo.provincia || 'Buenos Aires';
+            document.getElementById('campo-ubicacion').value = campo.ubicacion || '';
+            document.getElementById('campo-gps').value = campo.coordenadas_gps || '';
+            document.getElementById('campo-partida').value = campo.partida || '';
+            document.getElementById('campo-renspa').value = campo.renspa || '';
+            document.getElementById('campo-superficie-total').value = campo.superficie_ha || '';
+            document.getElementById('campo-superficie-agricola').value = campo.superficie_agricola_ha || campo.superficie_ha || '';
+            document.getElementById('campo-suelo').value = campo.tipo_suelo || '';
+            document.getElementById('campo-ip').value = campo.indice_productividad || '';
+            document.getElementById('campo-cultivos').value = campo.cultivos_campana || '';
+            document.getElementById('campo-instalaciones').value = campo.instalaciones_clave || '';
+            document.getElementById('campo-descripcion').value = campo.descripcion || '';
+
+            // Población de lotes en la tabla
+            const tbody = document.getElementById('lotes-tbody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                const lotes = (campo.lotes_detallados && campo.lotes_detallados.length > 0) ? campo.lotes_detallados : [
+                    { nombre: 'Lote 1', superficie_ha: campo.superficie_ha || 100, cultivo: 'Soja de 1ra', variedad: '' }
+                ];
+
+                lotes.forEach((l, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'lote-row-item';
+                    const cVal = l.cultivo || 'Soja de 1ra';
+                    tr.innerHTML = `
+                        <td><input type="text" class="lote-input-mini lote-row-nombre" value="${l.nombre || 'Lote ' + (idx+1)}" placeholder="ej: Lote 1" required></td>
+                        <td><input type="number" step="0.1" min="0.1" class="lote-input-mini lote-row-ha" value="${l.superficie_ha || ''}" placeholder="ha" required></td>
+                        <td>
+                            <select class="lote-input-mini lote-row-cultivo">
+                                <option value="Soja de 1ra" ${cVal.includes('Soja de 1') || cVal.includes('Soja 1') ? 'selected' : ''}>Soja de 1ra</option>
+                                <option value="Soja de 2da" ${cVal.includes('Soja de 2') || cVal.includes('Soja 2') ? 'selected' : ''}>Soja de 2da</option>
+                                <option value="Maíz temprano" ${cVal.includes('temprano') || (cVal.includes('Maíz') && !cVal.includes('tardío')) ? 'selected' : ''}>Maíz temprano</option>
+                                <option value="Maíz tardío" ${cVal.includes('tardío') ? 'selected' : ''}>Maíz tardío</option>
+                                <option value="Trigo Pan" ${cVal.includes('Trigo') ? 'selected' : ''}>Trigo Pan</option>
+                                <option value="Girasol" ${cVal.includes('Girasol') ? 'selected' : ''}>Girasol</option>
+                                <option value="Barbecho" ${cVal.includes('Barbecho') ? 'selected' : ''}>Barbecho</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="lote-input-mini lote-row-variedad" value="${l.variedad || ''}" placeholder="ej: DM 46R18 / DK 72-10"></td>
+                        <td style="text-align: center;">
+                            <button type="button" class="btn-remove-lote-row" title="Eliminar fila de lote">✕</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            if (window.updateLotesSum) window.updateLotesSum();
+
+            const titleEl = document.getElementById('modal-campo-title');
+            const subtitleEl = document.getElementById('modal-campo-subtitle');
+            const btnSubmitText = document.getElementById('btn-submit-text');
+
+            if (titleEl) titleEl.textContent = '✏️ Modificar Campo: ' + campo.nombre;
+            if (subtitleEl) subtitleEl.textContent = 'Edita los datos catastrales, hectáreas, suelo o lotes';
+            if (btnSubmitText) btnSubmitText.textContent = '💾 Guardar Cambios en IA Desk Agro';
+        }
+
+        function editarCampoPorId(campoId) {
+            openModalCampo('editar', campoId);
+        }
+
+        function editarCampoActivo() {
+            const activeBtn = document.querySelector('.campo-tab-btn.active');
+            if (activeBtn && activeBtn.dataset.targetCampo) {
+                const targetId = activeBtn.dataset.targetCampo.replace('tab-campo-', '');
+                openModalCampo('editar', targetId);
+            } else {
+                openModalCampo('editar');
+            }
+        }
+
+        window.openModalCampo = openModalCampo;
+        window.closeModalCampo = closeModalCampo;
+        window.setCampoFormMode = setCampoFormMode;
+        window.cargarDatosCampoSeleccionado = cargarDatosCampoSeleccionado;
+        window.editarCampoPorId = editarCampoPorId;
+        window.editarCampoActivo = editarCampoActivo;
+
+    </script>
+
 </body>
 </html>
