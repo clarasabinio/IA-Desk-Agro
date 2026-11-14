@@ -118,6 +118,7 @@ IA-Desk-Agro/
 │   ├── prompts/
 │   │   └── system_prompt.txt   # Prompt del sistema y reglas de integridad para la IA
 │   ├── services/
+│   │   ├── alertas_service.py       # Sistema de alertas de stock crítico y umbrales mínimos
 │   │   ├── stock_service.py         # Integridad transaccional y prevención de saldos negativos
 │   │   ├── claude_service.py        # Copiloto conversacional, simulación y tool calling
 │   │   ├── agronomic_engine.py      # Cálculos técnicos INTA CostoMaq y factores de suelo
@@ -130,6 +131,7 @@ IA-Desk-Agro/
 │   └── templates/app/          # Vistas HTML (Dashboard interactivo)
 ├── core/                       # Configuración del proyecto Django (settings, asgi, wsgi)
 ├── files_storage/              # Registros vivos en JSON, bitácoras y hojas Excel
+│   ├── umbrales_stock_critico.json # Configuración persistente de umbrales de stock crítico
 │   ├── stock_gasoil.json       # Balance de combustibles
 │   ├── stock_insumos.json      # Balance de insumos y fertilizantes
 │   ├── stock_granos_silos.json # Granos en silos
